@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!--  
+ * @author Nigel Cook
+ *
+ * (C) Copyright 2012. Nigel Cook. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ * 
+ * Licensed under the terms described in LICENSE file that accompanied this code, (the "License"); you may not use this file
+ * except in compliance with the License. 
+ * 
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on 
+ *  an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the 
+ *  specific language governing permissions and limitations under the License.
+-->
+
+<project name="build" default="dist" basedir=".">
+	<description> Build file for n3phele common libs</description>	
+    <target name="dist" depends="" description="Create common jars deliverables">
+    	<jar jarfile="dist/n3phele-shared-with-factory.jar">
+    		<fileset dir="war/WEB-INF/classes" includes="n3phele/service/core/**/*.class" />
+    		<fileset dir="war/WEB-INF/classes" includes="n3phele/service/model/core/**/*.class" />
+    	</jar>
+    	<jar jarfile="dist/n3phele-shared-with-backend.jar">
+    		<fileset dir="war/WEB-INF/classes" includes="n3phele/service/core/**/*.class" />
+    		<fileset dir="war/WEB-INF/classes" includes="n3phele/service/model/core/**/*.class" />
+    		<fileset dir="war/WEB-INF/classes" includes="n3phele/service/model/repository/**/*.class" />
+    		<fileset dir="war/WEB-INF/classes" includes="n3phele/storage/**/*.class" />
+    		<fileset dir="war/WEB-INF/classes" includes="**/*.properties" />
+    	</jar>
+    </target>
+</project>

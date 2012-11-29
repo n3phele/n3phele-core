@@ -1,0 +1,761 @@
+
+
+options {
+  STATIC=false;
+}
+
+
+
+PARSER_BEGIN(Evaluator)
+/**
+ * @author Nigel Cook
+ *
+ * (C) Copyright 2010-2012. Nigel Cook. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ * 
+ * Licensed under the terms described in LICENSE file that accompanied this code, (the "License"); you may not use this file
+ * except in compliance with the License. 
+ * 
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on 
+ *  an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the 
+ *  specific language governing permissions and limitations under the License.
+ */
+
+package n3phele.service.expression;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import n3phele.service.actions.tasks.ActionLog;
+import n3phele.service.model.core.ParameterType;
+import n3phele.service.model.core.TypedParameter;
+
+/** N3phele expression evaluator */
+@SuppressWarnings({"serial", "unused", "unchecked"})
+public class Evaluator {
+	private final static Logger log = Logger.getLogger(Evaluator.class.getName()); 
+
+	Map<String,Map<String,TypedParameter>> context = null;
+
+	public static void invoke(List<TypedParameter>parameters, Map<String,Map<String,TypedParameter>> context, ActionLog actionLog) {
+		Map<String,TypedParameter> varSet = new HashMap<String,TypedParameter>();
+		context.put("$$$", varSet);
+		for(TypedParameter p : parameters) {
+			varSet.put(p.getName(), p);
+		}
+		for(TypedParameter p : parameters) {
+			String arg="";
+			try {
+				arg = p.value();
+				if(arg == null || arg.length() == 0)
+					arg = p.defaultValue();
+                    if(p.getType().equals(ParameterType.String) || p.getType().equals(ParameterType.Secret)) {
+                    	if(!arg.startsWith("\"") && !arg.startsWith("$<") && !arg.startsWith("("))
+                            arg = "\"" + arg + "\"";
+                    }
+				Evaluator x = new Evaluator(arg, context);
+				Object o;
+				String result = null;
+				if(p.getType().equals(ParameterType.List)) {
+					o = x.Expression();
+
+					if(o instanceof List) {
+	            		result = listToString((List<Object>)o);
+					} else {
+						StringBuffer b = new StringBuffer();
+	            		b.append("[");
+						if(o instanceof String) {
+							b.append("\"");
+	            			b.append((String)o);
+	            			b.append("\"");
+						} else {
+							b.append(String.valueOf(o));
+						}
+						b.append("]");
+	               		result = b.toString();
+					}
+
+	                p.setValue(result);
+				} else {
+					o = x.Expression();
+					if(o instanceof String) result = (String)o;
+					else if(o instanceof List) result = listToString((List<Object>)o);
+					else if(o instanceof Integer) result = ((Integer)o).toString();
+					else if(o instanceof Double) result = ((Double)o).toString();
+					switch(p.getType()) {
+					case Boolean:
+						if(o instanceof Integer)
+							p.setValue(Boolean.valueOf((Integer)o != 0).toString());
+						else
+							p.setValue(Boolean.valueOf(result).toString());
+						break;
+					default:
+					case String:
+					case Secret:
+						p.setValue(result);
+						break;
+					case Long:
+						if(o instanceof Integer)
+							p.setValue(result);
+						else if(o instanceof Double)
+							p.setValue(Long.toString(((Double)o).longValue()));
+						else 
+							p.setValue(Long.valueOf(result).toString());
+						break;
+					case Double:
+						if(o instanceof Double)
+							p.setValue(result);
+						else
+							p.setValue(Double.valueOf(result).toString());
+						break;
+					}
+				}
+			} catch (Exception error) {
+                    log.log(Level.WARNING, "Expression error "+p.getName()+" "+arg, error);
+                    if(actionLog != null)
+                            actionLog.error("Expression error "+p.getName()+" "+arg+" "+error.getMessage());
+                    p.setValue("");
+                    throw new IllegalArgumentException(error);
+            } catch (TokenMgrError parser) {
+                log.log(Level.WARNING, "Expression error "+p.getName()+" "+arg+parser.getMessage()+" Reason: "+parser.errorCode);
+                if(actionLog != null)
+                        actionLog.error("Expression error "+p.getName()+" "+arg+" "+parser.getMessage());
+                p.setValue("");
+                throw new IllegalArgumentException(parser);
+            }
+		}
+	}
+	
+	private static String listToString(List<Object> o) {
+		StringBuffer b = new StringBuffer();
+    	b.append("[");
+
+		int i = 0;
+		for(Object obj : o) {
+			if(i++ > 0)
+				b.append(",");
+			if(obj instanceof String) {
+				b.append("\"");
+				b.append((String)obj);
+				b.append("\"");
+			} else {
+				b.append(String.valueOf(obj));
+			}
+		} 
+
+		b.append("]");
+        return b.toString();
+	
+	}
+	
+	private static String listToString(List<Object> o, Object seperatorField, Object quotesField) {
+	    StringBuffer b = new StringBuffer();
+	    String seperator = " ";
+	    char leftQuote = 0;
+	    char rightQuote = 0;
+	    if(seperatorField instanceof String) {
+	            seperator = (String)seperatorField;
+	    }
+	    if(quotesField instanceof String) {
+	            String target = (String)quotesField;
+	            if(target!= null && target.length() > 0)
+	                    leftQuote = target.charAt(0);
+	            if(target!= null && target.length() > 1)
+	                    rightQuote = target.charAt(1);
+	    }
+	
+	    int i = 0;
+	    for(Object obj : o) {
+	            if(i++ > 0)
+	                    b.append(seperator);
+	            if(obj instanceof String) {
+	                    if(leftQuote != 0) b.append(leftQuote);
+	                    b.append((String)obj);
+	                    if(rightQuote != 0) b.append(rightQuote);
+	            } else {
+	            		if(leftQuote != 0) b.append(leftQuote);
+	                    b.append(String.valueOf(obj));
+	                    if(rightQuote != 0) b.append(rightQuote);
+	            }
+	    }
+
+    	return b.toString();
+
+    }
+
+
+	/** Main entry point. */
+	public Evaluator(String expression, Map<String, Map<String,TypedParameter>> context) {
+		this(new java.io.StringReader(expression));
+		this.context = context;
+	}
+
+	private Object lookup(String key) throws ParseException {
+		String arg="";
+		try {
+			String variable = key.substring(2,key.length()-1);
+			String bits[] = variable.split("\\.");
+			Map<String,TypedParameter> varSet = context.get(bits[0]);
+			if(varSet == null) {
+				varSet = context.get("$$");
+				if(varSet.containsKey(bits[0])) {
+					bits = ("$$."+variable).split("\\.");
+				} else {
+                	varSet = context.get("$$$");
+                	if(varSet.containsKey(bits[0])) {
+                        bits = ("$$$."+variable).split("\\.");
+                	}
+                }
+			}
+			if(varSet != null && bits.length > 1) {
+				TypedParameter p = varSet.get(bits[1]);
+				if(p != null) {
+					arg = p.value();
+					if(arg == null || arg.length() == 0)
+						arg = p.defaultValue();
+					switch (p.getType()) {
+					case Boolean:
+						if(Boolean.valueOf(arg))
+							return new Integer(1);
+						else
+							return new Integer(0);
+					case Long:
+						return new Integer(arg);
+					case Double:
+						return new Double(arg);
+					case List:
+						Evaluator internal = new Evaluator(arg, context);
+						try {
+                        	return internal.SimpleListExpression();
+                        } catch (TokenMgrError err) {
+                        	throw new ParseException("Error loading "+bits[0]+"."+bits[1]+":"+err.getMessage());
+                        }
+					case String:
+					case Secret:
+					default:
+						return arg;
+					}
+				}
+			}
+		} catch (Exception e) {
+			throw new ParseException("Exception handling "+key+" "+e.getMessage());
+		}
+
+		throw new ParseException("unknown variable "+key);
+	}
+    
+    int asInteger(Object o) {
+	    int i = 0;
+		if(o instanceof Integer) i = (Integer)o;
+	    else if(o instanceof Double) i = ((Double)o).intValue();
+	    else if(o instanceof String) i = Integer.valueOf((String)o);
+    	return i;
+    }
+
+}
+
+
+PARSER_END(Evaluator)
+
+
+SKIP : {
+ " "
+|  "\t"
+|  "\n"
+|  "\r"
+}
+
+
+
+
+TOKEN : {
+ <INTEGER_LITERAL: <DECIMAL_LITERAL> | <HEX_LITERAL> | <OCTAL_LITERAL> >
+|  <#DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])*>
+|  <#HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+>
+|  <#OCTAL_LITERAL: "0" (["0"-"7"])*>
+|  <FLOATING_POINT_LITERAL: (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])? | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])? | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])? | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]>
+|  <#EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+>
+|  <STRING_LITERAL: "\"" ( ~["\"","\\","\n","\r"] | "\\" ( ["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])?  | ["0"-"3"] ["0"-"7"] ["0"-"7"] | ( ["\n","\r"] | "\r\n")))* "\"">
+}
+
+
+TOKEN : {
+ <IDENTIFIER: "$<" <LETTER> (<LETTER> | <DIGIT> | ".")* ">" >
+|  <#LETTER: ["A"-"Z","_","-","a"-"z"]>
+|  <#DIGIT: ["0"-"9"]>
+}
+
+
+
+Object Expression() : {Object o;}
+{
+  o = ConditionalExpression() 			{ return o; } 
+}
+
+Object FunctionExpression() : { Object o = null; Object pattern; Object field; Object field2; Object target;}
+{
+	( "regex(" target = Expression() "," pattern = Expression() "," field = AdditiveExpression() ")" 	
+		{ 
+			if(target instanceof Integer)
+				target = ((Integer)target).toString();
+			else if(target instanceof Double)
+				target = ((Double)target).toString();
+			
+			if(pattern instanceof Integer)
+				pattern = ((Integer)pattern).toString();
+			else if(pattern instanceof Double)
+				pattern = ((Double)pattern).toString();
+			
+			int selector = 0;
+			if(field instanceof Double)
+				selector = (int) ((Double)field).longValue();
+			else if(field instanceof Integer)
+				selector = (int) ((Integer)field);
+			else if(field instanceof String)
+				selector = Integer.valueOf((String)field);
+			try {	
+                Pattern p = Pattern.compile((String) pattern);
+                Matcher matcher = p.matcher((String)target);
+                matcher.find();
+                o = matcher.group(selector);
+			}  catch (IllegalStateException e) { 
+                        	o = ""; 
+            } catch (Exception e) {
+				throw new ParseException(e.getMessage());
+			}
+
+			return o; 
+		}
+	| "max(" field = Expression() "," field2 = Expression() ")" 
+		{ 
+			if(field instanceof Double) {
+				if(field2 instanceof Double) {
+					o = ((Double)field2 > (Double)field)? field2 : field;
+				} else if(field2 instanceof Integer) {
+					o = ((Integer)field2 > (Double)field)? field2 : field;
+				} else {
+					o = (Double.valueOf((String)field2) > (Double)field)? field2 : field;
+				}
+			} else if(field instanceof Integer) {
+				if(field2 instanceof Double) {
+					o = ((Double)field2 > (Integer)field)? field2 : field;
+				} else if(field2 instanceof Integer) {
+					o = ((Integer)field2 > (Integer)field)? field2 : field;
+				} else {
+					o = (Integer.valueOf((String)field2) > (Integer)field)? field2 : field;
+				}
+			
+			} else if(field2 instanceof Double) {
+				o = (((Double)field2) > Double.valueOf((String)field))? field2 : field;
+			
+			} else if(field2 instanceof Integer) {
+				o = (((Integer)field2) > Integer.valueOf((String)field))? field2 : field;
+			} else {
+				o = (((String)field2).compareTo((String)field )>0) ? field2 : field;
+			}
+			return o; 
+		}
+		
+	| "min(" field = Expression() "," field2 = Expression() ")" 
+		{ 
+			if(field instanceof Double) {
+				if(field2 instanceof Double) {
+					o = ((Double)field2 < (Double)field)? field2 : field;
+				} else if(field2 instanceof Integer) {
+					o = ((Integer)field2 < (Double)field)? field2 : field;
+				} else {
+					o = (Double.valueOf((String)field2) > (Double)field)? field2 : field;
+				}
+			} else if(field instanceof Integer) {
+				if(field2 instanceof Double) {
+					o = ((Double)field2 < (Integer)field)? field2 : field;
+				} else if(field2 instanceof Integer) {
+					o = ((Integer)field2 < (Integer)field)? field2 : field;
+				} else {
+					o = (Integer.valueOf((String)field2) > (Integer)field)? field2 : field;
+				}
+			
+			} else if(field2 instanceof Double) {
+				o = (((Double)field2) < Double.valueOf((String)field))? field2 : field;
+			
+			} else if(field2 instanceof Integer) {
+				o = (((Integer)field2) < Integer.valueOf((String)field))? field2 : field;
+			} else {
+				o = (((String)field2).compareTo((String)field )<0) ? field2 : field;
+			}
+			return o; 
+		}
+	| "length(" o = Expression() ")" { if(o==null) return 0;
+											  else if(o instanceof String) return ((String)o).length();
+											  else if(!(o instanceof List)) return 1;
+											  else return ((List<Object>)o).size(); }
+    | "string(" o = Expression() "," field = Expression() "," field2 = Expression() ")" { if(o==null) return 0;
+											  else if(!(o instanceof List)) return o;
+											  else return listToString(((List<Object>)o), field, field2); }
+	| "escape(" o = Expression() ")" { if(o==null) return 0;
+											  else if(!(o instanceof String)) return o;
+											  else return StringEscapeUtils.escapeJavaString((String)o); }
+	| "unescape(" o = Expression() ")" { if(o==null) return 0;
+											  else if(!(o instanceof String)) return o;
+											  else return StringEscapeUtils.unescapeJavaString((String)o); }
+											  
+	)
+}
+
+Object ConditionalExpression() : {Object o1; Object o2; Object o3;}
+{
+	o1 = LogicalORExpression() [ "?" o2 = Expression() ":" o3 = ConditionalExpression() 
+	
+		{
+			Integer i1;
+			if(o1 instanceof Integer) {
+				i1 = (Integer) o1;
+				
+				o1 = i1 != 0 ? o2 : o3;
+			} else {
+				o1 = o3;
+			}
+		
+		}
+	
+	] { return o1; }
+}
+
+
+Object LogicalORExpression() : {Object o; Object o2;}
+{
+	o = LogicalANDExpression() [ "||" 
+	o2 = LogicalORExpression()   { if(o instanceof Integer &&
+												  o2 instanceof Integer) {
+												  	Integer i = (Integer) o;
+												  	Integer i2 = (Integer) o2;
+												  	Integer result;
+												  	result = ((i == 1 || i2 == 1) ? 1 : 0);
+												  	o = result;
+												  } 
+									}
+	] { return o; }
+}
+
+Object LogicalANDExpression() : { Object o; Object o2;}
+{
+	o =  EqualityExpression() [ "&&" 
+		o2 = LogicalANDExpression() { if(o instanceof Integer &&
+												  o2 instanceof Integer) {
+												  	Integer i = (Integer) o;
+												  	Integer i2 = (Integer) o2;
+												  	Integer result;
+												  	result = ((i == 1 && i2 == 1) ? 1 : 0);
+												  	o = result;
+												  } 
+									}
+		] { return o; }
+}
+
+Object EqualityExpression() : {Object o; String op; Object o2; Integer result; }
+{
+	o = RelationalExpression() [ 
+	( "==" 								{ op = "=="; }
+	| "!=" 								{ op = "!="; }
+	) o2 = EqualityExpression() 		{   if(o instanceof Double || o2 instanceof Double) {
+												if(o instanceof Integer) o = (double) ((Integer)o);
+												if(o2 instanceof Integer) o2 = (double) ((Integer)o2);
+											}
+											if(op == "==") {
+											    result = o.equals(o2) ? 1 : 0;
+											} else {
+												result = !o.equals(o2) ? 1 : 0;
+											}
+											o = result;
+										}
+	
+	]		{ return o; }
+}
+
+Object RelationalExpression() : {Object o; String op; Object o2;}
+{
+	o = AdditiveExpression() [ 
+	( "<"											{ op = "<"; } 
+	| ">"											{ op = ">"; } 
+	| "<=" 											{ op = "<="; }
+	| ">=" 											{ op = ">="; }
+	) o2 = RelationalExpression() 					{ if(o instanceof Double || o2 instanceof Double) {
+                                                        Double i=0.0;
+                                                        Double i2=0.0;
+                                                        Integer result = 0;
+                                                        if(o instanceof Double || o instanceof Integer) {
+                                                        	if(o instanceof Double)
+                                                        		i = (Double)o;
+                                                        	else
+                                                        		i = (double) ((Integer)o);
+                                                        }
+                                                        if(o2 instanceof Double || o2 instanceof Integer) {
+                                                        	if(o2 instanceof Double)
+                                                        		i2 = (Double)o2;
+                                                        	else
+                                                        		i2 = (double) ((Integer)o2);
+                                                        }
+                                                        if(op == "<") {
+                                                                result = i < i2 ? 1 : 0;
+                                                        } else if(op == ">") {
+                                                                result = i > i2 ? 1 : 0;
+                                                        } else  if(op == "<=") {
+                                                                result = i <= i2 ? 1 : 0;
+                                                        } else if(op == ">=") {
+                                                                result = i >= i2 ? 1 : 0;
+                                                        }
+                                                        o = result;
+
+	                                                  } else if(o instanceof Integer &&
+	                                                          o2 instanceof Integer) {
+	
+	                                                        Integer i = (Integer)o;
+	                                                        Integer i2 = (Integer)o2;
+	                                                        if(op == "<") {
+	                                                                i = i < i2 ? 1 : 0;
+	                                                        } else if(op == ">") {
+	                                                                i = i > i2 ? 1 : 0;
+	                                                        } else  if(op == "<=") {
+	                                                                i = i <= i2 ? 1 : 0;
+	                                                        } else if(op == ">=") {
+	                                                                i = i >= i2 ? 1 : 0;
+	                                                        }
+	                                                        o = i;
+	                                                  }
+	                                                }
+	
+	]	{ return o; }
+}
+
+
+Object AdditiveExpression() : {Object o; String op; Object o2;}
+{
+	o = MultiplicativeExpression() 	
+	[ ( "+" 							{ op = "+"; }
+	  | "-" 							{ op = "-"; }
+	  ) 
+		 o2 = AdditiveExpression()		{ if(op == "-") {
+	                                        if(o instanceof Integer &&
+	                                           o2 instanceof Integer)
+	                                           o = (Integer)o - (Integer)o2;
+	                                        else if((o instanceof Double || o instanceof Integer)
+	                                                 && (o2 instanceof Double || o2 instanceof Integer)) {
+	                                        		Double a1;
+	                                        		Double a2;
+	                                        		if(o instanceof Double)
+	                                        			a1 = (Double)o;
+	                                        		else
+	                                        			a1 = (double) ((Integer)o);
+	                                        		if(o2 instanceof Double)
+	                                        			a2 = (Double)o2;
+	                                        		else
+	                                        			a2 = (double) ((Integer)o2);
+	                                        		
+	                                                o = a1 - a2;
+	                                        }
+		                                  } else {
+		                                        if(o instanceof Integer || o instanceof Double) {
+		                                                if(o2 instanceof Integer || o2 instanceof Double) {
+		                                                        if(o instanceof Integer && o2 instanceof Integer)
+		                                                                o = (Integer)o + (Integer)o2;
+		                                                        else {
+		                                                        	Double a1;
+		                                                    		Double a2;
+		                                                    		if(o instanceof Double)
+		                                                    			a1 = (Double)o;
+		                                                    		else
+		                                                    			a1 = (double) ((Integer)o);
+		                                                    		if(o2 instanceof Double)
+		                                                    			a2 = (Double)o2;
+		                                                    		else
+		                                                    			a2 = (double) ((Integer)o2);
+		                                                    		
+		                                                            o = a1 + a2;
+		                                                        }
+		                                                } else {
+		                                                        if(o instanceof Integer)
+		                                                                o = ((Integer)o).toString()+(String)o2;
+		                                                        else
+		                                                                o = ((Double)o).toString()+(String)o2;
+		                                                }
+		                                        } else if(o instanceof String) {
+		                                                if(o2 instanceof Integer) {
+		                                                        o = (String)o + ((Integer)o2).toString();
+		                                                } else if(o2 instanceof Double) {
+		                                                        o = (String)o + ((Double)o2).toString();
+		                                                } else{
+		                                                        o = (String)o + (String)o2;
+		                                                }
+		
+		                                        } else if(o instanceof List) {
+		                                        		if(!(o2 instanceof List)) {
+		                                                        o = ((List<Object>)o).add(o2);
+		                                                } else{
+		                                                        ((List<Object>)o).addAll((List<Object>)o2);
+		                                                }
+		                                        }
+		                                    }
+ 										}		                                  
+	 								
+	]
+	{ return o; }
+}
+
+Object MultiplicativeExpression() : {Object o; String op; Object op2; }
+{
+	o = UnaryExpression() [ 
+	       ( "*"			{ op = "*"; }
+	       | "/" 			{ op = "/"; }
+	       | "%" 			{ op = "%"; }
+	       )
+	       op2 = MultiplicativeExpression()		{ if(o instanceof Integer && op2 instanceof Integer) {
+                                                    Integer result = (Integer) o;
+                                                    Integer i2 = (Integer) op2;
+		                                            if(op == "*") result = result * i2;
+		                                            else if(op == "/") result = result / i2;
+		                                            else if(op == "%") result = result % i2;
+		                                            o = result;
+		
+		                                          } else if((o instanceof Double) && op2 instanceof Integer) {
+		                                            Double result = (Double) o;
+		                                            Integer i2 = (Integer) op2;
+		                                            if(op == "*") result = result * i2;
+		                                            else if(op == "/") result = result / i2;
+		                                            else if(op == "%") result = result % i2;
+		                                            o = result;
+		
+		                                          } else if((o instanceof Double) && op2 instanceof Double) {
+                                                    Double result = (Double) o;
+                                                    Double i2 = (Double) op2;
+		                                            if(op == "*") result = result * i2;
+		                                            else if(op == "/") result = result / i2;
+		                                            else if(op == "%") result = result % i2;
+		                                            o = result;
+		                                          } else if((o instanceof Integer) && op2 instanceof Double) {
+                                                    Double result = (double)((Integer) o);
+                                                    Double i2 = (Double) op2;
+		                                            if(op == "*") result = result * i2;
+		                                            else if(op == "/") result = result / i2;
+		                                            else if(op == "%") result = result % i2;
+		                                            o = result;
+		                                          }
+                                                }
+	       ]									{ return o; }
+}
+
+
+Object UnaryExpression() : {String op = null; Object o; Object[] post = new Object[0];}
+{
+	( o = ListIndexExpression() | 
+	   ( op = UnaryOperator() o = UnaryExpression() )
+	)
+	 {
+	 	if(o instanceof Integer) {
+                Integer i = 0;
+                i = (Integer) o;
+                if(op == "-")
+                        i = -i;
+                else if(op == "~")
+                        i = ~i;
+                else if(op == "!") {
+                        if(i == 0)
+                                i = 1;
+                        else
+                                i = 0;
+                }
+                o = i;
+        } else if(o instanceof Double) {
+                Double i;
+                i = (Double) o;
+                Object result = i;
+                if(op == "-")
+                        result = -i;
+                else if(op == "~")
+                        result = (double) ~(i.longValue());
+                else if(op == "!") {
+                        if(i == 0)
+                                result = new Integer(1);
+                        else
+                                result = new Integer(0);
+                }
+                o = result;
+        }  
+	 	return o;
+	 }
+}
+
+String UnaryOperator() : {}
+{
+	( "+" 				{ return "+"; }
+	| "-" 				{ return "-"; }
+	| "~" 				{ return "~"; }
+	| "!" 				{ return "!"; }
+	)
+}
+
+
+Object ListIndexExpression() : { Object p; Object o; Object o2; }
+{
+	p = PrimaryExpression()
+	[
+	  ( LOOKAHEAD(3) "[" o = Expression() "]" { if(p instanceof List) p = ((List<Object>)p).get(asInteger(o));
+		 						    else {
+		 						    	ArrayList<Object> l = new ArrayList<Object>(1);
+		 						    	l.add(p);
+		 						    	p = l.get(asInteger(o));
+		 						    }
+		 						 }
+	  | "[" o = Expression() "," o2=Expression() "]" 
+	  							{ if(p instanceof List) p = ((List<Object>)p).subList(asInteger(o), asInteger(o2));
+		 						    else {
+		 						    	ArrayList<Object> l = new ArrayList<Object>(1);
+		 						    	l.add(p);
+		 						    	p = l.subList(asInteger(o), asInteger(o2));
+		 						    }
+		 						 }
+	  )
+	]
+	{ return p; }
+}
+
+Object PrimaryExpression() : {Object o; Token t; List<Object> list; }
+{
+	(   o = Constant()								{  return o; }
+	  | "(" o = Expression() ")" 		{ return o; }
+	  | t = <IDENTIFIER> 				{ return lookup(t.image); }
+	  | list = SimpleListExpression()	{ return list; }
+	  | o = FunctionExpression() 		{ return o; }
+	)
+}
+
+
+
+List<Object> SimpleListExpression() : {List<Object> list; Token t; }
+{
+	 (
+		LOOKAHEAD(2)"[" list = ListOfObjects() "]"	{ return list; }
+	  |  "[" "]"						{ return new ArrayList<Object>(); }
+	)
+}
+
+List<Object> ListOfObjects() : {List<Object> list = new ArrayList<Object>(); Object o1; Object o2; }
+{
+	( 
+		  o1 = Expression() 	{ list.add(o1); }
+		  ("," o2 = Expression(){ list.add(o2); } )* 	{ return list; }
+	)
+}
+Object Constant() : {Token t;}
+{ 
+	(
+ 	  t = <INTEGER_LITERAL> 		{ return Integer.decode(t.image); } 
+ 	| t = <STRING_LITERAL>  		{ return t.image.substring(1,t.image.length()-1); }
+ 	| t = <FLOATING_POINT_LITERAL>  { return Double.valueOf(t.image); }
+ 	)
+}
