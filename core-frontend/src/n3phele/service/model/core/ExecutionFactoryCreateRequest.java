@@ -19,19 +19,31 @@ import java.util.ArrayList;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement(name="ExecutionFactoryCreateRequest")
-@XmlType(name="ExecutionFactoryCreateRequest", propOrder={"name", "description", "location", "parameters", "notification", "accessKey", "encryptedSecret", "owner", "idempotencyKey"})
+@XmlRootElement(name = "ExecutionFactoryCreateRequest")
+@XmlType(name = "ExecutionFactoryCreateRequest", propOrder = { "name", "description", "location", "parameters", "notification",
+		"accessKey", "encryptedSecret", "owner", "idempotencyKey", "instanceId", "spotId", "created", "price", "account",
+		"activity", "id" })
 public class ExecutionFactoryCreateRequest {
 	public String name;
 	public String description;
 	public URI location;
-	public ArrayList<NameValue> parameters; 
+	public ArrayList<NameValue> parameters;
 	public URI notification;
 	public String accessKey;
 	public String encryptedSecret;
 	public URI owner;
 	public String idempotencyKey;
-	
-	public ExecutionFactoryCreateRequest() {}
-	
+
+	// Created for n3phele instances
+	public String instanceId;
+	public String spotId;
+	public String created;
+	public String price;
+	public URI account;
+	public URI activity;
+	public Long id;
+
+	public ExecutionFactoryCreateRequest() {
+	}
+
 }

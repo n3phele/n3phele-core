@@ -14,6 +14,8 @@
 package n3phele.client.presenter;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import n3phele.client.CacheManager;
 import n3phele.client.ClientFactory;
@@ -21,6 +23,7 @@ import n3phele.client.model.Account;
 import n3phele.client.model.Cloud;
 import n3phele.client.presenter.helpers.AuthenticatedRequestFactory;
 import n3phele.client.view.AccountView;
+import n3phele.service.rest.impl.AccountResource;
 
 import com.google.gwt.activity.shared.AbstractActivity;
 import com.google.gwt.core.client.GWT;
@@ -42,6 +45,7 @@ public class AccountActivity extends AbstractActivity {
 	private Account account = null;
 	private final CacheManager cacheManager;
 	private final EventBus eventBus;
+
 	public AccountActivity(String accountUri, ClientFactory factory) {
 		this.accountUri = accountUri;
 		this.display = factory.getAccountView();
@@ -54,35 +58,35 @@ public class AccountActivity extends AbstractActivity {
 		display.setPresenter(this);
 		panel.setWidget(display);
 		getClouds();
-		
+
 		if(accountUri == null || accountUri.length()==0 || accountUri.equals("null")) {
-			this.account =  JavaScriptObject.createObject().<Account> cast();
+			this.account = JavaScriptObject.createObject().<Account> cast();
 			display.setData(this.account);
 		} else {
 			this.account = null;
-			display.setData(this.account);
 			getAccount();
+			display.setData(this.account);
 		}
 
 
 	}
-	
+
 	@Override
 	public String mayStop() {
-	    return null;
+		return null;
 	}
 	@Override
 	public void onCancel() {
-		
+
 	}
 	@Override
 	public void onStop() {
 		this.display.setData(null);
 	}
 	public void onSave(Account account, String name, String description,
-			String cloud, String cloudId, String password) {
-		updateAccountDetails(account.getUri(), name, description, cloud, cloudId, password);
-				
+			String cloud, String cloudId, String secret) {
+			updateAccountDetails(account.getUri(), name, description, cloud, cloudId, secret);	
+			
 	}
 
 	protected void updateClouds(List<Cloud> list) {
@@ -93,19 +97,19 @@ public class AccountActivity extends AbstractActivity {
 		this.account = account;
 		display.setData(this.account);
 	}
-	
-	
+
+
 	public void goToPrevious() {
 		History.back();
 	}
 
 
-	
+
 	/*
 	 * Data Handling
 	 * -------------
 	 */
-	
+
 
 	public void getAccount() {
 		// Send request to server and catch any errors.
@@ -131,7 +135,7 @@ public class AccountActivity extends AbstractActivity {
 			//displayError("Couldn't retrieve JSON "+e.getMessage());
 		}
 	}
-	
+
 	protected void getClouds() {
 		this.eventBus.addHandler(CacheManager.CloudListUpdate.TYPE, new CacheManager.CloudListUpdateEventHandler() {
 			@Override
@@ -144,7 +148,7 @@ public class AccountActivity extends AbstractActivity {
 	private void updateAccountDetails(String url, String name, String description, String cloud, String cloudId, final String password) {
 
 		// Send request to server and catch any errors.
-		if(url==null || url.trim().length()==0) {
+		if(url==null || url.trim().length()==0 || url.equals("null")) {
 			url = cacheManager.ServiceAddress+"account";
 		}
 		RequestBuilder builder = AuthenticatedRequestFactory.newRequest(RequestBuilder.POST, url);
@@ -178,8 +182,8 @@ public class AccountActivity extends AbstractActivity {
 					} else if (201 == response.getStatusCode()) {
 						goToPrevious();
 					} else {
-						Window.alert("Account update error "+response.getStatusText());
-					}
+						Window.alert("Account update error "+response.getStatusCode()+response.getStatusText());
+					}					
 				}
 
 			});
@@ -192,14 +196,14 @@ public class AccountActivity extends AbstractActivity {
 
 	public void onSelect(Account selected) {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
+
 	/*
 	 * Event Definition
 	 * ----------------
 	 */
-	
+
 
 
 }

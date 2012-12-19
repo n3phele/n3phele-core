@@ -13,9 +13,9 @@
  */
 package n3phele.service.model;
 
-import n3phele.service.core.NotFoundException;
 import n3phele.service.model.core.AbstractManager;
 import n3phele.service.model.core.Entity;
+import n3phele.service.model.core.NotFoundException;
 
 
 public abstract class CachingAbstractManager<Item extends Entity> extends AbstractManager<Item> {

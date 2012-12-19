@@ -19,8 +19,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import n3phele.service.core.NotFoundException;
-
 import com.googlecode.objectify.Key;
 
 public abstract class AbstractManager<Item extends Entity> {

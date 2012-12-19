@@ -48,8 +48,8 @@ public class AccountView extends WorkspaceVerticalPanel {
 	private TextBox name;
 	private TextBox description;
 	private TextBox cloudId;
-	private PasswordTextBox password;
-	private PasswordTextBox confirmPassword;
+	private TextBox secret;
+	//private PasswordTextBox confirmPassword;
 	private Button cancel;
 	private Button save;
 	private AccountActivity presenter;
@@ -59,8 +59,8 @@ public class AccountView extends WorkspaceVerticalPanel {
 	private final ValidInputIndicatorWidget nameValid;
 	private final ValidInputIndicatorWidget cloudSelected;
 	private final ValidInputIndicatorWidget gotCloudId;
-	private final ValidInputIndicatorWidget passwordTextSupplied;
-	private final ValidInputIndicatorWidget passwordConfirmSupplied;
+	private final ValidInputIndicatorWidget secretTextSupplied;
+	//private final ValidInputIndicatorWidget passwordConfirmSupplied;
 	private final ValidInputIndicatorWidget errorsOnPage;
 	public AccountView() {
 		super(new MenuItem(N3phele.n3pheleResource.accountIcon(), "Cloud Account", null));
@@ -124,18 +124,18 @@ public class AccountView extends WorkspaceVerticalPanel {
 		cloudId.addKeyUpHandler(keyup);
 		table.setWidget(3, 2, cloudId);
 		
-		Label lblNewLabel_4 = new Label("New password");
+		Label lblNewLabel_4 = new Label("Cloud Secret");
 		table.setWidget(4, 0, lblNewLabel_4);
 		
-		passwordTextSupplied = new ValidInputIndicatorWidget("Password text required", false);
-		table.setWidget(4, 1, passwordTextSupplied);
-		password = new PasswordTextBox();
-		password.setVisibleLength(40);
-		password.addChangeHandler(update);
-		password.addKeyUpHandler(keyup);
-		table.setWidget(4, 2, password);
+		secretTextSupplied = new ValidInputIndicatorWidget("Secret text required", false);
+		table.setWidget(4, 1, secretTextSupplied);
+		secret = new TextBox();
+		secret.setVisibleLength(40);
+		secret.addChangeHandler(update);
+		secret.addKeyUpHandler(keyup);
+		table.setWidget(4, 2, secret);
 		
-
+		/*
 		Label lblNewLabel_5 = new Label("Confirm Password");
 		table.setWidget(5, 0, lblNewLabel_5);
 		passwordConfirmSupplied = new ValidInputIndicatorWidget("Matching password text required", false);
@@ -145,6 +145,7 @@ public class AccountView extends WorkspaceVerticalPanel {
 		confirmPassword.addChangeHandler(update);
 		confirmPassword.addKeyUpHandler(keyup);
 		table.setWidget(5, 2, confirmPassword);
+		*/
 		
 		cancel = new Button("cancel",  new ClickHandler() {
           public void onClick(ClickEvent event) {
@@ -185,7 +186,7 @@ public class AccountView extends WorkspaceVerticalPanel {
 	
 	public void do_save() {
 		this.presenter.onSave(account, name.getText(), 
-				description.getText().trim(), uriMap.get(cloud.getSelectedIndex()), cloudId.getText().trim(), password.getText().trim());
+				description.getText().trim(), uriMap.get(cloud.getSelectedIndex()), cloudId.getText().trim(), secret.getText().trim());
 	}
 	
 	public void do_cancel() {
@@ -211,8 +212,8 @@ public class AccountView extends WorkspaceVerticalPanel {
 			name.setText("");
 			description.setText("");
 			cloudId.setText("");
-			password.setText("");
-			confirmPassword.setText("");
+			secret.setText("");
+			//confirmPassword.setText("");
 			validateAccount(true);
 		}
 	}
@@ -253,23 +254,23 @@ public class AccountView extends WorkspaceVerticalPanel {
 		this.cloudSelected.setVisible(!cloudValid);
 		isValid = isValid && nameValid && cloudValid;
 		boolean gotId =  cloudId.getText() != null && cloudId.getText().length() != 0;
-		boolean gotPassword = password.getText() != null && password.getText().length() != 0;
-		boolean gotConfirm = confirmPassword.getText() != null && confirmPassword.getText().length() != 0;
+		boolean gotPassword = secret.getText() != null && secret.getText().length() != 0;
+		//boolean gotConfirm = confirmPassword.getText() != null && confirmPassword.getText().length() != 0;
 		if(account.getUri() == null || account.getUri().length() == 0) {
 			this.gotCloudId.setVisible(!gotId);
-			this.passwordTextSupplied.setVisible(!gotPassword);
-			this.passwordConfirmSupplied.setVisible(!(gotConfirm && password.getText().equals(confirmPassword.getText())));
-			isValid = isValid && gotId && gotPassword && gotConfirm && password.getText().equals(confirmPassword.getText());
+			this.secretTextSupplied.setVisible(!gotPassword);
+			//this.passwordConfirmSupplied.setVisible(!(gotConfirm && password.getText().equals(confirmPassword.getText())));
+			isValid = isValid && gotId && gotPassword; //&& gotConfirm && password.getText().equals(confirmPassword.getText());
 		} else {
-			if(gotPassword || gotConfirm || gotId ) {
+			if(gotPassword || gotId ) {
 				this.gotCloudId.setVisible(!gotId);
-				this.passwordTextSupplied.setVisible(!gotPassword);
-				this.passwordConfirmSupplied.setVisible(!(gotConfirm && password.getText().equals(confirmPassword.getText())));
-				isValid = isValid && gotPassword && gotConfirm && password.getText().equals(confirmPassword.getText()) && gotId;
+				this.secretTextSupplied.setVisible(!gotPassword);
+				//this.passwordConfirmSupplied.setVisible(!(gotConfirm && password.getText().equals(confirmPassword.getText())));
+				isValid = isValid && gotPassword; //&& gotConfirm && password.getText().equals(confirmPassword.getText()) && gotId;
 			} else {
 				this.gotCloudId.setVisible(false);
-				this.passwordTextSupplied.setVisible(false);
-				this.passwordConfirmSupplied.setVisible(false);
+				this.secretTextSupplied.setVisible(false);
+				//this.passwordConfirmSupplied.setVisible(false);
 			}
 		}
 		this.errorsOnPage.setVisible(!isValid);

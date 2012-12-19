@@ -372,7 +372,7 @@ public class CommandDetailView extends WorkspaceVerticalPanel {
 	
 	private void doRun() {
 		if(presenter != null) {
-			this.run.setEnabled(false);
+			this.run.setEnabled(false);		
 			this.presenter.run(data, jobName.getText(), getParameterValuesAndClear(data.getExecutionParameters()),
 					getRepoRefs(data.getInputFiles()), getRepoRefs(data.getOutputFiles()), getSendEmail(), getSelectedAccount(), getSelectedProfileId());
 		}
@@ -1274,6 +1274,7 @@ public class CommandDetailView extends WorkspaceVerticalPanel {
 			
 		});
 		table.addColumn(checkColumn);
+		table.setColumnWidth(checkColumn, "40px");
 		TextColumn<CloudProfile> accountColumn = new TextColumn<CloudProfile>() {
 			@Override
 			public String getValue(CloudProfile profile) {
@@ -1284,6 +1285,7 @@ public class CommandDetailView extends WorkspaceVerticalPanel {
 			}
 		};
 		table.addColumn(accountColumn);
+		table.setColumnWidth(accountColumn, "150px");
 		TextColumn<CloudProfile> nameColumn = new TextColumn<CloudProfile>() {
 			@Override
 			public String getValue(CloudProfile profile) {
@@ -1295,6 +1297,7 @@ public class CommandDetailView extends WorkspaceVerticalPanel {
 			}
 		};
 		table.addColumn(nameColumn);
+		table.setColumnWidth(nameColumn, "105px");
 		TextColumn<CloudProfile> descriptionColumn = new TextColumn<CloudProfile>() {
 			@Override
 			public String getValue(CloudProfile profile) {
@@ -1305,6 +1308,10 @@ public class CommandDetailView extends WorkspaceVerticalPanel {
 			}
 		};
 		table.addColumn(descriptionColumn);
+		table.setColumnWidth(descriptionColumn, "105px");
+		table.setWidth("400px");
+		table.addStyleName(N3phele.n3pheleResource.css().lineBreakStyle());
+		table.setTableLayoutFixed(true);
 		return table;
 	}
 

@@ -13,6 +13,8 @@
  */
 package n3phele.client.view;
 
+import java.util.StringTokenizer;
+
 import n3phele.client.model.User;
 import n3phele.client.widgets.ValidInputIndicatorWidget;
 
@@ -37,6 +39,7 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
@@ -50,8 +53,8 @@ public class NewUserView extends DialogBox {
 	private PasswordTextBox confirmPassword;
 	private Button cancel;
 	private Button save;
-	private PasswordTextBox confirmSecret;
-	private PasswordTextBox ec2Secret;
+	// private PasswordTextBox confirmSecret;
+	private TextBox secret;
 	private TextBox accessKey;
 	private final String signupUrl;
 	private ValidInputIndicatorWidget emailValid;
@@ -61,23 +64,28 @@ public class NewUserView extends DialogBox {
 	private ValidInputIndicatorWidget passwordConfirmSupplied;
 	private ValidInputIndicatorWidget errorsOnPage;
 	private Widget accessKeySupplied;
-	private ValidInputIndicatorWidget ec2SecretSupplied;
-	private Widget ec2ConfirmSupplied;
+	private ValidInputIndicatorWidget secretSupplied;
+	// private Widget confirmSupplied;
+	private ListBox credentialType;
+	private ListBox cloudZone;
+	private Label lblNewLabel_5, lblNewLabel_6; // lblNewLabel_7;
+
 	public NewUserView(String signupUrl) {
 		this.signupUrl = signupUrl;
 		this.setGlassEnabled(true);
 		this.setAnimationEnabled(true);
-		
+
 		table = new FlexTable();
 		table.setCellPadding(1);
 		table.setCellSpacing(5);
-		
+
 		ChangeHandler update = new ChangeHandler() {
 
 			@Override
 			public void onChange(ChangeEvent event) {
 				save.setEnabled(validateUser(true));
-			}};
+			}
+		};
 		KeyUpHandler keyup = new KeyUpHandler() {
 
 			@Override
@@ -85,49 +93,63 @@ public class NewUserView extends DialogBox {
 				validateUser(true);
 			}
 
-			};
-		
+		};
+
+		ChangeHandler credentialTypeEvent = new ChangeHandler() {
+			public void onChange(ChangeEvent event) {
+				if (credentialType.isItemSelected(0)) {
+					lblNewLabel_5.setText("Amazon EC2 Access Key ID");
+					lblNewLabel_6.setText("Amazon EC2 Secret Access Key");
+					// lblNewLabel_7.setText("Confirm EC2 Secret Access Key");
+				} else {
+					lblNewLabel_5.setText("HP Cloud Access Key ID");
+					lblNewLabel_6.setText("HP Cloud Secret Access Key");
+					// lblNewLabel_7.setText("Confirm HP Cloud Secret Access Key");
+				}
+				fillCloudZoneListBox();
+			}
+		};
 		HTML heading = new HTML("<i><u>New User Registration</u></i>");
-		table.setWidget(0,0, heading);
-		
+		table.setWidget(0, 0, heading);
+
 		Label lblNewLabel = new Label("Email");
 		table.setWidget(1, 0, lblNewLabel);
 		emailValid = new ValidInputIndicatorWidget("Email address required", true);
 		table.setWidget(1, 1, emailValid);
-		
+
 		email = new TextBox();
 		email.setVisibleLength(30);
 		email.addChangeHandler(update);
 		email.addKeyUpHandler(keyup);
 		table.setWidget(1, 2, email);
-		
+
 		Label lblNewLabel_1 = new Label("First Name");
 		table.setWidget(2, 0, lblNewLabel_1);
 		firstNameValid = new ValidInputIndicatorWidget("Text value required", true);
 		table.setWidget(2, 1, firstNameValid);
-		
+
 		firstName = new TextBox();
 		firstName.setVisibleLength(30);
 		firstName.addChangeHandler(update);
 		firstName.addKeyUpHandler(keyup);
 		table.setWidget(2, 2, firstName);
-		
+
 		Label lblNewLabel_2 = new Label("Last Name");
 		table.setWidget(3, 0, lblNewLabel_2);
 		lastNameValid = new ValidInputIndicatorWidget("Text value required", true);
 		table.setWidget(3, 1, lastNameValid);
-		
+
 		lastName = new TextBox();
 		lastName.setVisibleLength(30);
 		lastName.addChangeHandler(update);
 		lastName.addKeyUpHandler(keyup);
 		table.setWidget(3, 2, lastName);
-		
+
 		Label lblNewLabel_3 = new Label("New password");
 		table.setWidget(4, 0, lblNewLabel_3);
 		passwordTextSupplied = new ValidInputIndicatorWidget("Password text required", true);
 		table.setWidget(4, 1, passwordTextSupplied);
-		
+
 		password = new PasswordTextBox();
 		password.setVisibleLength(30);
 		password.addChangeHandler(update);
@@ -138,76 +160,98 @@ public class NewUserView extends DialogBox {
 		table.setWidget(5, 0, lblNewLabel_4);
 		passwordConfirmSupplied = new ValidInputIndicatorWidget("Matching password text required", true);
 		table.setWidget(5, 1, passwordConfirmSupplied);
-		
+
 		confirmPassword = new PasswordTextBox();
 		confirmPassword.setVisibleLength(30);
 		confirmPassword.addChangeHandler(update);
 		confirmPassword.addKeyUpHandler(keyup);
 		table.setWidget(5, 2, confirmPassword);
-		
-		Label lblNewLabel_5 = new Label("Amazon EC2 Access Key ID");
-		table.setWidget(6, 0, lblNewLabel_5);
-		accessKeySupplied = new ValidInputIndicatorWidget("Access key required", true);
-		table.setWidget(6, 1, accessKeySupplied);
 
-		
+		Label lblNewLabel_9 = new Label("Select cloud");
+		table.setWidget(6, 0, lblNewLabel_9);
+
+		credentialType = new ListBox();
+		credentialType.setVisibleItemCount(1);
+		credentialType.insertItem("Amazon EC2", 0);
+		credentialType.insertItem("HP Cloud", 1);
+		credentialType.addChangeHandler(credentialTypeEvent);
+		table.setWidget(6, 2, credentialType);
+
+		Label lblCloudZone = new Label("Cloud Zone");
+		table.setWidget(7, 0, lblCloudZone);
+
+		// adicionado a zona da cloud.
+		cloudZone = new ListBox();
+		cloudZone.setVisibleItemCount(1);
+		table.setWidget(7, 2, cloudZone);
+		fillCloudZoneListBox();
+
+		lblNewLabel_5 = new Label("Amazon EC2 Access Key ID");
+		table.setWidget(8, 0, lblNewLabel_5);
+		accessKeySupplied = new ValidInputIndicatorWidget("Access key required", true);
+		table.setWidget(8, 1, accessKeySupplied);
+
 		accessKey = new TextBox();
 		accessKey.setVisibleLength(30);
 		accessKey.addChangeHandler(update);
 		accessKey.addKeyUpHandler(keyup);
-		table.setWidget(6, 2, accessKey);
-		
-		Label lblNewLabel_6 = new Label("Amazon EC2 Secret Access Key");
-		table.setWidget(7, 0, lblNewLabel_6);
-		ec2SecretSupplied = new ValidInputIndicatorWidget("Amazon EC2 secret access key required", true);
-		table.setWidget(7, 1, ec2SecretSupplied);
-		
-		ec2Secret = new PasswordTextBox();
-		ec2Secret.setVisibleLength(30);
-		ec2Secret.addChangeHandler(update);
-		ec2Secret.addKeyUpHandler(keyup);
-		table.setWidget(7, 2, ec2Secret);
-		
-		Label lblNewLabel_7 = new Label("Confirm EC2 Secret Access Key");
-		table.setWidget(8, 0, lblNewLabel_7);
-		ec2ConfirmSupplied = new ValidInputIndicatorWidget("Matching Amazon EC2 secret access key required", true);
-		table.setWidget(8, 1, ec2ConfirmSupplied);
-		
-		confirmSecret = new PasswordTextBox();
-		confirmSecret.setVisibleLength(30);
-		confirmSecret.addChangeHandler(update);
-		confirmSecret.addKeyUpHandler(keyup);
-		table.setWidget(8, 2, confirmSecret);
-		
-		cancel = new Button("cancel",  new ClickHandler() {
-          public void onClick(ClickEvent event) {
-            do_cancel();
-          }
-        });
+		table.setWidget(8, 2, accessKey);
 
+		lblNewLabel_6 = new Label("Amazon EC2 Secret Access Key");
+		table.setWidget(9, 0, lblNewLabel_6);
+		secretSupplied = new ValidInputIndicatorWidget("Amazon EC2 secret access key required", true);
+		table.setWidget(9, 1, secretSupplied);
 
-		table.setWidget(9, 3, cancel);
-		table.getFlexCellFormatter().setHorizontalAlignment(9, 0, HasHorizontalAlignment.ALIGN_RIGHT);
+		secret = new TextBox();
+		secret.setVisibleLength(30);
+		secret.addChangeHandler(update);
+		secret.addKeyUpHandler(keyup);
+		table.setWidget(9, 2, secret);
 		
-		save = new Button("register",  new ClickHandler() {
-	          public void onClick(ClickEvent event) {
-	              do_save();
-	            }
-	          });
-		table.setWidget(9, 2, save);
-		table.getFlexCellFormatter().setHorizontalAlignment(9, 2, HasHorizontalAlignment.ALIGN_RIGHT);
+		/*
+		 * lblNewLabel_7 = new Label("Confirm EC2 Secret Access Key");
+		 * table.setWidget(9, 0, lblNewLabel_7); confirmSupplied = new
+		 * ValidInputIndicatorWidget
+		 * ("Matching Amazon EC2 secret access key required", true);
+		 * table.setWidget(9, 1, confirmSupplied);
+		 * 
+		 * confirmSecret = new PasswordTextBox();
+		 * confirmSecret.setVisibleLength(30);
+		 * confirmSecret.addChangeHandler(update);
+		 * confirmSecret.addKeyUpHandler(keyup); table.setWidget(9, 2,
+		 * confirmSecret);
+		 */
+		cancel = new Button("cancel", new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				do_cancel();
+			}
+		});
+
+		table.setWidget(10, 3, cancel);
+		// table.getFlexCellFormatter().setHorizontalAlignment(10, 0,
+		// HasHorizontalAlignment.ALIGN_RIGHT);
+
+		save = new Button("register", new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				do_save();
+			}
+		});
+		table.setWidget(10, 2, save);
+		// table.getFlexCellFormatter().setHorizontalAlignment(10, 2,
+		// HasHorizontalAlignment.ALIGN_RIGHT);
 		save.setEnabled(false);
 		errorsOnPage = new ValidInputIndicatorWidget("check for missing or invalid parameters marked with this icon", true);
-		table.setWidget(9, 1, errorsOnPage);
-		table.getFlexCellFormatter().setHorizontalAlignment(9, 3, HasHorizontalAlignment.ALIGN_RIGHT);
+		table.setWidget(10, 1, errorsOnPage);
+		// table.getFlexCellFormatter().setHorizontalAlignment(10, 3,
+		// HasHorizontalAlignment.ALIGN_RIGHT);
 
-		for(int i=1; i < 9; i++) {
+		for (int i = 1; i < 10; i++) {
 			table.getFlexCellFormatter().setColSpan(i, 2, 3);
 			table.getFlexCellFormatter().setVerticalAlignment(i, 0, HasVerticalAlignment.ALIGN_MIDDLE);
 			table.getFlexCellFormatter().setHorizontalAlignment(i, 0, HasHorizontalAlignment.ALIGN_RIGHT);
 			table.getFlexCellFormatter().setVerticalAlignment(i, 2, HasVerticalAlignment.ALIGN_MIDDLE);
 			table.getFlexCellFormatter().setHorizontalAlignment(i, 2, HasHorizontalAlignment.ALIGN_LEFT);
-	
+
 		}
 
 		table.getColumnFormatter().setWidth(1, "18px");
@@ -217,22 +261,58 @@ public class NewUserView extends DialogBox {
 		this.add(table);
 		this.center();
 	}
-	
+
+	public void fillCloudZoneListBox() {
+		String cloud = credentialType.getValue(credentialType.getSelectedIndex());
+
+		int index = this.signupUrl.lastIndexOf('/');
+		String url = this.signupUrl.substring(0, index) + "/cloud/zones";
+		
+		RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
+		builder.setUser("signup");
+		builder.setPassword("newuser");
+		builder.setHeader("cloudType", cloud);
+
+		try {
+			@SuppressWarnings("unused")
+			Request request = builder.sendRequest("", new RequestCallback() {
+				public void onError(Request request, Throwable exception) {
+					String msg = exception.getMessage();
+				}
+
+				public void onResponseReceived(Request request, Response response) {
+					if (200 == response.getStatusCode()) {
+						String[] zones = response.getText().split(";");
+						cloudZone.clear();
+						for (int i = 0; i < zones.length; i++) {
+							cloudZone.insertItem(zones[i], cloudZone.getItemCount());
+						}
+					} else {
+						Window.alert("Zones retrieve problems : HTTP status " + response.getStatusCode());
+					}
+				}
+
+			});
+		} catch (RequestException e) {
+			Window.alert("Zones retrieve exception " + e.getMessage());
+		}
+	}
+
 	public void do_save() {
-		createUser(this.signupUrl, email.getText(), 
-				firstName.getText().trim(), lastName.getText().trim(), password.getText().trim(),
-				accessKey.getText().trim(), ec2Secret.getText().trim());
+		createUser(this.signupUrl, email.getText(), firstName.getText().trim(), lastName.getText().trim(), password.getText()
+				.trim(), accessKey.getText().trim(), secret.getText().trim(), cloudZone.getValue(cloudZone.getSelectedIndex()));
 		hide();
 	}
-	
-	private void createUser(String url, final String email, String firstName, String lastName, String password,
-			String ec2Id, String ec2Secret) {
+
+	private void createUser(String url, final String email, String firstName, String lastName, String password, String cloudId,
+			String cloudSecret, String cloudZoneName) {
 
 		// Send request to server and catch any errors.
 		RequestBuilder builder = new RequestBuilder(RequestBuilder.POST, url);
 		builder.setUser("signup");
 		builder.setPassword("newuser");
 		builder.setHeader("Content-type", "application/x-www-form-urlencoded");
+
 		StringBuilder args = new StringBuilder();
 		args.append("email=");
 		args.append(URL.encodeQueryString(email));
@@ -240,46 +320,48 @@ public class NewUserView extends DialogBox {
 		args.append(URL.encodeQueryString(firstName));
 		args.append("&lastName=");
 		args.append(URL.encodeQueryString(lastName));
-		if(password != null && password.length() > 0) {
+		if (password != null && password.length() > 0) {
 			args.append("&secret=");
 			args.append(URL.encodeQueryString(password));
 		}
-		if(ec2Id != null && ec2Id.length() != 0) {
-			args.append("&ec2Id=");
-			args.append(URL.encodeQueryString(ec2Id));
-			args.append("&ec2Secret=");
-			args.append(URL.encodeQueryString(ec2Secret));
+		if (cloudId != null && cloudId.length() != 0) {
+			args.append("&cloudId=");
+			args.append(URL.encodeQueryString(cloudId));
+			args.append("&cloudSecret=");
+			args.append(URL.encodeQueryString(cloudSecret));
 		}
+		args.append("&cloudZoneName=");
+		args.append(URL.encodeQueryString(cloudZoneName));
+
 		try {
 			@SuppressWarnings("unused")
 			Request request = builder.sendRequest(args.toString(), new RequestCallback() {
 				public void onError(Request request, Throwable exception) {
-					Window.alert("User create error "+exception.getMessage());
+					Window.alert("User create error " + exception.getMessage());
 				}
 
 				public void onResponseReceived(Request request, Response response) {
 					GWT.log("Got reply");
 					if (201 == response.getStatusCode()) {
-						Window.alert("User "+email+" created.");
+						Window.alert("User " + email + " created.");
 					} else {
-						Window.alert("User create failure "+response.getStatusText()+"\n"+
-								response.getText());
+						Window.alert("User create failure " + response.getStatusText() + "\n" + response.getText());
 					}
 				}
 
 			});
 		} catch (RequestException e) {
-			Window.alert("Account create exception "+e.getMessage());
+			Window.alert("Account create exception " + e.getMessage());
 		}
 	}
-	
+
 	public void do_cancel() {
 		setData(null);
 		hide();
 	}
-	
+
 	public void setData(User user) {
-		if(user != null) {
+		if (user != null) {
 			email.setText(user.getName());
 			firstName.setText(user.getFirstName());
 			lastName.setText(user.getLastName());
@@ -290,14 +372,14 @@ public class NewUserView extends DialogBox {
 			password.setText("");
 			confirmPassword.setText("");
 			accessKey.setText("");
-			ec2Secret.setText("");
-			confirmSecret.setText("");
+			secret.setText("");
+			// confirmSecret.setText("");
 		}
 	}
 
-	
 	private boolean validateUser(boolean isValid) {
-		boolean gotEmail = (email.getText().equals("root") || email.getText().matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$"));
+		boolean gotEmail = (email.getText().equals("root") || email.getText().matches(
+				"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$"));
 		this.emailValid.setVisible(!gotEmail);
 		boolean gotFirstName = firstName.getText() != null && firstName.getText().length() != 0;
 		this.firstNameValid.setVisible(!gotFirstName);
@@ -311,13 +393,15 @@ public class NewUserView extends DialogBox {
 		this.passwordConfirmSupplied.setVisible(!(gotConfirm && password.getText().equals(confirmPassword.getText())));
 		isValid = isValid && gotPassword && gotConfirm && password.getText().equals(confirmPassword.getText());
 
-		boolean gotEC2id = accessKey.getText() != null && accessKey.getText().length() != 0;
-		boolean gotEC2Secret = ec2Secret.getText() != null && ec2Secret.getText().length() != 0;
-		boolean gotEC2Confirm = confirmSecret.getText() != null && confirmSecret.getText().length() != 0 && ec2Secret.getText().equals(confirmSecret.getText());
-		this.accessKeySupplied.setVisible(!gotEC2id);
-		this.ec2SecretSupplied.setVisible(!gotEC2Secret);
-		this.ec2ConfirmSupplied.setVisible(!gotEC2Confirm);
-		isValid = isValid && gotEC2Secret && gotEC2Confirm && gotEC2id && ec2Secret.getText().equals(confirmSecret.getText());
+		boolean gotId = accessKey.getText() != null && accessKey.getText().length() != 0;
+		boolean gotSecret = secret.getText() != null && secret.getText().length() != 0;
+		// boolean gotEC2Confirm = confirmSecret.getText() != null &&
+		// confirmSecret.getText().length() != 0 &&
+		// secret.getText().equals(confirmSecret.getText());
+		this.accessKeySupplied.setVisible(!gotId);
+		this.secretSupplied.setVisible(!gotSecret);
+		// this.confirmSupplied.setVisible(!gotEC2Confirm);
+		isValid = isValid && gotSecret && gotId;
 		this.errorsOnPage.setVisible(!isValid);
 		this.save.setEnabled(isValid);
 		return isValid;

@@ -14,17 +14,14 @@
 package n3phele.service.model;
 
 import java.net.URI;
-
 import javax.persistence.Embedded;
 import javax.persistence.Id;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-
 import n3phele.service.model.core.Credential;
 import n3phele.service.model.core.Entity;
-
 import com.google.appengine.api.datastore.Text;
 import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Unindexed;
@@ -146,7 +143,4 @@ public class Account extends Entity {
 		result.uri = c.uri;
 		return result;
 	}
-
-
-
 }

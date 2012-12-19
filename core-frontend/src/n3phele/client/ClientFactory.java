@@ -18,7 +18,9 @@ import com.google.gwt.event.shared.EventBus;
 import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.place.shared.PlaceController;
 
+import n3phele.client.presenter.AccountHyperlinkActivity;
 import n3phele.client.resource.N3pheleResource;
+import n3phele.client.view.AccountHyperlinkView;
 import n3phele.client.view.AccountListView;
 import n3phele.client.view.AccountView;
 import n3phele.client.view.ActivityCommandView;
@@ -26,6 +28,7 @@ import n3phele.client.view.CommandDetailView;
 import n3phele.client.view.CommandListGridView;
 import n3phele.client.view.CommandListView;
 import n3phele.client.view.ActivityListView;
+import n3phele.client.view.CompleteAccountView;
 import n3phele.client.view.LoginView;
 import n3phele.client.view.ProgressView;
 import n3phele.client.view.RecentActivityView;
@@ -41,15 +44,16 @@ public class ClientFactory {
 	private final CacheManager cacheManager;
 	public N3pheleResource n3pheleResource = null;
 	private AppPlaceHistoryMapper historyMapper;
-	
 	private ActivityListView detailedActivityView=null;
 	private LoginView loginView=null;
 	private RecentActivityView recentActivity = null;
 	private CommandListView commandListView = null;
 	private CommandDetailView commandDetailView = null;
+	private CompleteAccountView completeAccountView = null;
 	private UserView userView = null;
 	private AccountView accountView = null;
 	private AccountListView accountListView = null;
+	private AccountHyperlinkView accountHyperlinkView = null;
 	private RepoListView repoListView = null;
 	private RepoView repoView = null;
 	private ProgressView progressView = null;
@@ -156,10 +160,21 @@ public class ClientFactory {
 		if(accountView == null) accountView = new AccountView();
 		return this.accountView;
 	}
+	
+	public CompleteAccountView getCompleteAccountView() {
+		if(completeAccountView == null) completeAccountView = new CompleteAccountView();
+		return this.completeAccountView;
+	}
 
 	public AccountListView getAccountListView() {
 		if(accountListView == null) accountListView = new AccountListView();
 		return this.accountListView;
+	}
+	
+	public AccountHyperlinkView getAccountHyperlinkView(String accountUri) {
+		if(accountHyperlinkView == null) 
+			accountHyperlinkView = new AccountHyperlinkView(accountUri);
+		return this.accountHyperlinkView;
 	}
 
 	public RepoListView getRepositoryListView() {

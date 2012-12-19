@@ -1,0 +1,12 @@
+{
+  "hp-desktop": {
+    "description": "n3phele desktop on HP Cloud Storage",
+    "uri": "https://www.hpcloud.com/content/storage-solutions",
+    "kind": "Swift"
+  },
+  "s3-desktop": {
+    "description": "n3phele desktop on Amazon S3",
+    "uri": "https://s3.amazonaws.com",
+    "kind": "S3"
+  }
+}

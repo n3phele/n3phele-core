@@ -213,7 +213,7 @@ public class Action extends Entity  {
 				outputFiles.add(f);
 			}
 		}
-		if(actionURI.equals(ActionURI.createVM)|| actionURI.equals(ActionURI.createvm)) {
+		if(actionURI.equals(ActionURI.createVM) || actionURI.equals(ActionURI.createvm)) {
 			Account account = dao.account().load(activity.getAccount(), dao.user().get(activity.getOwner()));
 			ArrayList<TypedParameter>inParams = new ArrayList<TypedParameter>();
 			inParams.addAll(TypedParameter.cloneOf(CreateVmTask.defaultInputParameter));
@@ -230,6 +230,8 @@ public class Action extends Entity  {
 			task.setCloud(account.getCloud());
 			task.setCloudCredential(account.getCredential());
 			task.setAccountName(account.getName());
+			// Added to put this information inside the creating of VirtualServers
+			task.setAccountURI(account.getUri());
 			task.setProgress(progress);
 		} else if(actionURI.equals(ActionURI.executeCommand) || actionURI.equals(ActionURI.executecommand)) {
 			ArrayList<TypedParameter>inParams = new ArrayList<TypedParameter>();

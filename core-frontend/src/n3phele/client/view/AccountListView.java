@@ -14,6 +14,7 @@
 package n3phele.client.view;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -46,17 +47,19 @@ import com.google.gwt.view.client.SingleSelectionModel;
 public class AccountListView extends WorkspaceVerticalPanel {
 	private CellTable<Account> cellTable;
 	private List<Account> data = null;
-	private AccountListActivity accountListActivity = null;
-//	private final Map<String,String> cloudMap = new HashMap<String,String>();
+	private AccountListActivity presenter = null;
 	private ActionDialogBox<Account> dialog;
 	private static ClickableCellTableResource resource = null;
+	private double cost = 0.0;
+	private HashMap<Account, Double> costPerAccount = null;
+	private HashMap<Account, String> timePerAccount = null;
 	public AccountListView() {
 		super(new MenuItem(N3phele.n3pheleResource.accountIcon(), "Accounts", null),
-			  new MenuItem(N3phele.n3pheleResource.accountAddIcon(), "create a new account", "account:null"));
+				new MenuItem(N3phele.n3pheleResource.accountAddIcon(), "create a new account", "account:null"));
 
 		if(resource ==null)
 			resource = GWT.create(ClickableCellTableResource.class);
-		
+
 		cellTable = new CellTable<Account>(15, resource);
 		cellTable.setSize("455px", "");
 
@@ -64,54 +67,100 @@ public class AccountListView extends WorkspaceVerticalPanel {
 			@Override
 			public String getValue(Account item) {
 				String result = "";
-				if(item != null)
-					return item.getName();
+				if(item != null){
+					result += item.getName();
+				}
 				return result;
 			}
 		};
 		cellTable.addColumn(nameColumn, "Name");
-		
-		TextColumn<Account> descriptionColumn = new TextColumn<Account>() {
+		cellTable.setColumnWidth(nameColumn, "120px");
+
+		TextColumn<Account> hoursColumn = new TextColumn<Account>() {
 			@Override
 			public String getValue(Account item) {
 				String result = "";
-				if(item != null)
-					return item.getDescription();
+				if(item != null){
+					if(costPerAccount != null && costPerAccount.containsKey(item))
+						result += "US$" + (double)Math.round(costPerAccount.get(item) * 1000) / 1000;
+					else
+						result += "US$" + 0.0;
+				}
 				return result;
 			}
 		};
-		cellTable.addColumn(descriptionColumn, "Description");
-		
+		cellTable.addColumn(hoursColumn, "Last 24 hours");
+		cellTable.setColumnWidth(hoursColumn, "100px");
+
+		TextColumn<Account> activeColumn = new TextColumn<Account>() {
+			@Override
+			public String getValue(Account item) {
+				String result = "";
+				if(item != null){
+					if(timePerAccount != null && timePerAccount.containsKey(item)){
+						String value = timePerAccount.get(item);
+						int hours = Integer.parseInt(value.substring(0, value.indexOf("/")));
+						int minutes = Integer.parseInt(value.substring(value.indexOf("/")+1));
+						int days = 0;
+						if(minutes > 59){
+							hours += minutes/60;
+							minutes = minutes%60;
+						}
+						if(hours > 23){
+							days = hours/24;
+							hours = hours%24;
+						}
+						if(days == 0 && hours == 0)
+							result += minutes + "min";
+						else if(days == 0 && hours != 0 && minutes != 0)
+							result += hours +"h "+ minutes + "min";
+						else if(days == 0 && hours != 0 && minutes == 0)
+							result += hours +"h";
+						else if(days != 0 && hours != 0 && minutes != 0)
+							result += days + "d " + hours + "h " + minutes + "min";
+						else if(days != 0 && hours == 0 && minutes != 0)
+							result += days + "d " + minutes + "min";
+						else 
+							result += days + "d";
+					}
+					else
+						result += 0;
+				}
+				return result;
+			}
+		};
+		cellTable.addColumn(activeColumn, "Active");
+		cellTable.setColumnWidth(activeColumn, "80px");
+
+
 		TextColumn<Account> cloudColumn = new TextColumn<Account>() {
 			@Override
 			public String getValue(Account item) {
 				String result = "";
 				if(item != null) {
 					result = item.getCloudName();
-//					String s= item.getCloud();
-//					if(cloudMap.containsKey(s))
-//						return cloudMap.get(s);
-//					else
-//						return s;
 				}
 				return result;
 			}
 		};
 		cellTable.addColumn(cloudColumn, "Cloud");
-		 // Add a selection model to handle user selection.
-	    final SingleSelectionModel<Account> selectionModel = new SingleSelectionModel<Account>();
-	    cellTable.setSelectionModel(selectionModel);
-	    selectionModel.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
-	      public void onSelectionChange(SelectionChangeEvent event) {
-	        Account selected = selectionModel.getSelectedObject();
-	        if (selected != null) {
-	          if(accountListActivity != null) {
-	        	 accountListActivity.onSelect(selected);
-	          }
-	        }
-	      }
-	    });
-	    
+		cellTable.setColumnWidth(cloudColumn, "120px");
+
+
+		// Add a selection model to handle user selection.
+		final SingleSelectionModel<Account> selectionModel = new SingleSelectionModel<Account>();
+		cellTable.setSelectionModel(selectionModel);
+		selectionModel.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
+			public void onSelectionChange(SelectionChangeEvent event) {
+				Account selected = selectionModel.getSelectedObject();
+				if (selected != null) {
+					if(presenter != null) {
+						presenter.onSelect(selected);
+					}
+				}
+			}
+		});
+
 		Column<Account, Account> cancelColumn = new Column<Account, Account>(
 				new CancelButtonCell<Account>(new Delegate<Account>() {
 
@@ -121,20 +170,21 @@ public class AccountListView extends WorkspaceVerticalPanel {
 							cellTable.getSelectionModel().setSelected(value, false);
 							getDialog(value).show();
 						}
-					}}, "delete Account")) {
+					}}, "delete account")) {
 			@Override
 			public Account getValue(Account object) {
 				return object;
 			}
 		};
 		cellTable.addColumn(cancelColumn);
-		cellTable.setColumnWidth(cancelColumn, "26px");
-
-	    cellTable.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
-		this.add(cellTable);
+		cellTable.setColumnWidth(cancelColumn, "20px");
 		
+		cellTable.setTableLayoutFixed(true);
+		cellTable.setKeyboardSelectionPolicy(KeyboardSelectionPolicy.DISABLED);
+		this.add(cellTable);
+
 	}
-	
+
 	public void setDisplayList(List<Account> list) {
 		if(list == null)
 			list = new ArrayList<Account>();
@@ -143,11 +193,13 @@ public class AccountListView extends WorkspaceVerticalPanel {
 	}
 
 	public void setPresenter(AccountListActivity accountListActivity) {
-		this.accountListActivity = accountListActivity;
-		
+		this.presenter = accountListActivity;
+
 	}
 
-	public void refresh(List<Account> newProgressList) {
+	public void refresh(List<Account> newProgressList, HashMap<Account, Double> costPerAccount, HashMap<Account, String> timePerAccount) {
+		this.costPerAccount = costPerAccount;
+		this.timePerAccount = timePerAccount;
 		setDisplayList(newProgressList);
 	}
 
@@ -156,28 +208,26 @@ public class AccountListView extends WorkspaceVerticalPanel {
 		this.cellTable.setRowData(i, data.subList(i, i+1));
 	}
 
-//	public void setClouds(List<Cloud> list) {
-//		cloudMap.clear();
-//		if(list != null) {
-//			for(Cloud c : list) {
-//				cloudMap.put(c.getUri(),c.getName());
-//			}
-//			refresh(data);
-//		}
-//	}
-	
+	public void refreshCostPerAccount(HashMap<Account, Double> cost) {
+		this.costPerAccount = cost;
+	}
+
+	public void set24HoursCost(double cost){
+		this.cost = cost;
+	}
+
 	protected ActionDialogBox<Account> getDialog(Account item) {
 		if(dialog == null) {
 			dialog = new ActionDialogBox<Account>("Account Removal Confirmation",
 					"No", "Yes", new Delegate<Account>(){
 
-						@Override
-						public void execute(Account object) {
-							kill(object.getUri());
-							
-						}});
-			 dialog.setGlassEnabled(true);
-			 dialog.setAnimationEnabled(true);
+				@Override
+				public void execute(Account object) {
+					kill(object.getUri());
+
+				}});
+			dialog.setGlassEnabled(true);
+			dialog.setAnimationEnabled(true);
 
 		}
 		dialog.setValue("Remove cloud account \""+item.getName()+"\" from n3phele?<p>" +
@@ -185,33 +235,33 @@ public class AccountListView extends WorkspaceVerticalPanel {
 		dialog.center();
 		return dialog;
 	}
-	
+
 	private void kill(String uri) {
-		 String url = uri;
-		 // Send request to server and catch any errors.
-		    RequestBuilder builder = AuthenticatedRequestFactory.newRequest(RequestBuilder.DELETE, url);
+		String url = uri;
+		// Send request to server and catch any errors.
+		RequestBuilder builder = AuthenticatedRequestFactory.newRequest(RequestBuilder.DELETE, url);
 
-		    try {
-		      @SuppressWarnings("unused")
+		try {
+			@SuppressWarnings("unused")
 			Request request = builder.sendRequest(null, new RequestCallback() {
-		        public void onError(Request request, Throwable exception) {
-		        	Window.alert("Couldn't delete "+exception.getMessage());
-		        }
+				public void onError(Request request, Throwable exception) {
+					Window.alert("Couldn't delete "+exception.getMessage());
+				}
 
-		        public void onResponseReceived(Request request, Response response) {
-		          if (204 == response.getStatusCode()) {
-		        	  if(AccountListView.this.accountListActivity != null)
-							AccountListView.this.accountListActivity.getAccountList();
-		          } else {
-		        	  Window.alert("Couldn't delete (" + response.getStatusText() + ")");
-		          }
-		        }
-		      });
-		    } catch (RequestException e) {
-		    	Window.alert("Couldn't delete "+e.getMessage());
-		    
-		    }
-		
+				public void onResponseReceived(Request request, Response response) {
+					if (204 == response.getStatusCode()) {
+						if(AccountListView.this.presenter != null)
+							AccountListView.this.presenter.getAccountList();
+					} else {
+						Window.alert("Couldn't delete (" + response.getStatusText() + ")");
+					}
+				}
+			});
+		} catch (RequestException e) {
+			Window.alert("Couldn't delete "+e.getMessage());
+
+		}
+
 	}
-	
+
 }

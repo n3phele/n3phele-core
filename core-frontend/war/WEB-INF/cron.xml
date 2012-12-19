@@ -4,5 +4,12 @@
 		<url>/admin/worker/action/refresh</url>
 		<description>Refresh the action list</description>
 		<schedule>every 1 minutes synchronized</schedule>
+		<target>version-5</target>
+	</cron>
+	<cron>
+		<url>/resources/virtualServers/updateStatus</url>
+		<description>update the status of n3phele VirtualServer list</description>
+		<schedule>every 1 minutes synchronized</schedule>
+		<target>version-5</target>
 	</cron>
 </cronentries>

@@ -20,7 +20,13 @@ public interface N3pheleCssResource extends CssResource {
   String commandDetailHeader();
   @ClassName("commandDetailText")
   String commandDetailText();
-
+  
+  @ClassName("clickableTextCellEffect")
+  String clickableTextCellEffect();
+  
+  @ClassName("lineBreakStyle")
+  String lineBreakStyle();
+  
   @ClassName("gwt-Hyperlink-basePanelEditProfile")
   String gwtHyperlinkBasePanelEditProfile();
  

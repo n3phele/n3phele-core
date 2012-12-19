@@ -32,6 +32,12 @@ public class Account extends Entity {
 		return this.cloud;
 	}-*/;
 	
+	
+	public native final Long getId() /*-{
+		return this.id;
+	}-*/;
+	
+	
 	/**
 	 * @return the cloudName
 	 */

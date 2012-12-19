@@ -35,7 +35,6 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
-import n3phele.service.core.NotFoundException;
 import n3phele.service.core.Resource;
 import n3phele.service.model.Account;
 import n3phele.service.model.AccountCollection;
@@ -45,21 +44,27 @@ import n3phele.service.model.ServiceModelDao;
 import n3phele.service.model.core.Collection;
 import n3phele.service.model.core.Credential;
 import n3phele.service.model.core.GenericModelDao;
+import n3phele.service.model.core.NotFoundException;
 import n3phele.service.model.core.User;
 
 @Path("/account")
 public class AccountResource {
-	private static Logger log = Logger.getLogger(AccountResource.class.getName()); 
+	private static Logger log = Logger.getLogger(AccountResource.class
+			.getName());
 	private final Dao dao;
+
 	public AccountResource(Dao dao) {
 		this.dao = dao;
 	}
+
 	public AccountResource() {
 		this(new Dao());
 	}
 
-	@Context UriInfo uriInfo;
-	@Context SecurityContext securityContext;
+	@Context
+	UriInfo uriInfo;
+	@Context
+	SecurityContext securityContext;
 
 	@GET
 	@Produces("application/json")
@@ -67,11 +72,12 @@ public class AccountResource {
 	public AccountCollection list(
 			@DefaultValue("false") @QueryParam("summary") Boolean summary) {
 
-		log.warning("list Accounts entered with summary "+summary);
-		
-		Collection<Account> result = getAccountList(UserResource.toUser(securityContext), summary);
+		log.warning("list Accounts entered with summary " + summary);
 
-		return new AccountCollection(result,0,-1);
+		Collection<Account> result = getAccountList(
+				UserResource.toUser(securityContext), summary);
+
+		return new AccountCollection(result, 0, -1);
 	}
 
 	@POST
@@ -83,54 +89,65 @@ public class AccountResource {
 			@FormParam("accountId") String accountId,
 			@FormParam("secret") String secret) {
 
-		Cloud myCloud = dao.cloud().load(cloud, UserResource.toUser(securityContext));
-		if(name == null || name.trim().length()==0) {
+		Cloud myCloud = dao.cloud().load(cloud,
+				UserResource.toUser(securityContext));
+		if (name == null || name.trim().length() == 0) {
 			throw new IllegalArgumentException("bad name");
 		}
-		Account account = new Account(name, description, cloud, new Credential(accountId, secret).encrypt(),
-				UserResource.toUser(securityContext).getUri(), false);
+		Account account = new Account(name, description, cloud, new Credential(
+				accountId, secret).encrypt(), UserResource.toUser(
+				securityContext).getUri(), false);
 
 		dao.account().add(account);
-		String result = CloudResource.testAccount(myCloud, UserResource.toUser(securityContext), account, true);
-		if(result == null || result.trim().length()==0) {
-			log.warning("Created "+account.getUri());
+		String result = CloudResource.testAccount(myCloud,
+				UserResource.toUser(securityContext), account, true);
+		if (result == null || result.trim().length() == 0) {
+			log.warning("Created " + account.getUri());
 			return Response.created(account.getUri()).build();
 		} else {
-			log.warning("Created "+account.getUri()+" with warnings "+result);
-			return Response.ok(result,MediaType.TEXT_PLAIN_TYPE).location(account.getUri()).build();
-		}	
+			log.warning("Created " + account.getUri() + " with warnings "
+					+ result);
+			return Response.ok(result, MediaType.TEXT_PLAIN_TYPE)
+					.location(account.getUri()).build();
+		}
 	}
-	
+
 	@POST
 	@Produces("application/json")
 	@Path("{id}")
 	@RolesAllowed("authenticated")
-	public Account update(@PathParam ("id") Long id,
+	public Account update(@PathParam("id") Long id,
 			@FormParam("name") String name,
 			@FormParam("description") String description,
 			@FormParam("cloud") URI cloud,
 			@FormParam("accountId") String accountId,
 			@FormParam("secret") String secret) {
 
-		Cloud myCloud = dao.cloud().load(cloud, UserResource.toUser(securityContext));
-		Account item = dao.account().load(id, UserResource.toUser(securityContext));
-		if(name == null || name.trim().length()==0) {
-				throw new IllegalArgumentException("bad name");
+		Cloud myCloud = dao.cloud().load(cloud,
+				UserResource.toUser(securityContext));
+		Account item = dao.account().load(id,
+				UserResource.toUser(securityContext));
+		if (name == null || name.trim().length() == 0) {
+			throw new IllegalArgumentException("bad name");
 		}
 		Credential credential = null;
-		if(secret != null && secret.trim().length() != 0) {
+		if (secret != null && secret.trim().length() != 0) {
 			credential = new Credential(accountId, secret).encrypt();
 		}
-			
+
 		item.setName(name);
-		item.setDescription(description==null?null:description.trim());
+		item.setDescription(description == null ? null : description.trim());
 		item.setCloud(cloud);
-		if(credential != null)
+		if (credential != null)
 			item.setCredential(credential);
 		dao.account().update(item);
-		String result = CloudResource.testAccount(myCloud, UserResource.toUser(securityContext), item, true);
+		String result = CloudResource.testAccount(myCloud,
+				UserResource.toUser(securityContext), item, true);
 
-		log.warning("Updated "+ item.getUri()+((credential != null)?" including credential "+result:""));
+		log.warning("Updated "
+				+ item.getUri()
+				+ ((credential != null) ? " including credential " + result
+						: ""));
 		return item;
 	}
 
@@ -138,87 +155,106 @@ public class AccountResource {
 	@Produces("application/json")
 	@Path("{id}")
 	@RolesAllowed("authenticated")
-	public Account get( @PathParam ("id") Long id) throws NotFoundException {
+	public Account get(@PathParam("id") Long id) throws NotFoundException {
 
-		Account item = dao.account().load(id, UserResource.toUser(securityContext));
+		Account item = dao.account().load(id,
+				UserResource.toUser(securityContext));
 		return item;
 	}
-	
+
 	@GET
 	@Path("{id}/init")
 	@Produces("text/plain")
 	@RolesAllowed("authenticated")
-	public Response init(@PathParam ("id") Long id) throws NotFoundException {
-		Account item = dao.account().load(id, UserResource.toUser(securityContext));
-		Cloud myCloud = dao.cloud().load(item.getCloud(), UserResource.toUser(securityContext));
-		String result = CloudResource.testAccount(myCloud, UserResource.toUser(securityContext), item, true);
-		if(result == null || result.trim().length()==0) {
-			return Response.ok("ok",MediaType.TEXT_PLAIN_TYPE).location(item.getUri()).build();
+	public Response init(@PathParam("id") Long id) throws NotFoundException {
+		Account item = dao.account().load(id,
+				UserResource.toUser(securityContext));
+		Cloud myCloud = dao.cloud().load(item.getCloud(),
+				UserResource.toUser(securityContext));
+		String result = CloudResource.testAccount(myCloud,
+				UserResource.toUser(securityContext), item, true);
+		if (result == null || result.trim().length() == 0) {
+			return Response.ok("ok", MediaType.TEXT_PLAIN_TYPE)
+					.location(item.getUri()).build();
 		} else {
-			log.warning("Init "+item.getUri()+" with warnings "+result);
-			return Response.ok(result,MediaType.TEXT_PLAIN_TYPE).location(item.getUri()).build();
-		}	
+			log.warning("Init " + item.getUri() + " with warnings " + result);
+			return Response.ok(result, MediaType.TEXT_PLAIN_TYPE)
+					.location(item.getUri()).build();
+		}
 	}
 
 	@DELETE
 	@Path("{id}")
 	@RolesAllowed("authenticated")
-	public void delete(@PathParam ("id") Long id) throws NotFoundException {
-		Account item = dao.account().load(id, UserResource.toUser(securityContext));
+	public void delete(@PathParam("id") Long id) throws NotFoundException {
+		Account item = dao.account().load(id,
+				UserResource.toUser(securityContext));
 		dao.account().delete(item);
 	}
 
 	public String createAccountForUser(User user, String accountId,
-			String secret) throws NotFoundException {
-		Cloud ec2 = dao.cloud().load("EC2", user);
+			String secret, String cloudZoneName) throws NotFoundException {
+
+		Cloud cloud = dao.cloud().load(cloudZoneName, user);
+		
 		Credential credential = null;
-		if(secret != null && secret.trim().length() != 0) {
+		if (secret != null && secret.trim().length() != 0) {
 			credential = new Credential(accountId, secret).encrypt();
 		}
-		Account defaultEC2 = new Account("EC2", "Amazon EC2 account", ec2.getUri(), credential, user.getUri(), false);
-		dao.account().add(defaultEC2);
-		String result = CloudResource.testAccount(ec2, user, defaultEC2, true);
+		
+		String accountName = user.getFirstName() + user.getLastName() + "_" + cloud.getName(); 
+		Account defaultAccount = new Account(accountName, cloud.getDescription(),
+				cloud.getUri(), credential, user.getUri(), false);
+		dao.account().add(defaultAccount);
+		String result = CloudResource.testAccount(cloud, user, defaultAccount,
+				true);
 		return result;
 	}
-	
+
 	public Collection<Account> getAccountList(User user, boolean summary) {
 
-		log.warning("list Accounts entered with summary "+summary);
-		
+		log.warning("list Accounts entered with summary " + summary);
+
 		Collection<Account> result = dao.account().getCollection(user);
 		Map<URI, String> cloudMap = new HashMap<URI, String>();
-		
-		if(result.getElements() != null) {
-			for(int i=0; i < result.getElements().size(); i++) {
+
+		if (result.getElements() != null) {
+			for (int i = 0; i < result.getElements().size(); i++) {
 				Account account = result.getElements().get(i);
 				URI cloud = account.getCloud();
-				if(cloud != null) {
+				if (cloud != null) {
 					String cloudName = cloudMap.get(cloud);
-					if(cloudName == null) {
+					if (cloudName == null) {
 						try {
 							Cloud c = dao.cloud().get(cloud);
 							cloudName = c.getName();
 							cloudMap.put(cloud, cloudName);
 						} catch (NotFoundException nfe) {
-							log.severe("Unknown cloud on account "+account.getUri());
+							log.severe("Unknown cloud on account "
+									+ account.getUri());
 							cloudName = cloud.toString();
 						}
 					}
 					account.setCloudName(cloudName);
 				}
-				if(summary)
+				if (summary)
 					result.getElements().set(i, Account.summary(account));
 			}
 		}
 		return result;
 	}
-	
+
 	static public class AccountManager extends CachingAbstractManager<Account> {
 		public AccountManager() {
 		}
+
 		@Override
 		protected URI myPath() {
-			return UriBuilder.fromUri(Resource.get("baseURI", "http://localhost:8888/resources")).path(AccountResource.class).build();
+			return UriBuilder
+					.fromUri(
+							Resource.get("baseURI",
+									"http://localhost:8888/resources"))
+					.path(AccountResource.class).build();
 		}
 
 		@Override
@@ -226,23 +262,38 @@ public class AccountResource {
 			return new ServiceModelDao<Account>(Account.class, transactional);
 		}
 
-		public Account load(Long id, User requestor) throws NotFoundException { return super.get(id, requestor); }
+		public Account load(Long id, User requestor) throws NotFoundException {
+			return super.get(id, requestor);
+		}
+
 		/**
 		 * Locate a item from the persistent store based on the item name.
+		 * 
 		 * @param name
-		 * @param requestor requesting user
+		 * @param requestor
+		 *            requesting user
 		 * @return the item
-		 * @throws NotFoundException is the object does not exist
+		 * @throws NotFoundException
+		 *             is the object does not exist
 		 */
-		public Account load(String name, User requestor) throws NotFoundException { return super.get(name, requestor); }
+		public Account load(String name, User requestor)
+				throws NotFoundException {
+			return super.get(name, requestor);
+		}
+
 		/**
 		 * Locate a item from the persistent store based on the item URI.
+		 * 
 		 * @param uri
-		 * @param requestor requesting user
+		 * @param requestor
+		 *            requesting user
 		 * @return the item
-		 * @throws NotFoundException is the object does not exist
+		 * @throws NotFoundException
+		 *             is the object does not exist
 		 */
-		public Account load(URI uri, User requestor) throws NotFoundException { return super.get(uri, requestor); }
+		public Account load(URI uri, User requestor) throws NotFoundException {
+			return super.get(uri, requestor);
+		}
 
 	}
 }

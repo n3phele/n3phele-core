@@ -14,6 +14,8 @@
 package n3phele.client;
 
 import n3phele.client.presenter.AccountActivity;
+import n3phele.client.presenter.AccountHyperlinkActivity;
+import n3phele.client.presenter.AccountHyperlinkPlace;
 import n3phele.client.presenter.AccountListActivity;
 import n3phele.client.presenter.AccountListPlace;
 import n3phele.client.presenter.AccountPlace;
@@ -77,6 +79,8 @@ public class AppActivityMapper implements ActivityMapper {
 			return new AccountActivity(((AccountPlace) place).getPlaceName(), clientFactory);
 		} else if(place instanceof AccountListPlace) {
 			return new AccountListActivity(((AccountListPlace) place).getPlaceName(), clientFactory);
+		} else if(place instanceof AccountHyperlinkPlace) {
+			return new AccountHyperlinkActivity(((AccountHyperlinkPlace) place).getPlaceName(), clientFactory);
 		} else if(place instanceof RepoListPlace) {
 			return new RepoListActivity(((RepoListPlace) place).getPlaceName(), clientFactory);
 		} else if(place instanceof RepoPlace) {

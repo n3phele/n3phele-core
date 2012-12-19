@@ -36,7 +36,7 @@ import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Unindexed;
 import com.sun.jersey.core.util.Base64;
 
-// FiXME way way way way too many methods too similarly named
+// FiXME way way way way too many methods to similarly named
 
 
 @XmlRootElement(name = "Credential")
@@ -59,13 +59,13 @@ public class Credential {
 	}
 
 	public Credential decrypt() {
-		String password = Resource.get("seed", "");
+		String password = Resource.get("password", "");
 		return decrypt(this, password);
 	}
 	
 	
 	public static Credential decrypt(Credential credential) {
-		String password = Resource.get("seed", "");
+		String password = Resource.get("password", "");
 		return decrypt(credential, password);
 	}
 
@@ -114,12 +114,12 @@ public class Credential {
 	}
 	
 	public Credential encrypt() {
-		String password = Resource.get("seed", "");
+		String password = Resource.get("password", "");
 		return encrypt(this, password);
 	}
 
 	public static Credential encrypt(Credential credential) {
-		String password = Resource.get("seed", "");
+		String password = Resource.get("password", "");
 		return encrypt(credential, password);
 	}
 

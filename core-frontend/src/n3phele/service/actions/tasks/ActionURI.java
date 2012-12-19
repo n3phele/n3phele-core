@@ -18,8 +18,8 @@ import java.net.URI;
 public class ActionURI {
 	final public static URI iterator = URI.create("http://www.n3phele.com/iterator");
 	final public static URI oldIterator = URI.create("http://www.n3ph.com/iterator");
-	final public static URI oldJoin = URI.create("http://www.n3ph.com/join");
-	final public static URI join = URI.create("http://www.n3phele.com/join");
+	final public static URI join = URI.create("http://www.n3ph.com/join");
+	final public static URI oldJoin = URI.create("http://www.n3phele.com/join");
 	final public static URI log = URI.create("http://www.n3ph.com/log");
 	final public static URI executeCommand = URI.create("http://www.n3ph.com/executeCommand");
 	final public static URI executecommand = URI.create("http://www.n3phele.com/executecommand");

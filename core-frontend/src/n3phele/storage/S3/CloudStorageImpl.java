@@ -51,8 +51,8 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.sun.jersey.core.util.Base64;
 
 import n3phele.service.core.ForbiddenException;
-import n3phele.service.core.NotFoundException;
 import n3phele.service.model.core.Credential;
+import n3phele.service.model.core.NotFoundException;
 import n3phele.service.model.repository.FileNode;
 import n3phele.service.model.repository.PolicyHelper;
 import n3phele.service.model.repository.Repository;

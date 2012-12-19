@@ -36,9 +36,7 @@ import javax.ws.rs.core.UriInfo;
 
 import com.googlecode.objectify.Query;
 
-import n3phele.service.core.NotFoundException;
 import n3phele.service.core.Resource;
-import n3phele.service.core.UnprocessableEntityException;
 import n3phele.service.model.ActionState;
 import n3phele.service.model.CachingAbstractManager;
 import n3phele.service.model.ChangeManager;
@@ -49,6 +47,8 @@ import n3phele.service.model.ProgressCollection;
 import n3phele.service.model.ServiceModelDao;
 import n3phele.service.model.core.Collection;
 import n3phele.service.model.core.GenericModelDao;
+import n3phele.service.model.core.NotFoundException;
+import n3phele.service.model.core.UnprocessableEntityException;
 import n3phele.service.model.core.User;
 
 @Path("/progress")

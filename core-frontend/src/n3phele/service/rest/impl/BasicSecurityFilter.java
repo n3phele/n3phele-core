@@ -143,7 +143,7 @@ public class BasicSecurityFilter implements ContainerRequestFilter {
             return SecurityContext.BASIC_AUTH;
         }
     }
-
+   
     private final static User signupUser = new User("signup", "signup", "signup", "newuser");
     private final boolean production = Resource.get("production", true); 
     

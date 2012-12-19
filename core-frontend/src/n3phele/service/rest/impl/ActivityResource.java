@@ -56,9 +56,7 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import n3phele.service.actions.tasks.ActionLog;
-import n3phele.service.core.NotFoundException;
 import n3phele.service.core.Resource;
-import n3phele.service.core.UnprocessableEntityException;
 import n3phele.service.model.Account;
 import n3phele.service.model.Action;
 import n3phele.service.model.ActionSpecification;
@@ -81,8 +79,10 @@ import n3phele.service.model.core.BaseEntity;
 import n3phele.service.model.core.FileRef;
 import n3phele.service.model.core.GenericModelDao;
 import n3phele.service.model.core.NameValue;
+import n3phele.service.model.core.NotFoundException;
 import n3phele.service.model.core.ParameterType;
 import n3phele.service.model.core.TypedParameter;
+import n3phele.service.model.core.UnprocessableEntityException;
 import n3phele.service.model.core.User;
 
 import com.google.appengine.api.datastore.EntityNotFoundException;
@@ -880,10 +880,7 @@ public class ActivityResource {
 		} catch (Exception e) {
 			log.log(Level.WARNING, "Error processing activity "+activity.toString(), e);
 			throw new UnprocessableEntityException("Invalid file specification: "+lastRepo+" cause:"+e.getMessage());
-		}
-		
-		
-		
+		}		
 		
 		dao.activity().add(activity);
 
@@ -2299,7 +2296,8 @@ public class ActivityResource {
 				maxDuration = Math.max(maxDuration, estimates[1]);
 				stateCount[(int) estimates[2]] += 1;
 			}
-			int progress = 1000 - (int) ((1000 * maxRemaining)/maxDuration);
+			//int progress = 1000 - (int) ((1000 * maxRemaining)/maxDuration);
+			int progress = 900;
 			ActionState state = summarizeState(stateCount);
 			log.warning("=>Summarized state "+state);
 			if(state == ActionState.COMPLETE || state == ActionState.FAILED || state == ActionState.CANCELLED){

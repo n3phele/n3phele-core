@@ -33,6 +33,7 @@ public class TypedParameter implements Serializable {
 	private ParameterType type;
 	private Text value;
 	private Text defaultValue;
+	
 	public static Map<String, TypedParameter> asMap(List<TypedParameter> executionParameters) {
 		Map<String, TypedParameter> result = new HashMap<String, TypedParameter>();
 		if(executionParameters != null) {

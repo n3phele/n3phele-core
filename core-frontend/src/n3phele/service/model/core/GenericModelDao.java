@@ -24,8 +24,6 @@ import java.util.Map;
 import javax.persistence.Embedded;
 import javax.persistence.Transient;
 
-import n3phele.service.core.NotFoundException;
-
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Query;
 import com.googlecode.objectify.util.DAOBase;

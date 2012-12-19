@@ -12,6 +12,9 @@
  *  specific language governing permissions and limitations under the License.
  */
 package n3phele.service.model;
+/**
+ *
+ */
 
 import com.googlecode.objectify.ObjectifyService;
 
@@ -20,6 +23,7 @@ import n3phele.service.actions.tasks.ExecuteCommandTask;
 import n3phele.service.actions.tasks.FileTransferTask;
 import n3phele.service.model.core.GenericModelDao;
 import n3phele.service.model.core.User;
+import n3phele.service.model.core.VirtualServer;
 import n3phele.service.model.repository.Repository;
 
 public class ServiceModelDao<T> extends GenericModelDao<T> {
@@ -39,6 +43,16 @@ public class ServiceModelDao<T> extends GenericModelDao<T> {
 		ObjectifyService.register(Progress.class);
 		ObjectifyService.register(FileSpecification.class);
 		ObjectifyService.register(User.class);
+		
+		//ENTITIES RELATED TO THE CLOUD PRICES
+		ObjectifyService.register(Price.class);
+		ObjectifyService.register(InstancePrice.class);
+		ObjectifyService.register(InstanceSize.class);
+		ObjectifyService.register(InstanceType.class);
+		ObjectifyService.register(Region.class);
+		
+		//ENTITIES RELATED TO THE VIRTUALMACHINES CONTROL INSIDE DE ACCOUNTS 
+		ObjectifyService.register(VirtualServer.class);
 
 	}
 	public ServiceModelDao(Class<T> clazz, boolean transactional) {

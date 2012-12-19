@@ -22,6 +22,7 @@ import n3phele.service.rest.impl.HistoryResource.HistoryManager;
 import n3phele.service.rest.impl.ProgressResource.ProgressManager;
 import n3phele.service.rest.impl.RepositoryResource.RepositoryManager;
 import n3phele.service.rest.impl.UserResource.UserManager;
+import n3phele.service.rest.impl.VirtualServerResource.VirtualServerManager;
 
 public class Dao {
 	private AccountManager accountManager;
@@ -33,6 +34,7 @@ public class Dao {
 	private ProgressManager progressManager;
 	private UserManager userManager;
 	private RepositoryManager repositoryManager;
+	private VirtualServerManager virtualServerManager;
 	
 	public Dao() {};
 	
@@ -89,5 +91,10 @@ public class Dao {
 			userManager = new UserResource.UserManager();
 		return userManager;
 	}
-
+	
+	public VirtualServerManager virtualServer(){
+		if(virtualServerManager == null)
+			virtualServerManager = new VirtualServerResource.VirtualServerManager();
+		return virtualServerManager;
+	}
 }

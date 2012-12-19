@@ -28,6 +28,7 @@ import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Unindexed;
 
 @XmlRootElement(name="User")
+//@XmlSeeAlso(BaseEntity.class)
 @XmlType(name="User", propOrder={"firstName", "lastName", "validationSeed", "badAttempts", "validated", "validationDate", "admin"})
 @Unindexed
 @Cached

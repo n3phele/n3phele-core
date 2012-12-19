@@ -28,8 +28,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
-import n3phele.service.core.NotFoundException;
-import n3phele.service.core.UnprocessableEntityException;
 import n3phele.service.model.Account;
 import n3phele.service.model.Activity;
 import n3phele.service.model.CloudProfile;
@@ -38,6 +36,8 @@ import n3phele.service.model.ExecuteCommandRequest;
 import n3phele.service.model.FileSpecification;
 import n3phele.service.model.core.Collection;
 import n3phele.service.model.core.NameValue;
+import n3phele.service.model.core.NotFoundException;
+import n3phele.service.model.core.UnprocessableEntityException;
 import n3phele.service.model.repository.Repository;
 
 @Path("/cli")

@@ -45,7 +45,6 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
-import n3phele.service.core.NotFoundException;
 import n3phele.service.core.Resource;
 import n3phele.service.model.CachingAbstractManager;
 import n3phele.service.model.ServiceModelDao;
@@ -53,6 +52,7 @@ import n3phele.service.model.core.BaseEntity;
 import n3phele.service.model.core.Collection;
 import n3phele.service.model.core.Credential;
 import n3phele.service.model.core.GenericModelDao;
+import n3phele.service.model.core.NotFoundException;
 import n3phele.service.model.core.User;
 
 @Path("/user")
@@ -94,8 +94,10 @@ public class UserResource {
 			@FormParam("firstName") String firstName,
 			@FormParam("lastName") String lastName,
 			@FormParam("secret") String secret,
-			@FormParam("ec2Id") String ec2Id,
-			@FormParam("ec2Secret") String ec2secret) {
+			@FormParam("cloudId") String cloudId,
+			@FormParam("cloudSecret") String cloudSecret,
+			@FormParam("cloudZoneName") String cloudZoneName) {
+		
 		if(email == null || !email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$")) {
 			throw new IllegalArgumentException("bad email");
 		}
@@ -112,11 +114,11 @@ public class UserResource {
 			
 		}
 		dao.user().add(user);
-		boolean hasEC2Info = ec2Id != null && ec2Id.trim().length() != 0;
-		welcome(user, hasEC2Info);
-		if(hasEC2Info) {
-			new AccountResource(dao).createAccountForUser(user, ec2Id, ec2secret);
-			new RepositoryResource(dao).createRepoForUser(user, ec2Id, ec2secret);
+		boolean hasCloudInfo = cloudId != null && cloudId.trim().length() != 0;
+		welcome(user, hasCloudInfo);
+		if(hasCloudInfo) {
+			new AccountResource(dao).createAccountForUser(user, cloudId, cloudSecret, cloudZoneName);
+			new RepositoryResource(dao).createRepoForUser(user, cloudId, cloudSecret, cloudZoneName);
 		}
 		log.warning("Created "+user);
 		return Response.created(user.getUri()).build();

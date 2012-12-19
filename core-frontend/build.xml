@@ -1,31 +1,80 @@
-<?xml version="1.0"?>
-<!--  
- * @author Nigel Cook
- *
- * (C) Copyright 2012. Nigel Cook. All rights reserved.
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
- * 
- * Licensed under the terms described in LICENSE file that accompanied this code, (the "License"); you may not use this file
- * except in compliance with the License. 
- * 
- *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on 
- *  an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the 
- *  specific language governing permissions and limitations under the License.
--->
+<project>
 
-<project name="build" default="dist" basedir=".">
-	<description> Build file for n3phele common libs</description>	
-    <target name="dist" depends="" description="Create common jars deliverables">
-    	<jar jarfile="dist/n3phele-shared-with-factory.jar">
-    		<fileset dir="war/WEB-INF/classes" includes="n3phele/service/core/**/*.class" />
-    		<fileset dir="war/WEB-INF/classes" includes="n3phele/service/model/core/**/*.class" />
-    	</jar>
-    	<jar jarfile="dist/n3phele-shared-with-backend.jar">
-    		<fileset dir="war/WEB-INF/classes" includes="n3phele/service/core/**/*.class" />
-    		<fileset dir="war/WEB-INF/classes" includes="n3phele/service/model/core/**/*.class" />
-    		<fileset dir="war/WEB-INF/classes" includes="n3phele/service/model/repository/**/*.class" />
-    		<fileset dir="war/WEB-INF/classes" includes="n3phele/storage/**/*.class" />
-    		<fileset dir="war/WEB-INF/classes" includes="**/*.properties" />
-    	</jar>
-    </target>
+  <property name="sdk.dir" location="../../../../../home/ubuntu/appengine-java-sdk-1.7.1" />
+  <property name="gwt.dir" location="../../../../../home/ubuntu/gwt-2.4.0" />
+  <import file="${sdk.dir}/config/user/ant-macros.xml" />
+ 
+  <target name="copyjars"
+      description="Copies the App Engine JARs to the WAR.">
+    <copy
+        todir="war/WEB-INF/lib"
+        flatten="true">
+      <fileset dir="${sdk.dir}/lib/user">
+        <include name="**/*.jar" />
+      </fileset>
+    </copy>
+  </target>
+
+  <path id="project.classpath">
+    <pathelement path="war/WEB-INF/classes" />
+    <fileset dir="war/WEB-INF/lib">
+      <include name="**/*.jar" />
+    </fileset>
+    <fileset dir="${sdk.dir}/lib">
+      <include name="shared/**/*.jar" />
+    </fileset>
+    <fileset dir="${gwt.dir}">
+      <include name="**/*.jar" />
+    </fileset>
+  </path>
+  
+  <target name="compile" depends="copyjars"
+      description="Compiles Java source and copies other source files to the WAR.">
+    <mkdir dir="war/WEB-INF/classes" />
+    <copy todir="war/WEB-INF/classes">
+      <fileset dir="src">
+        <exclude name="**/*.java" />
+      </fileset>
+    </copy>
+    <javac
+        srcdir="src"
+        destdir="war/WEB-INF/classes"
+        classpathref="project.classpath"
+        debug="on" />
+  </target>
+
+  <target name="gwt_compile" depends="compile" description="GWT compile to JavaScript">
+    <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
+      <classpath>
+        <pathelement location="src"/>
+        <path refid="project.classpath"/>
+      </classpath>
+      <!-- add jvmarg -Xss16M or similar if you see a StackOverflowError -->
+      <arg value="n3phele.N3phele"/>
+    </java>
+  </target>
+
+  <target name="datanucleusenhance" depends="gwt_compile"
+      description="Performs JDO enhancement on compiled data classes.">
+    <enhance_war war="war" />
+  </target>
+	
+<target name="update" 
+        depends="enhance" 
+        description="Uploads the application to GAE">
+
+        <java classname="com.google.appengine.tools.admin.AppCfg" 
+              inputstring="lispoadev" 
+              classpath="${sdk.dir}\lib\appengine-tools-api.jar">
+
+              <classpath>
+                  <fileset dir="${war.dir}/WEB-INF/lib" includes="**/*.jar" />
+              </classpath>
+              <arg value="--email=n3phele.poadev@gmail.com" />
+              <arg value="--passin" />
+              <arg value="update" />
+              <arg value="war" />
+        </java>
+</target>  
+
 </project>

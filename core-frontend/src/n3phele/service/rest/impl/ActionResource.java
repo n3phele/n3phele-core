@@ -42,7 +42,7 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import n3phele.service.actions.tasks.ActionLog;
-import n3phele.service.core.NotFoundException;
+import n3phele.service.actions.tasks.ActionTask;
 import n3phele.service.core.Resource;
 import n3phele.service.expression.Evaluator;
 import n3phele.service.model.Action;
@@ -56,6 +56,7 @@ import n3phele.service.model.core.BaseEntity;
 import n3phele.service.model.core.FileRef;
 import n3phele.service.model.core.GenericModelDao;
 import n3phele.service.model.core.NameValue;
+import n3phele.service.model.core.NotFoundException;
 import n3phele.service.model.core.TypedParameter;
 import n3phele.service.model.core.User;
 

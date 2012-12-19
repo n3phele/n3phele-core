@@ -31,7 +31,7 @@ import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Unindexed;
 
 @XmlRootElement(name="Cloud")
-@XmlType(name="Cloud", propOrder={"description", "location", "factory", "inputParameters", "outputParameters"})
+@XmlType(name="Cloud", propOrder={"description", "location", "factory", "inputParameters", "outputParameters", "regionPrices"})
 @Unindexed
 @Cached
 public class Cloud extends Entity {
@@ -41,19 +41,21 @@ public class Cloud extends Entity {
 	private String factory;
 	@Embedded private Credential factoryCredential;
 	@Embedded private ArrayList<TypedParameter> inputParameters; 
-	@Embedded private ArrayList<TypedParameter> outputParameters; 
+	@Embedded private ArrayList<TypedParameter> outputParameters;
+	@Embedded private Region regionPrices;
 	
 	public Cloud() {}
 	
 
 	public Cloud(String name, String description,
-		 URI location, URI factory, Credential factoryCredential, URI owner, boolean isPublic) {
+		 URI location, URI factory, Credential factoryCredential, URI owner, boolean isPublic, Region regionPrices) {
 		super(name, null, "application/vnd.com.n3phele.Cloud+json", owner, isPublic);
 		this.id = null;
 		setDescription(description);
 		this.location = (location==null)? null : location.toString();
 		this.factory = (factory==null)? null : factory.toString();
 		this.factoryCredential = factoryCredential;
+		this.regionPrices = regionPrices;
 	}
 	
 	/**
@@ -175,10 +177,17 @@ public class Cloud extends Entity {
 
 	public static Cloud summary(Cloud c) {
 			if(c == null) return null;
-			Cloud result = new Cloud(c.name, null, null, null, null, c.getOwner(), c.isPublic);
+			Cloud result = new Cloud(c.name, null, null, null, null, c.getOwner(), c.isPublic, c.getRegionPrices());
 			result.uri = c.uri;
 			return result;
 	}
 
+	public Region getRegionPrices() {
+		return this.regionPrices;
+	}
 
+
+	public void setRegionPrices(Region regionPrices) {
+		this.regionPrices = regionPrices;
+	}
 }

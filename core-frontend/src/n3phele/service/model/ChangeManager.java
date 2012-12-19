@@ -73,9 +73,8 @@ public class ChangeManager {
 		for(long i = stamp+1; i <= cacheCount; i++) {
 			Change c = (Change) getCache().get(key+i);
 			if(c == null) {
-				log.severe("Missing cache key "+key+i+" currently "+cacheCount);
-				return null;
-				// continue;
+				log.severe("Missing cache key "+key+i);
+				continue;
 			}
 			if(isAdmin || c.isPublic() || c.getOwner().equals(owner))
 				changes.put((c.isDeleted()?"d":"u")+c.getUri(), c);

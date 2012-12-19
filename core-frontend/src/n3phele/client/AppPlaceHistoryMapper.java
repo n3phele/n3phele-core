@@ -13,6 +13,7 @@
  */
 package n3phele.client;
 
+import n3phele.client.presenter.AccountHyperlinkPlace;
 import n3phele.client.presenter.AccountListPlace;
 import n3phele.client.presenter.AccountPlace;
 import n3phele.client.presenter.ActivityDashboardPlace;
@@ -34,7 +35,7 @@ import com.google.gwt.place.shared.WithTokenizers;
 @WithTokenizers({ActivityListPlace.Tokenizer.class, LoginPlace.Tokenizer.class, 
 	ActivityDashboardPlace.Tokenizer.class, CommandListPlace.Tokenizer.class, CommandGridListPlace.Tokenizer.class,
 	CommandPlace.Tokenizer.class,
-	UserPlace.Tokenizer.class, AccountPlace.Tokenizer.class, AccountListPlace.Tokenizer.class,
+	UserPlace.Tokenizer.class, AccountPlace.Tokenizer.class, AccountListPlace.Tokenizer.class, AccountHyperlinkPlace.Tokenizer.class,
 	RepoListPlace.Tokenizer.class, RepoPlace.Tokenizer.class, RepoContentPlace.Tokenizer.class, 
 	ProgressPlace.Tokenizer.class, 
 	ActivityPlace.Tokenizer.class})
