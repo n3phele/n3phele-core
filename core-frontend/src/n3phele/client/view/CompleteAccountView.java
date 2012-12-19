@@ -1,3 +1,8 @@
+/**
+ * 
+ * 
+ */
+
 package n3phele.client.view;
 
 import n3phele.client.N3phele;
