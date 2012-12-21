@@ -315,7 +315,7 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 					addDuration(duration);
 					state = ActionState.COMPLETE;
 					log.fine(this.name + " vm(s) created successfully. Elapsed time " + duration + " seconds.");
-					ActionLog.name(this).info("vm(s) created completed successfully. Elapsed time " + duration + " seconds.");
+					ActionLog.name(this).info(siblings.length + " vm(s) created completed successfully. Elapsed time " + duration + " seconds.");
 
 				} else {
 					return false;

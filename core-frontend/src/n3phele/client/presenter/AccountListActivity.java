@@ -57,7 +57,7 @@ public class AccountListActivity extends AbstractActivity {
 	private HandlerRegistration handlerRegistration;
 	private VSCollection<VirtualServer> vsCol = null;
 	private HashMap<Account, Double> costPerAccount = null;
-	private HashMap<Account, String> timePerAccount = null;
+	private HashMap<Account, Integer> vsPerAccount = null;
 	private int runningHours = 0;
 	private int runningMinutes = 0;
 	protected final PlaceController placeController;
@@ -155,16 +155,16 @@ public class AccountListActivity extends AbstractActivity {
 			runningMinutes = 0;
 			getVSList(accountList.get(i));
 		}
-		display.refresh(this.accountList, this.costPerAccount, this.timePerAccount);
+		display.refresh(this.accountList, this.costPerAccount, this.vsPerAccount);
 	}
 
 	protected void updateCostPerAccount(Account account, List<Double> values) {
 		if(costPerAccount == null) return;
 		costPerAccount.put(account, getCost(values));
-		display.refresh(this.accountList, this.costPerAccount, this.timePerAccount);
+		display.refresh(this.accountList, this.costPerAccount, this.vsPerAccount);
 	}
 
-	protected void updateTimePerAccount(Account account, VirtualServer vs) {
+/*	protected void updateTimePerAccount(Account account, VirtualServer vs) {
 		if(timePerAccount == null) return;
 		int minutes = 0;
 		int hours = 0;
@@ -265,8 +265,13 @@ public class AccountListActivity extends AbstractActivity {
 		timePerAccount.put(account, result);
 		display.refresh(this.accountList, this.costPerAccount, this.timePerAccount);
 	}
+*/
 
-
+	public void updateVsPerAccount(Account account, int cont){
+		vsPerAccount.put(account, cont);
+		display.refresh(this.accountList, this.costPerAccount, this.vsPerAccount);
+	}
+	
 	/*
 	 * -------------
 	 * Data Handling
@@ -285,12 +290,15 @@ public class AccountListActivity extends AbstractActivity {
 
 				public void onResponseReceived(Request request, Response response) {
 					GWT.log("Got reply");
+					int cont = 0;
 					if (200 == response.getStatusCode()) {
 						VSCollection<VirtualServer> vsCollection = VirtualServer.asCollection(response.getText());
 						updateCostPerAccount(account, vsCollection.dayCost());
 						for(VirtualServer vs : vsCollection.getElements()){
-							updateTimePerAccount(account, vs);
+							//updateTimePerAccount(account, vs);
+							if(vs.getStatus().equalsIgnoreCase("running")) cont++;
 						}
+						updateVsPerAccount(account, cont);
 					} else {
 
 					}
@@ -316,7 +324,7 @@ public class AccountListActivity extends AbstractActivity {
 					if (200 == response.getStatusCode()) {
 						Collection<Account> account = Account.asCollection(response.getText());
 						costPerAccount = new HashMap<Account, Double>(account.getElements().size());
-						timePerAccount = new HashMap<Account, String>(account.getElements().size());
+						vsPerAccount = new HashMap<Account, Integer>(account.getElements().size());
 						updateAccountList(account.getElements());
 					} else {
 

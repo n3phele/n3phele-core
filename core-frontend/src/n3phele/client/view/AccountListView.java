@@ -52,7 +52,7 @@ public class AccountListView extends WorkspaceVerticalPanel {
 	private static ClickableCellTableResource resource = null;
 	private double cost = 0.0;
 	private HashMap<Account, Double> costPerAccount = null;
-	private HashMap<Account, String> timePerAccount = null;
+	private HashMap<Account, Integer> vsPerAccount = null;
 	public AccountListView() {
 		super(new MenuItem(N3phele.n3pheleResource.accountIcon(), "Accounts", null),
 				new MenuItem(N3phele.n3pheleResource.accountAddIcon(), "create a new account", "account:null"));
@@ -97,31 +97,9 @@ public class AccountListView extends WorkspaceVerticalPanel {
 			public String getValue(Account item) {
 				String result = "";
 				if(item != null){
-					if(timePerAccount != null && timePerAccount.containsKey(item)){
-						String value = timePerAccount.get(item);
-						int hours = Integer.parseInt(value.substring(0, value.indexOf("/")));
-						int minutes = Integer.parseInt(value.substring(value.indexOf("/")+1));
-						int days = 0;
-						if(minutes > 59){
-							hours += minutes/60;
-							minutes = minutes%60;
-						}
-						if(hours > 23){
-							days = hours/24;
-							hours = hours%24;
-						}
-						if(days == 0 && hours == 0)
-							result += minutes + "min";
-						else if(days == 0 && hours != 0 && minutes != 0)
-							result += hours +"h "+ minutes + "min";
-						else if(days == 0 && hours != 0 && minutes == 0)
-							result += hours +"h";
-						else if(days != 0 && hours != 0 && minutes != 0)
-							result += days + "d " + hours + "h " + minutes + "min";
-						else if(days != 0 && hours == 0 && minutes != 0)
-							result += days + "d " + minutes + "min";
-						else 
-							result += days + "d";
+					if(vsPerAccount != null && vsPerAccount.containsKey(item)){
+						int value = vsPerAccount.get(item);
+						result += value;
 					}
 					else
 						result += 0;
@@ -197,9 +175,9 @@ public class AccountListView extends WorkspaceVerticalPanel {
 
 	}
 
-	public void refresh(List<Account> newProgressList, HashMap<Account, Double> costPerAccount, HashMap<Account, String> timePerAccount) {
+	public void refresh(List<Account> newProgressList, HashMap<Account, Double> costPerAccount, HashMap<Account, Integer> vsPerAccount) {
 		this.costPerAccount = costPerAccount;
-		this.timePerAccount = timePerAccount;
+		this.vsPerAccount = vsPerAccount;
 		setDisplayList(newProgressList);
 	}
 

@@ -14,17 +14,12 @@
 package n3phele.client.presenter;
 
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import n3phele.client.CacheManager;
 import n3phele.client.ClientFactory;
 import n3phele.client.model.Account;
 import n3phele.client.model.Cloud;
 import n3phele.client.presenter.helpers.AuthenticatedRequestFactory;
 import n3phele.client.view.AccountView;
-import n3phele.service.rest.impl.AccountResource;
-
 import com.google.gwt.activity.shared.AbstractActivity;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
