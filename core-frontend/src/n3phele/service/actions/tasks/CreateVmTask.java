@@ -384,6 +384,7 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	public void createVirtualServer(VirtualServer vs, Cloud myCloud) {
 
 		log.warning("Entered on createVirtualServer");
@@ -470,8 +471,6 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 			args.append(URLEncoder.encode(this.accountURI.toString(), "UTF-8"));
 
 			client.resource(serviceURL.toString()).type(MediaType.APPLICATION_FORM_URLENCODED).post(ClientResponse.class, args.toString());
-			
-			int a = 2;
 
 		} catch (Exception e) {
 			log.warning("Error adding the VirtualServer " + e.getMessage());
