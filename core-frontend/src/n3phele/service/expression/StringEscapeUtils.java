@@ -1,3 +1,20 @@
+/*
+    2    * Licensed to the Apache Software Foundation (ASF) under one or more
+    3    * contributor license agreements.  See the NOTICE file distributed with
+    4    * this work for additional information regarding copyright ownership.
+    5    * The ASF licenses this file to You under the Apache License, Version 2.0
+    6    * (the "License"); you may not use this file except in compliance with
+    7    * the License.  You may obtain a copy of the License at
+    8    * 
+    9    *      http://www.apache.org/licenses/LICENSE-2.0
+   10    * 
+   11    * Unless required by applicable law or agreed to in writing, software
+   12    * distributed under the License is distributed on an "AS IS" BASIS,
+   13    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   14    * See the License for the specific language governing permissions and
+   15    * limitations under the License.
+   16    */
+
 package n3phele.service.expression;
 
 
