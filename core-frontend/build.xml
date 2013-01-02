@@ -1,7 +1,7 @@
 <project>
 
-  <property name="sdk.dir" location="../../../../../home/ubuntu/appengine-java-sdk-1.7.1" />
-  <property name="gwt.dir" location="../../../../../home/ubuntu/gwt-2.4.0" />
+  <property name="sdk.dir" location="/home/ubuntu/appengine-java-sdk-1.7.1" />
+  <property name="gwt.dir" location="/home/ubuntu/gwt-2.4.0" />
   <import file="${sdk.dir}/config/user/ant-macros.xml" />
  
   <target name="copyjars"
@@ -28,6 +28,14 @@
     </fileset>
   </path>
   
+   <path id="test.classpath">
+    <pathelement location="test-classes" />
+    <pathelement path="war/WEB-INF/classes" />
+   <fileset dir="war/WEB-INF/lib">
+      <include name="**/*.jar" />
+   </fileset>
+  </path>
+
   <target name="compile" depends="copyjars"
       description="Compiles Java source and copies other source files to the WAR.">
     <mkdir dir="war/WEB-INF/classes" />
@@ -42,8 +50,8 @@
         classpathref="project.classpath"
         debug="on" />
   </target>
-
-  <target name="gwt_compile" depends="compile" description="GWT compile to JavaScript">
+  
+  <target name="gwt_compile" depends="compile_tests" description="GWT compile to JavaScript">
     <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
       <classpath>
         <pathelement location="src"/>
@@ -58,23 +66,49 @@
       description="Performs JDO enhancement on compiled data classes.">
     <enhance_war war="war" />
   </target>
-	
-<target name="update" 
-        depends="enhance" 
-        description="Uploads the application to GAE">
 
-        <java classname="com.google.appengine.tools.admin.AppCfg" 
-              inputstring="lispoadev" 
-              classpath="${sdk.dir}\lib\appengine-tools-api.jar">
+  <target name="compile_tests" depends="compile"
+      description="Compiles Java source tests.">
+    <mkdir dir="test-classes" />
+    <copy todir="test-classes">
+      <fileset dir="test">
+        <exclude name="**/*.java" />
+      </fileset>
+    </copy>
+    <javac
+      srcdir="test"
+      destdir="test-classes"
+      classpathref="test.classpath"
+      debug="on" />
+  </target>
 
-              <classpath>
-                  <fileset dir="${war.dir}/WEB-INF/lib" includes="**/*.jar" />
-              </classpath>
-              <arg value="--email=n3phele.poadev@gmail.com" />
-              <arg value="--passin" />
-              <arg value="update" />
-              <arg value="war" />
-        </java>
-</target>  
+	<target name="update" depends="datanucleusenhance"
+		description="Uploads the application to App Engine.">
+		<appcfg action="update" war="war" />
+	</target>
+
+  <target name="tests">    
+    <waitfor maxwait="2" maxwaitunit="minute" checkevery="500">
+       <http url="http://15.185.173.105:8888"/>
+    </waitfor>
+
+    <junit fork="no" haltonfailure="yes">
+      <test name="n3pheleTests.HPCloudCreation" />
+      <formatter type="plain" usefile="false" />
+      <classpath refid="test.classpath" />
+    </junit>
+    
+    <junit fork="no" haltonfailure="yes">
+      <test name="n3pheleTests.N3pheleEC2CloudCreation" />
+      <formatter type="plain" usefile="false" />
+      <classpath refid="test.classpath" />
+    </junit>
+    
+    <junit fork="no" haltonfailure="yes">
+      <test name="n3pheleTests.VirtualServerTest" />
+      <formatter type="plain" usefile="false" />
+      <classpath refid="test.classpath" />
+    </junit>    
+  </target>
 
 </project>
