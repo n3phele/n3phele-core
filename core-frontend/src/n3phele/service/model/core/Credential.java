@@ -81,6 +81,7 @@ public class Credential {
 
 	private static String decryptor(String encrypted, String passwd) {
 		try {
+			log.log(Level.INFO, "Decryption - encrypted: "+encrypted+" passwd: "+passwd);
 			byte[] key = (passwd).getBytes("UTF-8");
 			MessageDigest sha = MessageDigest.getInstance("SHA-1");
 			key = sha.digest(key);
