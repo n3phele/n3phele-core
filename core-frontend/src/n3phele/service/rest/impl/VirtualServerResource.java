@@ -243,7 +243,8 @@ public class VirtualServerResource {
 						Client client = Client.create();
 						client.setConnectTimeout(20000);
 						
-						client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
+						client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().getAccount(), cloud.getFactoryCredential().getSecret()));
+						//client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
 						WebResource resource = client.resource(factory.toString());
 
 						try {
