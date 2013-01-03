@@ -97,8 +97,7 @@ public class BasicSecurityFilter implements ContainerRequestFilter {
         }
         if(user == null && (username .equals("signup") && password.equals("newuser"))) {
         	user = signupUser;
-        } else if(user == null || !user.getCredential().getSecret().equals(password)) {
-        //} else if(user == null || !user.getCredential().decrypt().getSecret().equals(password)) {
+        } else if(user == null || !user.getCredential().decrypt().getSecret().equals(password)) {
         	log.severe("Invalid username or password user='"+username+"' password='"+password+"'");
         	log.severe("Authorization header is '"+request.getHeaderValue(ContainerRequest.AUTHORIZATION)+"'");
             throw new MappableContainerException(new ForbiddenException("Invalid username or password"));
