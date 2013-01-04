@@ -81,17 +81,18 @@ public class Credential {
 
 	private static String decryptor(String encrypted, String passwd) {
 		try {			
-			byte[] key = (passwd).getBytes("UTF-16");
+			byte[] key = (passwd).getBytes("UTF-8");
 			MessageDigest sha = MessageDigest.getInstance("SHA-1");
 			key = sha.digest(key);
 			key = Arrays.copyOf(key, 16); // use only first 128 bit
 
 			SecretKeySpec spec = new SecretKeySpec(key, "AES");
-
-			Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
+			
+			
+			
+			Cipher cipher = Cipher.getInstance("AES");
 			cipher.init(Cipher.DECRYPT_MODE, spec);
 			return new String(cipher.doFinal(Base64.decode(encrypted)));
-			//return new String(cipher.doFinal(Base64.decode((encrypted).getBytes("UTF-8"))));
 		} catch (InvalidKeyException e) {
 			log.log(Level.SEVERE, "Decryption error", e);
 			throw new IllegalArgumentException(e);
@@ -139,16 +140,18 @@ public class Credential {
 
 	private static String encryptor(String str, String passwd) {
 		try {
-			byte[] key = (passwd).getBytes("UTF-16");
+			byte[] key = (passwd).getBytes("UTF-8");
 			MessageDigest sha = MessageDigest.getInstance("SHA-1");
 			key = sha.digest(key);
 			key = Arrays.copyOf(key, 16); // use only first 128 bit
 			SecretKeySpec spec = new SecretKeySpec(key, "AES");
 
-			Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
+			Cipher cipher = Cipher.getInstance("AES");
 			cipher.init(Cipher.ENCRYPT_MODE, spec);
+			
+			
 			return new String(Base64.encode(cipher.doFinal(str
-					.getBytes("UTF-8"))));
+				.getBytes("UTF-8"))));
 		} catch (InvalidKeyException e) {
 			log.log(Level.SEVERE, "Encryption error", e);
 			throw new IllegalArgumentException(e);
