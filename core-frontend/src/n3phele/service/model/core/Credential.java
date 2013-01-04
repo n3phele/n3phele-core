@@ -88,10 +88,10 @@ public class Credential {
 
 			SecretKeySpec spec = new SecretKeySpec(key, "AES");
 
-			Cipher cipher = Cipher.getInstance("AES");
+			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 			cipher.init(Cipher.DECRYPT_MODE, spec);
-			//return new String(cipher.doFinal(Base64.decode(encrypted)));
-			return new String(cipher.doFinal(Base64.decode((encrypted).getBytes("UTF-8"))));
+			return new String(cipher.doFinal(Base64.decode(encrypted)));
+			//return new String(cipher.doFinal(Base64.decode((encrypted).getBytes("UTF-8"))));
 		} catch (InvalidKeyException e) {
 			log.log(Level.SEVERE, "Decryption error", e);
 			throw new IllegalArgumentException(e);
@@ -145,7 +145,7 @@ public class Credential {
 			key = Arrays.copyOf(key, 16); // use only first 128 bit
 			SecretKeySpec spec = new SecretKeySpec(key, "AES");
 
-			Cipher cipher = Cipher.getInstance("AES");
+			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 			cipher.init(Cipher.ENCRYPT_MODE, spec);
 			return new String(Base64.encode(cipher.doFinal(str
 					.getBytes("UTF-8"))));
