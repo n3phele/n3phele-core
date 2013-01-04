@@ -80,8 +80,7 @@ public class Credential {
 	}
 
 	private static String decryptor(String encrypted, String passwd) {
-		try {
-			log.log(Level.INFO, "Decryption - encrypted: "+encrypted+" passwd: "+passwd);
+		try {			
 			byte[] key = (passwd).getBytes("UTF-8");
 			MessageDigest sha = MessageDigest.getInstance("SHA-1");
 			key = sha.digest(key);
@@ -91,7 +90,8 @@ public class Credential {
 
 			Cipher cipher = Cipher.getInstance("AES");
 			cipher.init(Cipher.DECRYPT_MODE, spec);
-			return new String(cipher.doFinal(Base64.decode(encrypted)));
+			//return new String(cipher.doFinal(Base64.decode(encrypted)));
+			return new String(cipher.doFinal(Base64.decode((encrypted).getBytes("UTF-8"))));
 		} catch (InvalidKeyException e) {
 			log.log(Level.SEVERE, "Decryption error", e);
 			throw new IllegalArgumentException(e);
