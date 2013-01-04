@@ -81,7 +81,7 @@ public class Credential {
 
 	private static String decryptor(String encrypted, String passwd) {
 		try {			
-			byte[] key = (passwd).getBytes("UTF-8");
+			byte[] key = (passwd).getBytes("UTF-16");
 			MessageDigest sha = MessageDigest.getInstance("SHA-1");
 			key = sha.digest(key);
 			key = Arrays.copyOf(key, 16); // use only first 128 bit
@@ -139,7 +139,7 @@ public class Credential {
 
 	private static String encryptor(String str, String passwd) {
 		try {
-			byte[] key = (passwd).getBytes("UTF-8");
+			byte[] key = (passwd).getBytes("UTF-16");
 			MessageDigest sha = MessageDigest.getInstance("SHA-1");
 			key = sha.digest(key);
 			key = Arrays.copyOf(key, 16); // use only first 128 bit
