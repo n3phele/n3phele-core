@@ -14,6 +14,7 @@
 package n3phele.service.model.core;
 
 import java.io.UnsupportedEncodingException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -88,8 +89,6 @@ public class Credential {
 
 			SecretKeySpec spec = new SecretKeySpec(key, "AES");
 			
-			
-			
 			Cipher cipher = Cipher.getInstance("AES");
 			cipher.init(Cipher.DECRYPT_MODE, spec);
 			return new String(cipher.doFinal(Base64.decode(encrypted)));
@@ -149,9 +148,8 @@ public class Credential {
 			Cipher cipher = Cipher.getInstance("AES");
 			cipher.init(Cipher.ENCRYPT_MODE, spec);
 			
-			
 			return new String(Base64.encode(cipher.doFinal(str
-				.getBytes("UTF-8"))));
+					.getBytes("UTF-8"))));
 		} catch (InvalidKeyException e) {
 			log.log(Level.SEVERE, "Encryption error", e);
 			throw new IllegalArgumentException(e);
