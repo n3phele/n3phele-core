@@ -17,8 +17,7 @@
  
   padding: 0px 10px;
   text-align: left;
-  color: #4b4a4a;
-  text-shadow: #ddf 1px 1px 0;
+  color: #000000;
 }
 
 .cellTableHeader {
@@ -27,8 +26,7 @@
   
   padding: 10px 0px;
   text-align: left;
-  color: #4b4a4a;
-  text-shadow: #ddf 1px 1px 0;
+  color: #000000;
 }
 
 .cellTableCell {

@@ -14,6 +14,7 @@
 package n3phele.service.model.core;
 
 import java.io.UnsupportedEncodingException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -59,13 +60,13 @@ public class Credential {
 	}
 
 	public Credential decrypt() {
-		String password = Resource.get("password", "");
+		String password = Resource.get("seed", "");
 		return decrypt(this, password);
 	}
 	
 	
 	public static Credential decrypt(Credential credential) {
-		String password = Resource.get("password", "");
+		String password = Resource.get("seed", "");
 		return decrypt(credential, password);
 	}
 
@@ -80,14 +81,14 @@ public class Credential {
 	}
 
 	private static String decryptor(String encrypted, String passwd) {
-		try {
+		try {			
 			byte[] key = (passwd).getBytes("UTF-8");
 			MessageDigest sha = MessageDigest.getInstance("SHA-1");
 			key = sha.digest(key);
 			key = Arrays.copyOf(key, 16); // use only first 128 bit
 
 			SecretKeySpec spec = new SecretKeySpec(key, "AES");
-
+			
 			Cipher cipher = Cipher.getInstance("AES");
 			cipher.init(Cipher.DECRYPT_MODE, spec);
 			return new String(cipher.doFinal(Base64.decode(encrypted)));
@@ -114,12 +115,12 @@ public class Credential {
 	}
 	
 	public Credential encrypt() {
-		String password = Resource.get("password", "");
+		String password = Resource.get("seed", "");
 		return encrypt(this, password);
 	}
 
 	public static Credential encrypt(Credential credential) {
-		String password = Resource.get("password", "");
+		String password = Resource.get("seed", "");
 		return encrypt(credential, password);
 	}
 
@@ -146,6 +147,7 @@ public class Credential {
 
 			Cipher cipher = Cipher.getInstance("AES");
 			cipher.init(Cipher.ENCRYPT_MODE, spec);
+			
 			return new String(Base64.encode(cipher.doFinal(str
 					.getBytes("UTF-8"))));
 		} catch (InvalidKeyException e) {

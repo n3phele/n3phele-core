@@ -60,8 +60,12 @@ import n3phele.service.model.Account;
 import n3phele.service.model.CachingAbstractManager;
 import n3phele.service.model.Cloud;
 import n3phele.service.model.ServiceModelDao;
-import n3phele.service.model.VSCollection;
+import n3phele.service.model.VirtualServerCollection;
 import n3phele.service.model.core.Collection;
+<<<<<<< HEAD
+=======
+import n3phele.service.model.core.Entity;
+>>>>>>> 245a040f36e99b68d32992bec292f76fa05f1211
 import n3phele.service.model.core.GenericModelDao;
 import n3phele.service.model.core.NameValue;
 import n3phele.service.model.core.NotFoundException;
@@ -175,7 +179,7 @@ public class VirtualServerResource {
 	@GET
 	@Produces("application/json")
 	@RolesAllowed("authenticated")
-	public VSCollection list(@DefaultValue("false") @QueryParam("summary") Boolean summary) {
+	public VirtualServerCollection list(@DefaultValue("false") @QueryParam("summary") Boolean summary) {
 
 		log.warning("User: " + UserResource.toUser(securityContext).getFirstName() + " " + UserResource.toUser(securityContext).getLastName());
 
@@ -192,14 +196,14 @@ public class VirtualServerResource {
 			}
 		}
 
-		return new VSCollection(result, 0, -1);
+		return new VirtualServerCollection(result, 0, -1);
 	}
 
 	@GET
 	@Produces("application/json")
 	@RolesAllowed("authenticated")
 	@Path("/account/{id}")
-	public VSCollection listForAccount(@PathParam("id") Long id) {
+	public VirtualServerCollection listForAccount(@PathParam("id") Long id) {
 
 		// Retrieve the collection of VirtualServer from GAE Data Store
 		Collection<VirtualServer> result = dao.virtualServer().getCollection(UserResource.toUser(securityContext));
@@ -215,7 +219,7 @@ public class VirtualServerResource {
 		// Return the collection
 		Collection<VirtualServer> ret = new Collection<VirtualServer>();
 		ret.setElements(accountVS);
-		return new VSCollection(ret, 0, -1);
+		return new VirtualServerCollection(ret, 0, -1);
 	}
 
 	@GET
@@ -301,7 +305,8 @@ public class VirtualServerResource {
 						
 						client.setConnectTimeout(20000);
 						
-						client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
+						client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().getAccount(), cloud.getFactoryCredential().getSecret()));
+						//client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
 						WebResource resource = client.resource(factory.toString());
 
 						try {

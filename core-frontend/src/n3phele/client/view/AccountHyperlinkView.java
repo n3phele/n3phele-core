@@ -116,7 +116,7 @@ public class AccountHyperlinkView extends WorkspaceVerticalPanel implements Entr
 
 		//DATAGRID
 		dataGrid = new DataGrid<VirtualServer>(15, resource);
-		dataGrid.setSize("455px", "100px");
+		dataGrid.setSize("495px", "100px");
 
 		TextColumn<VirtualServer> nameColumn = new TextColumn<VirtualServer>() {
 			@Override
