@@ -59,13 +59,13 @@ public class Credential {
 	}
 
 	public Credential decrypt() {
-		String password = Resource.get("password", "");
+		String password = Resource.get("seed", "");
 		return decrypt(this, password);
 	}
 	
 	
 	public static Credential decrypt(Credential credential) {
-		String password = Resource.get("password", "");
+		String password = Resource.get("seed", "");
 		return decrypt(credential, password);
 	}
 
@@ -114,12 +114,12 @@ public class Credential {
 	}
 	
 	public Credential encrypt() {
-		String password = Resource.get("password", "");
+		String password = Resource.get("seed", "");
 		return encrypt(this, password);
 	}
 
 	public static Credential encrypt(Credential credential) {
-		String password = Resource.get("password", "");
+		String password = Resource.get("seed", "");
 		return encrypt(credential, password);
 	}
 

@@ -20,8 +20,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import java.util.logging.Logger;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.DELETE;
@@ -42,20 +40,9 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
-import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestBuilder;
-import com.google.gwt.http.client.RequestCallback;
-import com.google.gwt.http.client.RequestException;
-import com.google.gwt.user.client.Window;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
 import com.sun.jersey.api.client.Client;
@@ -68,13 +55,11 @@ import n3phele.service.actions.tasks.ClientFactory;
 import n3phele.service.core.Resource;
 import n3phele.service.model.Account;
 import n3phele.service.model.CachingAbstractManager;
-import n3phele.service.model.ChangeManager;
 import n3phele.service.model.Cloud;
 import n3phele.service.model.ServiceModelDao;
-import n3phele.service.model.VSCollection;
+import n3phele.service.model.VirtualServerCollection;
 import n3phele.service.model.core.Collection;
 import n3phele.service.model.core.Entity;
-import n3phele.service.model.core.ExecutionFactoryCreateRequest;
 import n3phele.service.model.core.GenericModelDao;
 import n3phele.service.model.core.NameValue;
 import n3phele.service.model.core.NotFoundException;
@@ -186,7 +171,7 @@ public class VirtualServerResource {
 	@GET
 	@Produces("application/json")
 	@RolesAllowed("authenticated")
-	public VSCollection list(@DefaultValue("false") @QueryParam("summary") Boolean summary) {
+	public VirtualServerCollection list(@DefaultValue("false") @QueryParam("summary") Boolean summary) {
 
 		log.warning("User: " + UserResource.toUser(securityContext).getFirstName() + " " + UserResource.toUser(securityContext).getLastName());
 
@@ -203,14 +188,14 @@ public class VirtualServerResource {
 			}
 		}
 
-		return new VSCollection(result, 0, -1);
+		return new VirtualServerCollection(result, 0, -1);
 	}
 
 	@GET
 	@Produces("application/json")
 	@RolesAllowed("authenticated")
 	@Path("/account/{id}")
-	public VSCollection listForAccount(@PathParam("id") Long id) {
+	public VirtualServerCollection listForAccount(@PathParam("id") Long id) {
 
 		// Retrieve the collection of VirtualServer from GAE Data Store
 		Collection<VirtualServer> result = dao.virtualServer().getCollection(UserResource.toUser(securityContext));
@@ -226,7 +211,7 @@ public class VirtualServerResource {
 		// Return the collection
 		Collection<VirtualServer> ret = new Collection<VirtualServer>();
 		ret.setElements(accountVS);
-		return new VSCollection(ret, 0, -1);
+		return new VirtualServerCollection(ret, 0, -1);
 	}
 
 	@GET
@@ -258,7 +243,7 @@ public class VirtualServerResource {
 						Client client = Client.create();
 						client.setConnectTimeout(20000);
 						
-						client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
+						client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().getAccount(), cloud.getFactoryCredential().getSecret()));
 						WebResource resource = client.resource(factory.toString());
 
 						try {
