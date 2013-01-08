@@ -279,8 +279,8 @@ public class VirtualServerResource {
 				}
 			}
 		}
-
-		/*Collection<Account> accCollection = dao.account().getCollection();
+		
+	   /*Collection<Account> accCollection = dao.account().getCollection();
 
 		if (!accCollection.getElements().isEmpty()) {
 
