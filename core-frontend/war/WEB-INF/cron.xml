@@ -9,12 +9,7 @@
 	<cron>
 		<url>/resources/virtualServers/updateStatus</url>
 		<description>update the status of n3phele VirtualServer list</description>
-<<<<<<< HEAD
 		<schedule>every 1 minutes synchronized</schedule>
-		<target>version-8</target>
-=======
-		<schedule>every 10 minutes synchronized</schedule>
 		<target>version-7</target>
->>>>>>> 245a040f36e99b68d32992bec292f76fa05f1211
 	</cron>
 </cronentries>
