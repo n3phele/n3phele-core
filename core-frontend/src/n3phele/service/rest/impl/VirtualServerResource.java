@@ -20,8 +20,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import java.util.logging.Logger;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.DELETE;
@@ -40,27 +38,19 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import com.google.appengine.api.datastore.EntityNotFoundException;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
-import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestBuilder;
-import com.google.gwt.http.client.RequestCallback;
-import com.google.gwt.http.client.RequestException;
-import com.google.gwt.user.client.Window;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 
@@ -68,13 +58,10 @@ import n3phele.service.actions.tasks.ClientFactory;
 import n3phele.service.core.Resource;
 import n3phele.service.model.Account;
 import n3phele.service.model.CachingAbstractManager;
-import n3phele.service.model.ChangeManager;
 import n3phele.service.model.Cloud;
 import n3phele.service.model.ServiceModelDao;
 import n3phele.service.model.VSCollection;
 import n3phele.service.model.core.Collection;
-import n3phele.service.model.core.Entity;
-import n3phele.service.model.core.ExecutionFactoryCreateRequest;
 import n3phele.service.model.core.GenericModelDao;
 import n3phele.service.model.core.NameValue;
 import n3phele.service.model.core.NotFoundException;
@@ -84,12 +71,14 @@ import n3phele.service.model.core.VirtualServer;
 @Path("/virtualServers")
 public class VirtualServerResource {
 	private static Logger log = Logger.getLogger(VirtualServerResource.class.getName());
-
+	private static Client client;
+	private static WebResource resource;
+	
 	@Context
 	UriInfo uriInfo;
 	@Context
 	SecurityContext securityContext;
-
+	
 	private final Dao dao;
 
 	public VirtualServerResource(Dao dao) {
@@ -235,8 +224,63 @@ public class VirtualServerResource {
 	public Response updateStatus() {
 
 		log.warning("Entered n3phele updateStatus");
+		
+		Collection<VirtualServer> vsCollection = dao.virtualServer().getCollection(); 
+		
+		Cloud cloud;
+		URI factory = null;
+		if (!vsCollection.getElements().isEmpty()) {
+			
+			log.warning("Retrieved virtual server collection");
+		
+			for (VirtualServer vsDao : vsCollection.getElements()) {
+				// Get the cloud information
+				URI uriCloud = vsDao.getLocation();
+				Long id = Long.getLong(uriCloud.toString().substring(uriCloud.toString().lastIndexOf('/') + 1));
+				cloud = dao.cloud().get(id);
+				
+				// Connect with the factory
+				if(factory == null || factory != cloud.getFactory()) {
+					factory = cloud.getFactory();
+					client.setConnectTimeout(20000);
+					
+					client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
+					resource = client.resource(factory.toString());
+				}
+				
+				// Get the virtual server of EC2
+				VirtualServer vs = resource.path("/" + vsDao.getId()).get(VirtualServer.class);
+				boolean exists = false;
+				
+				// compare, and refresh, the two virtual servers
+				if (vs != null) {
 
-		Collection<Account> accCollection = dao.account().getCollection();
+					if (vsDao.getInstanceId().equals(vs.getInstanceId())) {
+						log.warning("Instance " + vs.getInstanceId() + " is " + vs.getStatus() + " name " + vs.getName());
+						exists = true;
+						if (vs.getStatus().equalsIgnoreCase("terminated") || vs.isZombie()) {
+							vsDao.setStatus("terminated");
+							vsDao.setEndDate(vs.getEndDate());
+							log.warning(vsDao.getInstanceId() + " set as terminated");
+							break;
+						} else {
+							vsDao.setStatus("running");
+							log.warning(vsDao.getInstanceId() + " set as running");
+							break;
+						}
+					}
+				}
+				
+				if (exists) {
+					dao.virtualServer().update(vsDao);
+				} else {
+					dao.virtualServer().delete(vsDao);
+					log.warning(vsDao.getInstanceId() + " deleted");
+				}
+			}
+		}
+
+		/*Collection<Account> accCollection = dao.account().getCollection();
 
 		if (!accCollection.getElements().isEmpty()) {
 
@@ -254,8 +298,7 @@ public class VirtualServerResource {
 					for (Cloud cloud : cloudCollection.getElements()) {
 
 						URI factory = cloud.getFactory();
-
-						Client client = Client.create();
+						
 						client.setConnectTimeout(20000);
 						
 						client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
@@ -286,8 +329,7 @@ public class VirtualServerResource {
 											}
 											
 											boolean exists = false;
-											String idVS = virtualServer.getUri().toString().substring(virtualServer.getUri().toString().lastIndexOf('/') + 1);
-
+										
 											for (Entity e : col.getElements()) {
 
 												String id = e.getUri().toString().substring(e.getUri().toString().lastIndexOf('/') + 1);
@@ -339,7 +381,7 @@ public class VirtualServerResource {
 					}					
 				}
 			}
-		}
+		}*/
 
 		return Response.ok().build();
 	}
