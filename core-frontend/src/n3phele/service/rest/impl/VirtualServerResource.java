@@ -1,4 +1,5 @@
 /**
+ /**
  * @author Cristina Scheibler
  * @author Tiago Ortiz
  *
@@ -38,6 +39,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import com.google.appengine.api.datastore.EntityNotFoundException;
 
 import java.lang.reflect.Type;
@@ -47,7 +52,6 @@ import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 
@@ -69,12 +73,14 @@ import n3phele.service.model.core.VirtualServer;
 @Path("/virtualServers")
 public class VirtualServerResource {
 	private static Logger log = Logger.getLogger(VirtualServerResource.class.getName());
-
+	private static Client client;
+	private static WebResource resource;
+	
 	@Context
 	UriInfo uriInfo;
 	@Context
 	SecurityContext securityContext;
-
+	
 	private final Dao dao;
 
 	public VirtualServerResource(Dao dao) {
@@ -87,27 +93,6 @@ public class VirtualServerResource {
 
 	/*
 	 * Create and add a new VirtualServer to the GAE Data Store
-	 */
-
-	/*
-	 * @POST
-	 * 
-	 * @RolesAllowed("authenticated")
-	 * 
-	 * @Produces("application/json") public Response add(ExecutionFactoryCreateRequest cr) {
-	 * 
-	 * log.warning("VirtualServer creation started");
-	 * 
-	 * VirtualServer vs = null;
-	 * 
-	 * Date dateCreated = new Date(cr.created); // Creating a new VirtualServer vs = new VirtualServer(cr.name, cr.description, cr.location, cr.parameters,
-	 * cr.notification, cr.instanceId, cr.spotId, cr.owner, dateCreated, cr.price, cr.activity, cr.id, cr.account);
-	 * 
-	 * // Adding to the GAE Data Store dao.virtualServer().add(vs);
-	 * 
-	 * log.warning("Created " + vs);
-	 * 
-	 * // Return a 201 code return Response.created(vs.getUri()).build(); }
 	 */
 
 	@POST
@@ -127,6 +112,7 @@ public class VirtualServerResource {
 		// Creating the parameters list from the json
 		ArrayList<NameValue> parameters = new Gson().fromJson(parametersList, collectionType);
 
+		@SuppressWarnings("deprecation")
 		Date dateCreated = new Date(created);
 		// Creating a new VirtualServer
 		vs = new VirtualServer(name, description, location, parameters, notification, instanceId, spotId, owner, dateCreated, price, activity, Long.valueOf(id), account);
@@ -139,31 +125,6 @@ public class VirtualServerResource {
 		// Return a 201 code
 		return Response.created(vs.getUri()).build();
 	}
-
-	/*
-	 * @POST
-	 * 
-	 * @RolesAllowed("authenticated")
-	 * 
-	 * @Produces("text/plain") public Response add(ExecutionFactoryCreateRequest cr) {
-	 * 
-	 * log.warning("VirtualServer creation started"); VirtualServer vs = null;
-	 * 
-	 * log.warning("ExecutionFactoryCreateRequest:"); log.warning(cr.name); log.warning(cr.description); log.warning(cr.location.toString());
-	 * log.warning(cr.notification.toString()); log.warning(cr.instanceId); log.warning(cr.spotId); log.warning(cr.owner.toString()); log.warning(cr.created.toString());
-	 * log.warning(cr.price); log.warning(cr.activity.toString()); log.warning(cr.account.toString());
-	 * 
-	 * Date dateCreated = new Date(cr.created);
-	 * 
-	 * // Creating a new VirtualServer vs = new VirtualServer(cr.name, cr.description, cr.location, cr.parameters, cr.notification, cr.instanceId, cr.spotId, cr.owner,
-	 * dateCreated, cr.price, cr.activity, Long.valueOf(cr.id), cr.account);
-	 * 
-	 * // Ading to the GAE Data Store dao.virtualServer().add(vs);
-	 * 
-	 * log.warning("Created " + vs);
-	 * 
-	 * // Return a 201 code return Response.created(vs.getUri()).build(); }
-	 */
 
 	/*
 	 * Return a collection of VirtualServer objects
@@ -220,112 +181,63 @@ public class VirtualServerResource {
 	public Response updateStatus() {
 
 		log.warning("Entered n3phele updateStatus");
+		
+		Collection<VirtualServer> vsCollection = dao.virtualServer().getCollection(); 
+		
+		Cloud cloud;
+		URI factory = null;
+		if (!vsCollection.getElements().isEmpty()) {
+			
+			log.warning("Retrieved virtual server collection");
+		
+			for (VirtualServer vsDao : vsCollection.getElements()) {
+				// Get the cloud information
+				URI uriCloud = vsDao.getLocation();
+				Long id = Long.getLong(uriCloud.toString().substring(uriCloud.toString().lastIndexOf('/') + 1));
+				cloud = dao.cloud().get(id);
+				
+				// Connect with the factory
+				if(factory == null || factory != cloud.getFactory()) {
+					factory = cloud.getFactory();
+					client.setConnectTimeout(20000);
+					
+					client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
+					resource = client.resource(factory.toString());
+				}
+				
+				// Get the virtual server of EC2
+				VirtualServer vs = resource.path("/" + vsDao.getId()).get(VirtualServer.class);
+				boolean exists = false;
+				
+				// compare, and refresh, the two virtual servers
+				if (vs != null) {
 
-		Collection<Account> accCollection = dao.account().getCollection();
-
-		if (!accCollection.getElements().isEmpty()) {
-
-			//log.warning("Retrieved account collection");
-
-			for (Account acc : accCollection.getElements()) {
-
-				Collection<Cloud> cloudCollection = dao.cloud().getCollection(acc.getUri());
-
-				if (!cloudCollection.getElements().isEmpty()) {
-
-				//	log.warning("Retrieved cloud collection");
-					boolean allFactoriesEmpty = true;
-
-					for (Cloud cloud : cloudCollection.getElements()) {
-
-						URI factory = cloud.getFactory();
-
-						Client client = Client.create();
-						client.setConnectTimeout(20000);
-						
-						client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().getAccount(), cloud.getFactoryCredential().getSecret()));
-						WebResource resource = client.resource(factory.toString());
-
-						try {
-
-							Collection<Entity> col = resource.get(new GenericType<Collection<Entity>>() {});
-
-							if (col != null) {
-
-								if (!col.getElements().isEmpty()) {
-									
-									allFactoriesEmpty = false;
-								//	log.warning("Retrieved entity collection");
-
-									// Virtual Servers from DAO
-									Collection<VirtualServer> vsDAO = dao.virtualServer().getCollection();
-
-									if (!vsDAO.getElements().isEmpty()) {
-
-									//	log.warning("Retrieved virtual server collection");
-
-										for (VirtualServer virtualServer : vsDAO.getElements()) {
-											
-											if (virtualServer.getStatus().equalsIgnoreCase("terminated")) {
-												break;
-											}
-											
-											boolean exists = false;
-											String idVS = virtualServer.getUri().toString().substring(virtualServer.getUri().toString().lastIndexOf('/') + 1);
-
-											for (Entity e : col.getElements()) {
-
-												String id = e.getUri().toString().substring(e.getUri().toString().lastIndexOf('/') + 1);
-
-												VirtualServer vs = resource.path("/" + id).type(MediaType.APPLICATION_JSON_TYPE).get(VirtualServer.class);
-
-												if (vs != null) {
-
-													if (virtualServer.getInstanceId().equals(vs.getInstanceId())) {
-														log.warning("Instance " + vs.getInstanceId() + " is " + vs.getStatus() + " name " + vs.getName());
-														exists = true;
-														if (vs.getStatus().equalsIgnoreCase("terminated") || vs.isZombie()) {
-															virtualServer.setStatus("terminated");
-															virtualServer.setEndDate(vs.getEndDate());
-															log.warning(virtualServer.getInstanceId() + " set as terminated");
-															break;
-														} else {
-															virtualServer.setStatus("running");
-															log.warning(virtualServer.getInstanceId() + " set as running");
-															break;
-														}
-													}
-												}
-											}
-
-											if (exists) {
-												dao.virtualServer().update(virtualServer);
-											} else {
-												dao.virtualServer().delete(virtualServer);
-												log.warning(virtualServer.getInstanceId() + " deleted");
-											}
-										}
-									}
-								}
-							}
-						} catch (Exception excNull) {
-							//log.warning("Entity collection null");
+					if (vsDao.getInstanceId().equals(vs.getInstanceId())) {
+						log.warning("Instance " + vs.getInstanceId() + " is " + vs.getStatus() + " name " + vs.getName());
+						exists = true;
+						if (vs.getStatus().equalsIgnoreCase("terminated") || vs.isZombie()) {
+							vsDao.setStatus("terminated");
+							vsDao.setEndDate(vs.getEndDate());
+							log.warning(vsDao.getInstanceId() + " set as terminated");
+							break;
+						} else {
+							vsDao.setStatus("running");
+							log.warning(vsDao.getInstanceId() + " set as running");
+							break;
 						}
 					}
-					
-					if (allFactoriesEmpty) {
-						log.warning("Empty factories, deleting all from dao.");
-						Collection<VirtualServer> vsDAO = dao.virtualServer().getCollection();
-						for (VirtualServer vs : vsDAO.getElements()) {
-							vs.setStatus("terminated");
-							vs.setEndDate(new Date());
-							dao.virtualServer().update(vs);
-						}
-					}					
+				}
+				
+				if (exists) {
+					dao.virtualServer().update(vsDao);
+				} else {
+					dao.virtualServer().delete(vsDao);
+					log.warning(vsDao.getInstanceId() + " deleted");
 				}
 			}
 		}
-
+		
+	
 		return Response.ok().build();
 	}
 
