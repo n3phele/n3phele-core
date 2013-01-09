@@ -378,7 +378,7 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 
 			// FIXME: Remove the headers. Implement this in another way.
 			client.resource(vs.getUri()).header("account", vs.getAccount()).header("delete", "true").type(MediaType.APPLICATION_JSON).delete(ClientResponse.class);
-			
+			//See the uri with headers
 			log.warning("URI with headers: " + client.resource(vs.getUri()).header("account", vs.getAccount()).header("delete", "true").type(MediaType.APPLICATION_JSON).delete(ClientResponse.class));
 			
 		} catch (Exception e) {
