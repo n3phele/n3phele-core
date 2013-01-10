@@ -87,22 +87,10 @@
 		<appcfg action="update" war="war" />
 	</target>
 
-  <target name="tests">    
+  <target name="tests" depends="datanucleusenhance">
     <waitfor maxwait="2" maxwaitunit="minute" checkevery="500">
        <http url="http://15.185.173.105:8888"/>
     </waitfor>
-
-    <junit fork="no" haltonfailure="yes">
-      <test name="n3pheleTests.HPCloudCreation" />
-      <formatter type="plain" usefile="false" />
-      <classpath refid="test.classpath" />
-    </junit>
-    
-    <junit fork="no" haltonfailure="yes">
-      <test name="n3pheleTests.N3pheleEC2CloudCreation" />
-      <formatter type="plain" usefile="false" />
-      <classpath refid="test.classpath" />
-    </junit>
     
     <junit fork="no" haltonfailure="yes">
       <test name="n3pheleTests.VirtualServerTest" />
