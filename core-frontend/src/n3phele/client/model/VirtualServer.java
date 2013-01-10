@@ -45,7 +45,7 @@ public class VirtualServer extends Entity {
 		return this.price;
 	}-*/;
 
-	public static final native VSCollection<VirtualServer> asCollection(
+	public static final native VirtualServerCollection<VirtualServer> asCollection(
 			String assumedSafe) /*-{
 		return eval("(" + assumedSafe + ")");
 		// return JSON.parse(assumedSafe);

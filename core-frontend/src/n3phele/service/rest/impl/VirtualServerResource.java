@@ -182,15 +182,15 @@ public class VirtualServerResource {
 
 		log.warning("Entered n3phele updateStatus");
 		
-		Collection<VirtualServer> vsCollection = dao.virtualServer().getCollection(); 
+		Collection<VirtualServer> virtualServerCollection = dao.virtualServer().getCollection(); 
 		
 		Cloud cloud;
 		URI factory = null;
-		if (!vsCollection.getElements().isEmpty()) {
+		if (!virtualServerCollection.getElements().isEmpty()) {
 			
 			log.warning("Retrieved virtual server collection");
 		
-			for (VirtualServer vsDao : vsCollection.getElements()) {
+			for (VirtualServer vsDao : virtualServerCollection.getElements()) {
 				// Get the cloud information
 				URI uriCloud = vsDao.getLocation();
 				Long id = Long.getLong(uriCloud.toString().substring(uriCloud.toString().lastIndexOf('/') + 1));
