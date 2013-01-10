@@ -338,11 +338,13 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 
 			Client client = ClientFactory.create();
 			// FIXME: Account credentials does not work. 403 forbidden.
+			//Fixed
 			// ClientFilter serviceAuth = new HTTPBasicAuthFilter(cloudCredential.getAccount(), cloudCredential.getSecret());
-			client.addFilter(new HTTPBasicAuthFilter(Resource.get("serviceUser", ""), Resource.get("serviceSecret", "")));
+			//client.addFilter(new HTTPBasicAuthFilter(Resource.get("serviceUser", ""), Resource.get("serviceSecret", "")));
+			client.addFilter(new HTTPBasicAuthFilter(cloudCredential.getAccount(), cloudCredential.getSecret())); 
 			client.setReadTimeout(20000);
 			client.setConnectTimeout(20000);
-
+			
 			StringBuilder serviceURL = new StringBuilder();
 			serviceURL.append(Resource.get("baseURI", "http://localhost:8888/resources"));
 			serviceURL.append("/virtualServers/instanceId/");
@@ -376,7 +378,9 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 
 			// FIXME: Remove the headers. Implement this in another way.
 			client.resource(vs.getUri()).header("account", vs.getAccount()).header("delete", "true").type(MediaType.APPLICATION_JSON).delete(ClientResponse.class);
-
+			//See the uri with headers
+			log.warning("URI with headers: " + client.resource(vs.getUri()).header("account", vs.getAccount()).header("delete", "true").type(MediaType.APPLICATION_JSON).delete(ClientResponse.class));
+			
 		} catch (Exception e) {
 
 			log.warning("Exception on getVsByInstanceId: " + e.getMessage());

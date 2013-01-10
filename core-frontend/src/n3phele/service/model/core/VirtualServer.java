@@ -526,4 +526,12 @@ public class VirtualServer extends Entity {
 		return result;
 	}
 
+	public String getCloudURI(){
+		return cloudURI;
+	}
+	
+	public void setCloudURI(String cloudURI){
+		this.cloudURI = cloudURI;
+	}
+	
 }

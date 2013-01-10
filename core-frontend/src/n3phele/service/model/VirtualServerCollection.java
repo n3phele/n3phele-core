@@ -30,7 +30,7 @@ import n3phele.service.model.core.Entity;
 import n3phele.service.model.core.VirtualServer;
 
 
-@XmlRootElement(name="VSCollection")
+@XmlRootElement(name="VirtualServerCollection")
 @XmlType(name="Collection")
 public class VirtualServerCollection extends Entity {
 	
