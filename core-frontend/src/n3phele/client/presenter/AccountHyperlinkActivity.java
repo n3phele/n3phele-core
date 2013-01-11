@@ -16,7 +16,7 @@ import n3phele.client.ClientFactory;
 import n3phele.client.model.Account;
 import n3phele.client.model.Activity;
 import n3phele.client.model.Collection;
-import n3phele.client.model.VSCollection;
+import n3phele.client.model.VirtualServerCollection;
 
 import n3phele.client.model.VirtualServer;
 import n3phele.client.presenter.helpers.AuthenticatedRequestFactory;
@@ -43,10 +43,10 @@ public class AccountHyperlinkActivity extends AbstractActivity {
 	private AccountHyperlinkView display;
 	private Account account = null;
 	private List<VirtualServer> vsList;
-	private VSCollection<VirtualServer> vsCol;
+	private VirtualServerCollection<VirtualServer> vsCol;
 	private final AppPlaceHistoryMapper historyMapper;
 	private String accountCollection;
-	private String vsCollection;
+	private String virtualServerCollection;
 	private final CacheManager cacheManager;
 	private EventBus eventBus;
 	private HandlerRegistration handlerRegistration;
@@ -62,8 +62,8 @@ public class AccountHyperlinkActivity extends AbstractActivity {
 		this.eventBus = factory.getEventBus();
 		this.accountCollection = URL.encode(factory.getCacheManager().ServiceAddress + "account");
 		String id = accountUri.substring(accountUri.lastIndexOf("/")+1);
-		this.vsCollection = URL.encode(factory.getCacheManager().ServiceAddress + "virtualServers/account/");
-		this.vsCollection += id;
+		this.virtualServerCollection = URL.encode(factory.getCacheManager().ServiceAddress + "virtualServers/account/");
+		this.virtualServerCollection += id;
 	}
 
 	@Override
@@ -91,7 +91,7 @@ public class AccountHyperlinkActivity extends AbstractActivity {
 		unregister();
 	}
 
-	protected void updateVSList(VSCollection<VirtualServer> list) {
+	protected void updateVSList(VirtualServerCollection<VirtualServer> list) {
 		vsCol = list;
 		this.vsList = new ArrayList<VirtualServer>(list.getElements());
 		for (VirtualServer vs : list.getElements()) {
@@ -193,7 +193,7 @@ public class AccountHyperlinkActivity extends AbstractActivity {
 
 	public void getVSList(){
 		// Send request to server and catch any errors.
-		RequestBuilder builder = AuthenticatedRequestFactory.newRequest(RequestBuilder.GET, vsCollection);
+		RequestBuilder builder = AuthenticatedRequestFactory.newRequest(RequestBuilder.GET, virtualServerCollection);
 		try {
 			Request request = builder.sendRequest(null, new RequestCallback() {
 				public void onError(Request request, Throwable exception) {
@@ -203,7 +203,7 @@ public class AccountHyperlinkActivity extends AbstractActivity {
 				public void onResponseReceived(Request request, Response response) {
 					GWT.log("Got reply");
 					if (200 == response.getStatusCode()) {
-						VSCollection<VirtualServer> vs = VirtualServer.asCollection(response.getText());
+						VirtualServerCollection<VirtualServer> vs = VirtualServer.asCollection(response.getText());
 						updateVSList(vs);
 					} else {
 

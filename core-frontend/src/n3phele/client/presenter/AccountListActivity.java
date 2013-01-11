@@ -22,7 +22,7 @@ import n3phele.client.CacheManager;
 import n3phele.client.ClientFactory;
 import n3phele.client.model.Account;
 import n3phele.client.model.Collection;
-import n3phele.client.model.VSCollection;
+import n3phele.client.model.VirtualServerCollection;
 import n3phele.client.model.VirtualServer;
 import n3phele.client.presenter.helpers.AuthenticatedRequestFactory;
 import n3phele.client.view.AccountListView;
@@ -53,9 +53,9 @@ public class AccountListActivity extends AbstractActivity {
 	private List<Account> accountList = null;
 	private final CacheManager cacheManager;
 	private String accountCollection;
-	private final String vsCollection;
+	private final String virtualServerCollection;
 	private HandlerRegistration handlerRegistration;
-	private VSCollection<VirtualServer> vsCol = null;
+	private VirtualServerCollection<VirtualServer> vsCol = null;
 	private HashMap<Account, Double> costPerAccount = null;
 	private HashMap<Account, Integer> vsPerAccount = null;
 	private int runningHours = 0;
@@ -67,7 +67,7 @@ public class AccountListActivity extends AbstractActivity {
 		this.display = factory.getAccountListView();
 		this.cacheManager = factory.getCacheManager();
 		this.accountCollection = URL.encode(factory.getCacheManager().ServiceAddress + "account");
-		this.vsCollection = URL.encode(factory.getCacheManager().ServiceAddress + "virtualServers/account/");
+		this.virtualServerCollection = URL.encode(factory.getCacheManager().ServiceAddress + "virtualServers/account/");
 		this.placeController = factory.getPlaceController();
 	}
 
@@ -279,7 +279,7 @@ public class AccountListActivity extends AbstractActivity {
 	 */
 
 	public void getVSList(final Account account){
-		String uri = vsCollection + account.getUri().substring(account.getUri().lastIndexOf("/")+1);
+		String uri = virtualServerCollection + account.getUri().substring(account.getUri().lastIndexOf("/")+1);
 		// Send request to server and catch any errors.
 		RequestBuilder builder = AuthenticatedRequestFactory.newRequest(RequestBuilder.GET, uri);
 		try {
@@ -292,9 +292,9 @@ public class AccountListActivity extends AbstractActivity {
 					GWT.log("Got reply");
 					int cont = 0;
 					if (200 == response.getStatusCode()) {
-						VSCollection<VirtualServer> vsCollection = VirtualServer.asCollection(response.getText());
-						updateCostPerAccount(account, vsCollection.dayCost());
-						for(VirtualServer vs : vsCollection.getElements()){
+						VirtualServerCollection<VirtualServer> virtualServerCollection = VirtualServer.asCollection(response.getText());
+						updateCostPerAccount(account, virtualServerCollection.dayCost());
+						for(VirtualServer vs : virtualServerCollection.getElements()){
 							//updateTimePerAccount(account, vs);
 							if(vs.getStatus().equalsIgnoreCase("running")) cont++;
 						}

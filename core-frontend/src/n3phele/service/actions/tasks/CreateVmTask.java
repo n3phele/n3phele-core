@@ -340,8 +340,8 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 			// FIXME: Account credentials does not work. 403 forbidden.
 			//Fixed
 			// ClientFilter serviceAuth = new HTTPBasicAuthFilter(cloudCredential.getAccount(), cloudCredential.getSecret());
-			//client.addFilter(new HTTPBasicAuthFilter(Resource.get("serviceUser", ""), Resource.get("serviceSecret", "")));
-			client.addFilter(new HTTPBasicAuthFilter(cloudCredential.getAccount(), cloudCredential.getSecret())); 
+			client.addFilter(new HTTPBasicAuthFilter(Resource.get("serviceUser", ""), Resource.get("serviceSecret", "")));
+			//client.addFilter(new HTTPBasicAuthFilter(cloudCredential.getAccount(), cloudCredential.getSecret())); 
 			client.setReadTimeout(20000);
 			client.setConnectTimeout(20000);
 			
@@ -377,7 +377,7 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 			client.setConnectTimeout(20000);
 
 			// FIXME: Remove the headers. Implement this in another way. Try QueryParams including them in url call as DELETE /virtualServer/1?delete=true
-			client.resource(vs.getUri()).header("account", vs.getAccount()).header("delete", "true").type(MediaType.APPLICATION_JSON).delete(ClientResponse.class);
+			client.resource(vs.getUri()).header("account", vs.getAccount()).header("delete", "true").type(MediaType.APPLICATION_JSON).delete(ClientResponse.class); 
 			
 		} catch (Exception e) {
 
@@ -401,7 +401,7 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 		// FIXME: Account credentials does not work. 403 forbidden.
 		// ClientFilter serviceAuth = new HTTPBasicAuthFilter(cloudCredential.getAccount(), cloudCredential.getSecret());
 		client.addFilter(new HTTPBasicAuthFilter(Resource.get("serviceUser", ""), Resource.get("serviceSecret", "")));
-		// client.addFilter(new HTTPBasicAuthFilter(cloudCredential.getAccount(), cloudCredential.getSecret()));
+		 //client.addFilter(new HTTPBasicAuthFilter(cloudCredential.getAccount(), cloudCredential.getSecret()));
 		client.setReadTimeout(20000);
 		client.setConnectTimeout(20000);
 
