@@ -86,7 +86,7 @@ public class VirtualServer extends Entity {
 		this.endDate = null;
 		this.activity = activity.toString();
 		this.account = account.toString();
-		this.cloudURI = clouduri.toString();
+		this.cloudURI = (clouduri == null) ? null : clouduri.toString();
 	}
 
 	/**

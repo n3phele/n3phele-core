@@ -130,10 +130,10 @@ public class VirtualServerTest extends JerseyTest {
 		
 		//Delete Virtual Server
 		clientResponse = removeVirtualServer("999999");
-		Assert.assertEquals(200, clientResponse.getStatus());		
+		Assert.assertTrue( (200 == clientResponse.getStatus() ) || (204 == clientResponse.getStatus() ) );		
 
 		list = listVirtualServers();
-		count = list.getElements().size();
+		count = (list.getElements() == null) ? 0 : list.getElements().size();
 		
 		//check if total servers number is equal as in the beginning
 		Assert.assertTrue( initialCount == count );
