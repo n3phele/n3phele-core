@@ -3,6 +3,6 @@ filesCopiedToWebInfLib=appengine-api-labs.jar|appengine-endpoints.jar|appengine-
 gaeDatanucleusEnabled=true
 gaeDeployDialogSettings=true
 gaeHrdEnabled=true
-gaeIsEclipseDefaultInstPath=false
+gaeIsEclipseDefaultInstPath=true
 googleCloudSqlEnabled=false
 localDevMySqlEnabled=true
