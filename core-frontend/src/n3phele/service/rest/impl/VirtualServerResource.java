@@ -112,11 +112,12 @@ public class VirtualServerResource {
 		// Creating the parameters list from the json
 		ArrayList<NameValue> parameters = new Gson().fromJson(parametersList, collectionType);
 
-		@SuppressWarnings("deprecation")
+
 		Date dateCreated = new Date(created);
 		// Creating a new VirtualServer
 		vs = new VirtualServer(name, description, location, parameters, notification, instanceId, spotId, owner, dateCreated, price, activity, Long.valueOf(id), account, clouduri);
-
+		if (vs==null)
+			log.severe("Can't create Virtual server! ");
 		// Ading to the GAE Data Store
 		dao.virtualServer().add(vs);
 
@@ -205,7 +206,7 @@ public class VirtualServerResource {
 						
 						client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
 						resource = client.resource(factory.toString());
-					}
+					
 					
 					// Get the virtual server of EC2
 					VirtualServer vs = resource.path("/" + vsDao.getId()).get(VirtualServer.class);
@@ -241,7 +242,7 @@ public class VirtualServerResource {
 			}
 		}
 		
-	
+		}
 		return Response.ok().build();
 	}
 
