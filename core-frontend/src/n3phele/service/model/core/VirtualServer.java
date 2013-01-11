@@ -31,7 +31,7 @@ import com.googlecode.objectify.annotation.Unindexed;
 @XmlRootElement(name = "VirtualServer")
 @XmlType(name = "VirtualServer", propOrder = { "created", "description", "location", "parameters", "status", "notification",
 		"instanceId", "spotId", "outputParameters", "siblings", "idempotencyKey", "zombie", "price", "endDate", "isAlive",
-		"activity", "account" })
+		"activity", "account", "cloudURI" })
 @Unindexed
 @Cached
 public class VirtualServer extends Entity {
@@ -59,6 +59,7 @@ public class VirtualServer extends Entity {
 	private Date endDate;
 	private String activity;
 	private String account;
+	private String cloudURI;
 
 	public VirtualServer() {
 	}
@@ -67,7 +68,7 @@ public class VirtualServer extends Entity {
 	 * Constructor used in the n3phele when the Servers are already created.
 	 */
 	public VirtualServer(String name, String description, URI location, ArrayList<NameValue> parametersList, URI notification,
-			String instanceId, String spotId, URI owner, Date created, String price, URI activity, Long id, URI account) {
+			String instanceId, String spotId, URI owner, Date created, String price, URI activity, Long id, URI account, String clouduri) {
 
 		super(name, null, "factory/vnd.com.n3phele.VirtualServer+json", owner, false);
 		this.id = id;
@@ -85,6 +86,7 @@ public class VirtualServer extends Entity {
 		this.endDate = null;
 		this.activity = activity.toString();
 		this.account = account.toString();
+		this.cloudURI = clouduri.toString();
 	}
 
 	/**
@@ -516,7 +518,7 @@ public class VirtualServer extends Entity {
 		VirtualServer result = null;
 		try {
 			result = new VirtualServer(vs.name, vs.description, new URI(vs.location), vs.parametersList, new URI(vs.notification),
-					vs.instanceId, vs.spotId, new URI(vs.owner), vs.created, vs.price, new URI(vs.activity), vs.id, new URI(vs.account));
+					vs.instanceId, vs.spotId, new URI(vs.owner), vs.created, vs.price, new URI(vs.activity), vs.id, new URI(vs.account), vs.cloudURI);
 			result.setAccessKey("");
 			result.setEncryptedKey("");
 		} catch (URISyntaxException e) {
@@ -530,8 +532,8 @@ public class VirtualServer extends Entity {
 		return cloudURI;
 	}
 	
-	public void setCloudURI(String cloudURI){
-		this.cloudURI = cloudURI;
+	public void setCloudURI(String cloudUR){
+		this.cloudURI = cloudUR;
 	}
 	
 }

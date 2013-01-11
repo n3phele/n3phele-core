@@ -101,7 +101,7 @@ public class VirtualServerResource {
 	public Response add(@FormParam("id") String id, @FormParam("name") String name, @FormParam("description") String description, @FormParam("location") URI location,
 			@FormParam("parametersList") String parametersList, @FormParam("notification") URI notification, @FormParam("instanceId") String instanceId,
 			@FormParam("spotId") String spotId, @FormParam("owner") URI owner, @FormParam("created") String created, @FormParam("price") String price,
-			@FormParam("activity") URI activity, @FormParam("account") URI account) {
+			@FormParam("activity") URI activity, @FormParam("account") URI account, @FormParam("clouduri") String clouduri) {
 
 		log.warning("VirtualServer creation started");
 
@@ -115,7 +115,7 @@ public class VirtualServerResource {
 		@SuppressWarnings("deprecation")
 		Date dateCreated = new Date(created);
 		// Creating a new VirtualServer
-		vs = new VirtualServer(name, description, location, parameters, notification, instanceId, spotId, owner, dateCreated, price, activity, Long.valueOf(id), account);
+		vs = new VirtualServer(name, description, location, parameters, notification, instanceId, spotId, owner, dateCreated, price, activity, Long.valueOf(id), account, clouduri);
 
 		// Ading to the GAE Data Store
 		dao.virtualServer().add(vs);
@@ -175,6 +175,7 @@ public class VirtualServerResource {
 		return new VirtualServerCollection(ret, 0, -1);
 	}
 
+	@SuppressWarnings("null")
 	@GET
 	// @RolesAllowed("authenticated")
 	@Path("/updateStatus")
@@ -192,47 +193,50 @@ public class VirtualServerResource {
 		
 			for (VirtualServer vsDao : virtualServerCollection.getElements()) {
 				// Get the cloud information
-				URI uriCloud = vsDao.getLocation();
-				Long id = Long.getLong(uriCloud.toString().substring(uriCloud.toString().lastIndexOf('/') + 1));
-				cloud = dao.cloud().get(id);
-				
-				// Connect with the factory
-				if(factory == null || factory != cloud.getFactory()) {
-					factory = cloud.getFactory();
-					client.setConnectTimeout(20000);
+				log.warning("Retrieved virtual server elements");
+				if(vsDao!=null && vsDao.getCloudURI()!=null){
+					URI uriCloud = URI.create(vsDao.getCloudURI());
+					cloud = dao.cloud().get(uriCloud);
 					
-					client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
-					resource = client.resource(factory.toString());
-				}
-				
-				// Get the virtual server of EC2
-				VirtualServer vs = resource.path("/" + vsDao.getId()).get(VirtualServer.class);
-				boolean exists = false;
-				
-				// compare, and refresh, the two virtual servers
-				if (vs != null) {
-
-					if (vsDao.getInstanceId().equals(vs.getInstanceId())) {
-						log.warning("Instance " + vs.getInstanceId() + " is " + vs.getStatus() + " name " + vs.getName());
-						exists = true;
-						if (vs.getStatus().equalsIgnoreCase("terminated") || vs.isZombie()) {
-							vsDao.setStatus("terminated");
-							vsDao.setEndDate(vs.getEndDate());
-							log.warning(vsDao.getInstanceId() + " set as terminated");
-							break;
-						} else {
-							vsDao.setStatus("running");
-							log.warning(vsDao.getInstanceId() + " set as running");
-							break;
+					// Connect with the factory
+					if(factory == null || factory != cloud.getFactory()) {
+						factory = cloud.getFactory();
+						client.setConnectTimeout(20000);
+						
+						client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
+						resource = client.resource(factory.toString());
+					}
+					
+					// Get the virtual server of EC2
+					VirtualServer vs = resource.path("/" + vsDao.getId()).get(VirtualServer.class);
+					boolean exists = false;
+					
+					// compare, and refresh, the two virtual servers
+					if (vs != null) {
+	
+						if (vsDao.getInstanceId().equals(vs.getInstanceId())) {
+							log.warning("Instance " + vs.getInstanceId() + " is " + vs.getStatus() + " name " + vs.getName());
+							exists = true;
+							if (vs.getStatus().equalsIgnoreCase("terminated") || vs.isZombie()) {
+								vsDao.setStatus("terminated");
+								vsDao.setEndDate(vs.getEndDate());
+								log.warning(vsDao.getInstanceId() + " set as terminated");
+								break;
+							} else {
+								vsDao.setStatus("running");
+								log.warning(vsDao.getInstanceId() + " set as running");
+								break;
+							}
 						}
 					}
-				}
-				
-				if (exists) {
-					dao.virtualServer().update(vsDao);
-				} else {
-					dao.virtualServer().delete(vsDao);
-					log.warning(vsDao.getInstanceId() + " deleted");
+					
+					if (exists) {
+						dao.virtualServer().update(vsDao);
+					} 
+					else {
+						dao.virtualServer().delete(vsDao);
+						log.warning(vsDao.getInstanceId() + " deleted");
+					}
 				}
 			}
 		}

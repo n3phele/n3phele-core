@@ -55,5 +55,10 @@ public class VirtualServer extends Entity {
 		return eval("(" + assumedSafe + ")");
 		// return JSON.parse(assumedSafe);
 	}-*/;
+	
+	public static final native String CloudURI() /*-{
+	return this.clouduri;
+}-*/;
+	
 
 }
