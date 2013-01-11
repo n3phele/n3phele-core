@@ -101,7 +101,7 @@ public class VirtualServerTest extends JerseyTest {
 		form.add("price", vmPrice);
 		form.add("activity", vmActivity);
 		form.add("account", vmAccount);
-
+		
 		// Executing the request
 		ClientResponse clientResponse = resource().path("/virtualServers").post(ClientResponse.class, form);
 		return clientResponse;
@@ -115,22 +115,22 @@ public class VirtualServerTest extends JerseyTest {
 		
 		//Get the list of initial Servers
 		VirtualServerCollection list = listVirtualServers();
-		int initialCount = list.getElements().size();
+		int initialCount = (list.getElements() == null) ? 0 : list.getElements().size();
 		
 		//Create Virtual Server
 		ClientResponse clientResponse = addVirtualServer("999999");
+		
 		Assert.assertEquals(201, clientResponse.getStatus());		
 		
 		list = listVirtualServers();
 		int count = list.getElements().size();
 		
 		//check if list has grow by one
-		Assert.assertTrue( initialCount == (count + 1) );
+		Assert.assertTrue( (initialCount + 1) == count );
 		
 		//Delete Virtual Server
-		clientResponse = removeVirtualServer("9999999");
-		Assert.assertEquals(200, clientResponse.getStatus());
-		
+		clientResponse = removeVirtualServer("999999");
+		Assert.assertEquals(200, clientResponse.getStatus());		
 
 		list = listVirtualServers();
 		count = list.getElements().size();
@@ -271,7 +271,7 @@ public class VirtualServerTest extends JerseyTest {
 		String accId = vs.getAccount().substring(vs.getAccount().lastIndexOf('/') + 1, vs.getAccount().length());
 
 		// Execute the request
-		ClientResponse clientResponse = resource().path(sbPath.toString()).header("account", accId).delete(ClientResponse.class);
+		ClientResponse clientResponse = resource().path(sbPath.toString()).header("account", accId).header("delete", "true").delete(ClientResponse.class);
 
 		return clientResponse;
 	}
