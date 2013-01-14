@@ -85,6 +85,7 @@ public class VirtualServerTest extends JerseyTest {
 		Random rdm = new Random();
 		int vmId = Integer.valueOf(id);
 		String vmAccount = "http://n3phele-dev.appspot.com/resources/account/30022";
+		String clouduri = "http://cloud.com";
 
 		// Creating the form to call the add method in the VirtualServerResource
 		Form form = new Form();
@@ -101,6 +102,7 @@ public class VirtualServerTest extends JerseyTest {
 		form.add("price", vmPrice);
 		form.add("activity", vmActivity);
 		form.add("account", vmAccount);
+		form.add("clouduri", clouduri);
 		
 		// Executing the request
 		ClientResponse clientResponse = resource().path("/virtualServers").post(ClientResponse.class, form);
@@ -108,7 +110,7 @@ public class VirtualServerTest extends JerseyTest {
 	}
 
 	/*
-	 * Test the process of adding a new VirtualServer object to GAE Data Store.
+	 * Test the process of adding a new VirtualServer object to GAE Data Store through API calls.
 	 */
 	@Test
 	public void testVirtualServerCreationListAndDeletion() throws RequestException {
