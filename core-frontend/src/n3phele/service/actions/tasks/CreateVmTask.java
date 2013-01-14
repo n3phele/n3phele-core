@@ -21,6 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.Embedded;
 import javax.persistence.Id;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -39,6 +40,7 @@ import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import n3phele.service.core.Resource;
 import n3phele.service.model.Account;
 import n3phele.service.model.ActionState;
+import n3phele.service.model.Activity;
 import n3phele.service.model.Cloud;
 import n3phele.service.model.InstancePrice;
 import n3phele.service.model.InstanceSize;
@@ -66,6 +68,7 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 	private Long id;
 	private String accountName;
 	private String accountURI; // Added parameter
+	private String owner; //Added parameter
 	private String cloud;
 	@Embedded
 	private Credential cloudCredential;
@@ -358,6 +361,7 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 
 		} catch (Exception e) {
 			log.warning("Exception on getVsByInstanceId: " + e.getMessage());
+			log.warning(e.getMessage());
 		}
 
 		return vs;
@@ -388,25 +392,22 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 
 	@SuppressWarnings("deprecation")
 	public void createVirtualServer(VirtualServer vs, Cloud myCloud) {
-
-		log.warning("Entered on createVirtualServer");
-
+		
 		String vmPrice = getVmPrice(myCloud);
 
 		StringBuilder serviceURL = new StringBuilder();
 		serviceURL.append(Resource.get("baseURI", "http://localhost:8888/resources"));
 		serviceURL.append("/virtualServers");
 
-		Client client = ClientFactory.create();
-		// FIXME: Account credentials does not work. 403 forbidden.
-		// ClientFilter serviceAuth = new HTTPBasicAuthFilter(cloudCredential.getAccount(), cloudCredential.getSecret());
+		Client client = ClientFactory.create();		
+				
 		client.addFilter(new HTTPBasicAuthFilter(Resource.get("serviceUser", ""), Resource.get("serviceSecret", "")));
-		 //client.addFilter(new HTTPBasicAuthFilter(cloudCredential.getAccount(), cloudCredential.getSecret()));
 		client.setReadTimeout(20000);
 		client.setConnectTimeout(20000);
-
-		Account account = client.resource(accountURI).type(MediaType.APPLICATION_JSON_TYPE).get(Account.class);
-
+		
+		log.warning("Account URI: "+accountURI);
+		
+		Activity activity = client.resource(vs.getOwner()).type(MediaType.APPLICATION_JSON_TYPE).get(Activity.class);
 		/*
 		 * ExecutionFactoryCreateRequest requestData = new ExecutionFactoryCreateRequest(); requestData.accessKey = ""; requestData.encryptedSecret = "";
 		 * requestData.idempotencyKey = vs.getIdempotencyKey(); requestData.created = vs.getCreated().toString(); requestData.activity = new URI(this.parent);
@@ -462,7 +463,8 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 				args.append("");
 			}
 			args.append("&owner=");
-			args.append(URLEncoder.encode(account.getOwner().toString(), "UTF-8"));
+			args.append(URLEncoder.encode(this.owner, "UTF-8"));
+			//args.append(URLEncoder.encode(account.getOwner().toString(), "UTF-8"));
 			args.append("&created=");
 			args.append(URLEncoder.encode(vs.getCreated().toString()));
 			args.append("&price=");
@@ -471,8 +473,14 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 			args.append(URLEncoder.encode(this.getParent().toString(), "UTF-8"));
 			args.append("&account=");
 			args.append(URLEncoder.encode(this.accountURI.toString(), "UTF-8"));
+			args.append("&clouduri=");
+			args.append(URLEncoder.encode(myCloud.getLocation().toString(), "UTF-8"));
 
-			client.resource(serviceURL.toString()).type(MediaType.APPLICATION_FORM_URLENCODED).post(ClientResponse.class, args.toString());
+			log.warning("Sendind request");
+			
+			ClientResponse response = client.resource(serviceURL.toString()).type(MediaType.APPLICATION_FORM_URLENCODED).post(ClientResponse.class, args.toString());
+			
+			log.warning("Client Reponse status: "+response.getStatus());
 
 		} catch (Exception e) {
 			log.warning("Error adding the VirtualServer " + e.getMessage());
@@ -480,8 +488,6 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 	}
 
 	public String getVmPrice(Cloud cloud) {
-
-		log.warning("Entered getVmPrice");
 
 		// FIXME: Verify if the cloud is HP or Amazon to catch the prices and VM types
 		String vmPrice = "";
@@ -576,6 +582,10 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 
 	public void setAccountURI(URI accountURI) {
 		this.accountURI = accountURI.toString();
+	}
+	
+	public void setOwner(URI owner) {
+		this.owner = owner.toString();
 	}
 
 	@Override
@@ -875,6 +885,10 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 	 */
 	public void setPublicIP(String[] publicIP) {
 		this.publicIP = publicIP;
+	}
+	
+	public String getOwner(){
+		return this.owner;
 	}
 
 	private String arrayToString(String[] a) {
