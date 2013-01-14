@@ -392,32 +392,22 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 
 	@SuppressWarnings("deprecation")
 	public void createVirtualServer(VirtualServer vs, Cloud myCloud) {
-
-		log.warning("Entered on createVirtualServer");
-
+		
 		String vmPrice = getVmPrice(myCloud);
 
 		StringBuilder serviceURL = new StringBuilder();
 		serviceURL.append(Resource.get("baseURI", "http://localhost:8888/resources"));
 		serviceURL.append("/virtualServers");
 
-		Client client = ClientFactory.create();
-		// FIXME: Account credentials does not work. 403 forbidden.
-		// ClientFilter serviceAuth = new HTTPBasicAuthFilter(cloudCredential.getAccount(), cloudCredential.getSecret());
+		Client client = ClientFactory.create();		
+				
 		client.addFilter(new HTTPBasicAuthFilter(Resource.get("serviceUser", ""), Resource.get("serviceSecret", "")));
-		 //client.addFilter(new HTTPBasicAuthFilter(cloudCredential.getAccount(), cloudCredential.getSecret()));
 		client.setReadTimeout(20000);
 		client.setConnectTimeout(20000);
 		
 		log.warning("Account URI: "+accountURI);
 		
-		//ClientResponse response = client.resource(accountURI).type(MediaType.APPLICATION_JSON).get(ClientResponse.class);
-		//Account account = response.getEntity(Account.class);
 		
-		//Account account = client.resource(accountURI).type(MediaType.APPLICATION_JSON).get(Account.class);
-		
-		//log.info("Account Retrived");
-		//log.info("Account Name: "+account.getName());
 		/*
 		 * ExecutionFactoryCreateRequest requestData = new ExecutionFactoryCreateRequest(); requestData.accessKey = ""; requestData.encryptedSecret = "";
 		 * requestData.idempotencyKey = vs.getIdempotencyKey(); requestData.created = vs.getCreated().toString(); requestData.activity = new URI(this.parent);
@@ -498,8 +488,6 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 	}
 
 	public String getVmPrice(Cloud cloud) {
-
-		log.warning("Entered getVmPrice");
 
 		// FIXME: Verify if the cloud is HP or Amazon to catch the prices and VM types
 		String vmPrice = "";
