@@ -156,7 +156,7 @@ public class AccountResource {
 	@Path("{id}")
 	@RolesAllowed("authenticated")
 	public Account get(@PathParam("id") Long id) throws NotFoundException {
-
+		
 		Account item = dao.account().load(id,
 				UserResource.toUser(securityContext));
 		return item;

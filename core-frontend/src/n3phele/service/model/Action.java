@@ -233,6 +233,7 @@ public class Action extends Entity  {
 			// Added to put this information inside the creating of VirtualServers
 			task.setAccountURI(account.getUri());
 			task.setProgress(progress);
+			task.setOwner(activity.getOwner());
 		} else if(actionURI.equals(ActionURI.executeCommand) || actionURI.equals(ActionURI.executecommand)) {
 			ArrayList<TypedParameter>inParams = new ArrayList<TypedParameter>();
 			inParams.addAll(TypedParameter.cloneOf(ExecuteCommandTask.defaultInputParameter));

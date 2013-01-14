@@ -40,6 +40,7 @@ import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import n3phele.service.core.Resource;
 import n3phele.service.model.Account;
 import n3phele.service.model.ActionState;
+import n3phele.service.model.Activity;
 import n3phele.service.model.Cloud;
 import n3phele.service.model.InstancePrice;
 import n3phele.service.model.InstanceSize;
@@ -67,6 +68,7 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 	private Long id;
 	private String accountName;
 	private String accountURI; // Added parameter
+	private String owner; //Added parameter
 	private String cloud;
 	@Embedded
 	private Credential cloudCredential;
@@ -407,7 +409,7 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 		
 		log.warning("Account URI: "+accountURI);
 		
-		
+		Activity activity = client.resource(vs.getOwner()).type(MediaType.APPLICATION_JSON_TYPE).get(Activity.class);
 		/*
 		 * ExecutionFactoryCreateRequest requestData = new ExecutionFactoryCreateRequest(); requestData.accessKey = ""; requestData.encryptedSecret = "";
 		 * requestData.idempotencyKey = vs.getIdempotencyKey(); requestData.created = vs.getCreated().toString(); requestData.activity = new URI(this.parent);
@@ -463,7 +465,7 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 				args.append("");
 			}
 			args.append("&owner=");
-			args.append(URLEncoder.encode(vs.getOwner().toString(), "UTF-8"));
+			args.append(URLEncoder.encode(this.owner, "UTF-8"));
 			//args.append(URLEncoder.encode(account.getOwner().toString(), "UTF-8"));
 			args.append("&created=");
 			args.append(URLEncoder.encode(vs.getCreated().toString()));
@@ -582,6 +584,10 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 
 	public void setAccountURI(URI accountURI) {
 		this.accountURI = accountURI.toString();
+	}
+	
+	public void setOwner(URI owner) {
+		this.owner = owner.toString();
 	}
 
 	@Override
@@ -881,6 +887,10 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 	 */
 	public void setPublicIP(String[] publicIP) {
 		this.publicIP = publicIP;
+	}
+	
+	public String getOwner(){
+		return this.owner;
 	}
 
 	private String arrayToString(String[] a) {
