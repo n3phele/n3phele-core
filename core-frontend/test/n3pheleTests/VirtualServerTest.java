@@ -1,16 +1,17 @@
 package n3pheleTests;
 
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.rmi.dgc.VMID;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Locale;
 import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
+
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import n3phele.service.core.Resource;
 import n3phele.service.model.Account;
@@ -20,7 +21,6 @@ import n3phele.service.model.core.NameValue;
 import n3phele.service.model.core.VirtualServer;
 import n3phele.service.rest.impl.N3pheleResource;
 
-import com.google.appengine.labs.repackaged.com.google.common.io.Resources;
 import com.google.gson.Gson;
 import com.google.gwt.http.client.RequestException;
 import com.sun.jersey.api.client.ClientResponse;
@@ -49,12 +49,96 @@ public class VirtualServerTest extends JerseyTest {
 		userName = Resource.get("testRootUsername", "");
 		userPwd = Resource.get("testRootPassword", "");
 	}
-
+	
 
 	@Override
 	protected TestContainerFactory getTestContainerFactory() {
 		return new SimpleTestContainerFactory(Resource.get("baseURI", "http://localhost:8888"));
 	}
+
+	/*
+	 * Test the process of adding a new VirtualServer object to GAE Data Store through API calls.
+	 */
+	@Test
+	public void testVirtualServerCreationListAndDeletion() throws RequestException {		
+		
+		//add credentials to request
+		this.client().addFilter(new HTTPBasicAuthFilter(userName, userPwd));
+
+		String id = "999999";
+		
+		//Get the list of initial Servers
+		VirtualServerCollection list = listVirtualServers();
+		int initialCount = (list.getElements() == null) ? 0 : list.getElements().size();
+		
+		//Create Virtual Server
+		ClientResponse clientResponse = addVirtualServer(id);
+		
+		Assert.assertEquals(201, clientResponse.getStatus());		
+		
+		list = listVirtualServers();
+		int count = list.getElements().size();
+		
+		//check if list has grow by one
+		Assert.assertTrue( (initialCount + 1) == count );
+		
+		//Delete Virtual Server
+		clientResponse = removeVirtualServer(id);
+		Assert.assertTrue( (200 == clientResponse.getStatus() ) || (204 == clientResponse.getStatus() ) );		
+
+		list = listVirtualServers();
+		count = (list.getElements() == null) ? 0 : list.getElements().size();
+		
+		//check if total servers number is equal as in the beginning
+		Assert.assertTrue( initialCount == count );
+	}
+	
+	@Test
+	public void testGetVirtualServer() throws RequestException {
+		
+		//add credentials to request
+		this.client().addFilter(new HTTPBasicAuthFilter(userName, userPwd));
+		
+		String id = "999999";
+		
+		//Create Virtual Server
+		ClientResponse clientResponse = addVirtualServer(id);		
+		Assert.assertEquals(201, clientResponse.getStatus());
+		
+		//Get Virtual Server
+		VirtualServer vs = getVirtualServer(id);
+		Assert.assertNotNull(vs);
+		Assert.assertEquals( (long)vs.getId(), Long.parseLong(id));
+		
+		//Delete Virtual Server
+		clientResponse = removeVirtualServer(id);
+		Assert.assertTrue( (200 == clientResponse.getStatus() ) || (204 == clientResponse.getStatus() ) );		
+	}
+	
+	@Test
+	public void testGetVirtualServerByInstanceId() throws RequestException {		
+
+		//add credentials to request
+		this.client().addFilter(new HTTPBasicAuthFilter(userName, userPwd));
+		
+		String id = "999999";
+		
+		//Create Virtual Server
+		ClientResponse clientResponse = addVirtualServer(id);
+		
+		Assert.assertEquals(201, clientResponse.getStatus());
+		
+		//Get Virtual Server By instanceId.
+		//Use the same id as the virtual server for this, because the add method created both as the same
+		VirtualServer vs = getVirtualServer(id);
+		Assert.assertNotNull(vs);
+		Assert.assertEquals( (long)vs.getId(), Long.parseLong(id));
+		
+		//Delete Virtual Server
+		clientResponse = removeVirtualServer(id);
+		Assert.assertTrue( (200 == clientResponse.getStatus() ) || (204 == clientResponse.getStatus() ) );		
+	}
+	
 
 	/**
 	 * Create a Virtual Server through the REST API call using the value of vmId, isntanceId, and spotId as the id passed by parameter.
@@ -109,153 +193,45 @@ public class VirtualServerTest extends JerseyTest {
 		return clientResponse;
 	}
 
-	/*
-	 * Test the process of adding a new VirtualServer object to GAE Data Store through API calls.
-	 */
-	@Test
-	public void testVirtualServerCreationListAndDeletion() throws RequestException {
-		
-		//Get the list of initial Servers
-		VirtualServerCollection list = listVirtualServers();
-		int initialCount = (list.getElements() == null) ? 0 : list.getElements().size();
-		
-		//Create Virtual Server
-		ClientResponse clientResponse = addVirtualServer("999999");
-		
-		Assert.assertEquals(201, clientResponse.getStatus());		
-		
-		list = listVirtualServers();
-		int count = list.getElements().size();
-		
-		//check if list has grow by one
-		Assert.assertTrue( (initialCount + 1) == count );
-		
-		//Delete Virtual Server
-		clientResponse = removeVirtualServer("999999");
-		Assert.assertTrue( (200 == clientResponse.getStatus() ) || (204 == clientResponse.getStatus() ) );		
-
-		list = listVirtualServers();
-		count = (list.getElements() == null) ? 0 : list.getElements().size();
-		
-		//check if total servers number is equal as in the beginning
-		Assert.assertTrue( initialCount == count );
-	}
 
 	public VirtualServerCollection listVirtualServers() {
-
-		this.client().addFilter(new HTTPBasicAuthFilter(userName, userPwd));
 
 		// Executing the request
 		VirtualServerCollection list = resource().path("/virtualServers").get(VirtualServerCollection.class);
 
 		return list;
 	}
-
-	//@Test
-	public void testListVSForAccount() {
-
-		this.client().addFilter(new HTTPBasicAuthFilter(userName, userPwd));
-
-		// Executing the request
-		VirtualServerCollection list = resource().path("/virtualServers/account/" + 5).get(VirtualServerCollection.class);
-
-		// List is null ?
-		Assert.assertNotNull(list.getElements());
-	}
-
-	/*
-	 * Tests the process of retrieving a VirtualServer
-	 */
-	//@Test
-	public void testGetVS() {
-
-		this.client().addFilter(new HTTPBasicAuthFilter(userName, userPwd));
-
-		// Retrieves a list of VirtualServer objects
-		VirtualServerCollection list = resource().path("/virtualServers").get(VirtualServerCollection.class);
-
-		if (list.getElements().isEmpty()) {
-			// The list of VirtualServer objects is empty
-			log.info("testGetVS - The list of VirtualServer is empty");
-			Assert.assertTrue(false);
-		} else {
-
-			// Get the VirtualServer ID
-			int pos = 0;
-			for (VirtualServer s : list.getElements()) {
-				if (s.getIsAlive()) {
-					break;
-				}
-				pos++;
-			}
-			String vsURI = list.getElements().get(pos).getUri().toString();
-			String vsId = vsURI.substring(vsURI.toString().lastIndexOf('/') + 1, vsURI.length());
-
-			// Build the request URL
-			StringBuilder sbPath = new StringBuilder();
-			sbPath.append("/virtualServers/");
-			sbPath.append(vsId);
-
-			// Execute the request
-			VirtualServer vs = resource().path(sbPath.toString()).get(VirtualServer.class);
-
-			Assert.assertNotNull(vs);
-			
-			URI path = resource().getURI();
-			}
-	}
-
-	/*
-	 * Test the process of retrieving a VirtualServer by the instanceId
-	 */
-	//@Test
-	public void testGetVSByInstanceId() {
-
-		this.client().addFilter(new HTTPBasicAuthFilter(userName, userPwd));
-
-		Account acc = resource().path("/account/5").get(Account.class);
 	
-		Credential cred = acc.getCredential();
+	public VirtualServer getVirtualServer(String id) {		
+		VirtualServer vs = null;
 		
-		this.client().removeAllFilters();
-		this.client().addFilter(new HTTPBasicAuthFilter(cred.getAccount(), cred.getSecret()));
-		
-		// Retrieves a list of VirtualServer objects
-		VirtualServerCollection list = resource().path("/virtualServers").get(VirtualServerCollection.class);
-		String vsInstanceId = "";
-		
-		if (list.getElements().isEmpty()) {
-			
-			// The list of VirtualServer objects is empty
-			log.info("testGetVS - The list of VirtualServer is empty");
-			Assert.assertTrue(false);
-			
-		} else {
+		// Build the request URL
+		StringBuilder sbPath = new StringBuilder();
+		sbPath.append("/virtualServers/");
+		sbPath.append(id);
 
-			// Get the VirtualServer ID
-			int pos = 0;
-			for (VirtualServer s : list.getElements()) {
-				if (s.getIsAlive()) {
-					vsInstanceId += s.getInstanceId();
-					break;
-				}
-				pos++;
-			}
-
-			// Build the request URL
-			StringBuilder sbPath = new StringBuilder();
-			sbPath.append("/virtualServers/");
-			sbPath.append("instanceId/");
-			sbPath.append(vsInstanceId);
-
-			// Execute the request
-			VirtualServer vs = resource().path(sbPath.toString()).get(VirtualServer.class);
-			Assert.assertNotNull(vs);
-		}
-
+		// Execute the request
+		vs = resource().path(sbPath.toString()).get(VirtualServer.class);
+				
+		return vs;
 	}
 	
-	
+	public VirtualServer getVirtualServerByInstanceId(String id) {
+		VirtualServer vs = null;
+		
+		StringBuilder sbPath = new StringBuilder();
+		sbPath.append("/virtualServers/");
+		sbPath.append("instanceId/");
+		sbPath.append(id);
+
+		// Execute the request
+		vs = resource().path(sbPath.toString()).get(VirtualServer.class);
+		
+		return vs;
+	}
+
+
+		
 	/**
 	 * Removes a Virtual Server through the REST API call using the id passed by parameter.
 	 * 
