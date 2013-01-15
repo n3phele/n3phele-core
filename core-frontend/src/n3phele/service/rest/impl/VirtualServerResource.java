@@ -112,7 +112,6 @@ public class VirtualServerResource {
 		// Creating the parameters list from the json
 		ArrayList<NameValue> parameters = new Gson().fromJson(parametersList, collectionType);
 
-
 		Date dateCreated = new Date(created);
 		// Creating a new VirtualServer
 		vs = new VirtualServer(name, description, location, parameters, notification, instanceId, spotId, owner, dateCreated, price, activity, Long.valueOf(id), account, clouduri);
@@ -292,18 +291,12 @@ public class VirtualServerResource {
 	@RolesAllowed("authenticated")
 	public Response deleteVS(@PathParam("id") Long id, @Context HttpHeaders httpHeaders) throws NotFoundException {
 
-		String account = httpHeaders.getRequestHeader("account").get(0);
-		account = account.substring(account.lastIndexOf('/') + 1, account.length());
-
 		boolean delete = false;
 		if (httpHeaders.getRequestHeader("delete") != null) {
 			delete = true;
 		}
 
 		log.info("Delete Virtual Server " + id);
-
-		// Load the account that owns this VirtualServer
-		Account acc = dao.account().load(Long.valueOf(account), UserResource.toUser(securityContext));
 
 		// Load the specific VirtualServer object
 		final VirtualServer vs = dao.virtualServer().load(id, UserResource.toUser(securityContext));
@@ -317,6 +310,12 @@ public class VirtualServerResource {
 				return Response.noContent().build();
 
 			} else {
+
+				String account = httpHeaders.getRequestHeader("account").get(0);
+				account = account.substring(account.lastIndexOf('/') + 1, account.length());
+
+				// Load the account that owns this VirtualServer
+				Account acc = dao.account().load(Long.valueOf(account), UserResource.toUser(securityContext));
 
 				Cloud cloud = dao.cloud().load(acc.getCloud(), UserResource.toUser(securityContext));
 

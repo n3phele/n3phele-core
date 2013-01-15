@@ -380,10 +380,8 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 			client.setReadTimeout(20000);
 			client.setConnectTimeout(20000);
 
-			// FIXME: Remove the headers. Implement this in another way.
+			// FIXME: Remove the headers. Implement this in another way. Try QueryParams including them in url call as DELETE /virtualServer/1?delete=true
 			client.resource(vs.getUri()).header("account", vs.getAccount()).header("delete", "true").type(MediaType.APPLICATION_JSON).delete(ClientResponse.class); 
-			//See the uri with headers
-			log.warning("URI with headers: " + client.resource(vs.getUri()).header("account", vs.getAccount()).header("delete", "true").type(MediaType.APPLICATION_JSON).delete(ClientResponse.class));
 			
 		} catch (Exception e) {
 

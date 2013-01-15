@@ -36,18 +36,18 @@
 	<classpathentry kind="lib" path="war/WEB-INF/lib/geronimo-jpa_3.0_spec-1.1.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/gwt-visualization.jar"/>
-	<classpathentry kind="lib" path="C:/Users/LIS/Downloads/eclipse-SDK-4.2-win32-x86_64/eclipse/plugins/appengine/gwt-2.4.0/gwt-2.4.0/gwt-user.jar">
+	<classpathentry kind="con" path="com.google.appengine.eclipse.core.GAE_CONTAINER"/>
+	<classpathentry kind="lib" path="C:/gwt-2.4.0/gwt-user.jar">
 		<attributes>
-			<attribute name="javadoc_location" value="file:/C:/Users/LIS/Downloads/eclipse-SDK-4.2-win32-x86_64/eclipse/plugins/appengine/gwt-2.4.0/gwt-2.4.0/doc/javadoc/"/>
+			<attribute name="javadoc_location" value="file:/C:/gwt-2.4.0/doc/javadoc/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/LIS/Downloads/eclipse-SDK-4.2-win32-x86_64/eclipse/plugins/appengine/gwt-2.4.0/gwt-2.4.0/gwt-dev.jar">
+	<classpathentry kind="lib" path="C:/gwt-2.4.0/gwt-dev.jar">
 		<attributes>
-			<attribute name="javadoc_location" value="file:/C:/Users/LIS/Downloads/eclipse-SDK-4.2-win32-x86_64/eclipse/plugins/appengine/gwt-2.4.0/gwt-2.4.0/doc/javadoc/"/>
+			<attribute name="javadoc_location" value="file:/C:/gwt-2.4.0/doc/javadoc/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/LIS/Downloads/eclipse-SDK-4.2-win32-x86_64/eclipse/plugins/appengine/gwt-2.4.0/gwt-2.4.0/validation-api-1.0.0.GA-sources.jar"/>
-	<classpathentry kind="lib" path="C:/Users/LIS/Downloads/eclipse-SDK-4.2-win32-x86_64/eclipse/plugins/appengine/gwt-2.4.0/gwt-2.4.0/validation-api-1.0.0.GA.jar" sourcepath="C:/Users/LIS/Downloads/eclipse-SDK-4.2-win32-x86_64/eclipse/plugins/appengine/gwt-2.4.0/gwt-2.4.0/validation-api-1.0.0.GA-sources.jar"/>
-	<classpathentry kind="con" path="com.google.appengine.eclipse.core.GAE_CONTAINER/appengine-java-sdk-1.7.1"/>
+	<classpathentry kind="lib" path="C:/gwt-2.4.0/validation-api-1.0.0.GA-sources.jar"/>
+	<classpathentry kind="lib" path="C:/gwt-2.4.0/validation-api-1.0.0.GA.jar" sourcepath="C:/gwt-2.4.0/validation-api-1.0.0.GA-sources.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
