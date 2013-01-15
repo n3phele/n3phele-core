@@ -52,6 +52,7 @@ import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 
@@ -85,10 +86,12 @@ public class VirtualServerResource {
 
 	public VirtualServerResource(Dao dao) {
 		this.dao = dao;
+		this.client = null;
 	}
 
 	public VirtualServerResource() {
 		this(new Dao());
+		this.client = null;
 	}
 
 	/*
@@ -186,55 +189,71 @@ public class VirtualServerResource {
 		Collection<VirtualServer> virtualServerCollection = dao.virtualServer().getCollection(); 
 		
 		Cloud cloud;
-		URI factory = null;
+		//URI factory = null;
+		
+		
 		if (!virtualServerCollection.getElements().isEmpty()) {
 			
 			log.warning("Retrieved virtual server collection");
 			
 			for (VirtualServer vsDao : virtualServerCollection.getElements()) {
+								
 				// Get the cloud information
-				log.warning("Retrieved virtual server elements");
-				log.warning("Cloud uri == " +vsDao.getCloudURI()+" works");
+				log.warning("Cloud URI:" +vsDao.getCloudURI());
+				
 				if(vsDao!=null && vsDao.getCloudURI()!=null){
 
 					URI uriCloud = URI.create(vsDao.getCloudURI());
 					cloud = dao.cloud().get(uriCloud);
 					
-					// Connect with the factory
+					URI factory = cloud.getFactory();
+					
+					/*// Connect with the factory
 					if(factory == null || factory != cloud.getFactory()) {
 						log.warning("Conection with factory works!");
-						factory = cloud.getFactory();
-						Client client = ClientFactory.create();
-						client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
-						client.setConnectTimeout(20000);
+						factory = cloud.getFactory();*/
+						
+						if(client == null){
+							client = ClientFactory.create();
+							client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
+							client.setConnectTimeout(20000);
+						}			
 						
 						
-						resource = client.resource(factory.toString());
-						log.warning("Passou do cliente");
-					
-					// Get the virtual server of EC2
-					VirtualServer vs = resource.path("/" + vsDao.getId()).get(VirtualServer.class);
-					boolean exists = false;
-					
-					// compare, and refresh, the two virtual servers
-					if (vs != null) {
-	
-						if (vsDao.getInstanceId().equals(vs.getInstanceId())) {
-							log.warning("Instance " + vs.getInstanceId() + " is " + vs.getStatus() + " name " + vs.getName());
-							exists = true;
-							if (vs.getStatus().equalsIgnoreCase("terminated") || vs.isZombie()) {
-								vsDao.setStatus("terminated");
-								vsDao.setEndDate(vs.getEndDate());
-								log.warning(vsDao.getInstanceId() + " set as terminated");
-								break;
-							} else {
-								vsDao.setStatus("running");
-								log.warning(vsDao.getInstanceId() + " set as running");
-								break;
+						resource = client.resource(factory.toString());			
+																	
+						// Get the virtual server of EC2
+						
+						Collection<Entity> col = resource.get(new GenericType<Collection<Entity>>() {});
+						boolean exists = false;
+						if (col != null){
+							if(!col.getElements().isEmpty()) {
+							
+							for (Entity e : col.getElements()) {
+
+								String id = e.getUri().toString().substring(e.getUri().toString().lastIndexOf('/') + 1);
+								VirtualServer vs = resource.path("/" + id).type(MediaType.APPLICATION_JSON_TYPE).get(VirtualServer.class);
+								
+								// compare, and refresh, the two virtual servers
+								if (vs != null) {
+			
+									if (vsDao.getInstanceId().equals(vs.getInstanceId())) {
+										log.warning("Instance " + vs.getInstanceId() + " is " + vs.getStatus() + " name " + vs.getName());
+										exists = true;
+										if (vs.getStatus().equalsIgnoreCase("terminated") || vs.isZombie()) {
+											vsDao.setStatus("terminated");
+											vsDao.setEndDate(vs.getEndDate());
+											log.warning(vsDao.getInstanceId() + " set as terminated");
+										break;
+									} else {
+										vsDao.setStatus("running");
+										log.warning(vsDao.getInstanceId() + " set as running");
+										break;
+										}
+									}
+								}
 							}
-						}
-					}
-					
+					}					
 					if (exists) {
 						dao.virtualServer().update(vsDao);
 					} 
@@ -245,6 +264,7 @@ public class VirtualServerResource {
 				}
 			}
 		}
+		
 		
 		}
 		return Response.ok().build();
