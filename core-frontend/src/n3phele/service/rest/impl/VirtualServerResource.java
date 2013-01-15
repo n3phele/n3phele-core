@@ -190,22 +190,27 @@ public class VirtualServerResource {
 		if (!virtualServerCollection.getElements().isEmpty()) {
 			
 			log.warning("Retrieved virtual server collection");
-		
+			
 			for (VirtualServer vsDao : virtualServerCollection.getElements()) {
 				// Get the cloud information
 				log.warning("Retrieved virtual server elements");
+				log.warning("Cloud uri == " +vsDao.getCloudURI()+" works");
 				if(vsDao!=null && vsDao.getCloudURI()!=null){
+
 					URI uriCloud = URI.create(vsDao.getCloudURI());
 					cloud = dao.cloud().get(uriCloud);
 					
 					// Connect with the factory
 					if(factory == null || factory != cloud.getFactory()) {
+						log.warning("Conection with factory works!");
 						factory = cloud.getFactory();
+						Client client = ClientFactory.create();
+						client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
 						client.setConnectTimeout(20000);
 						
-						client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
+						
 						resource = client.resource(factory.toString());
-					
+						log.warning("Passou do cliente");
 					
 					// Get the virtual server of EC2
 					VirtualServer vs = resource.path("/" + vsDao.getId()).get(VirtualServer.class);
