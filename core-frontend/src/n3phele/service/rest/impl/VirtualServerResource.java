@@ -211,7 +211,8 @@ public class VirtualServerResource {
 						try{
 					// Get the virtual server of EC2
 					vs = resource.path("/" + vsDao.getId()).type(MediaType.APPLICATION_JSON_TYPE).get(VirtualServer.class);
-						} catch (UniformInterfaceException e){
+							log.warning("URI === "+resource.path("/" + vsDao.getId()).type(MediaType.APPLICATION_JSON_TYPE));
+						} catch (Exception e){
 							log.info("Not found in EC2" + e);
 						}
 					boolean exists = false;
@@ -324,11 +325,11 @@ public class VirtualServerResource {
 				Cloud cloud = dao.cloud().load(acc.getCloud(), UserResource.toUser(securityContext));
 
 				final String factoryURI = cloud.getFactory().toString() + "/" + id.toString();
-				cliente.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
-				cliente.setReadTimeout(30000);
-				cliente.setConnectTimeout(20000);
+				client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
+				client.setReadTimeout(30000);
+				client.setConnectTimeout(20000);
 
-				ClientResponse response = cliente.resource(factoryURI).type(MediaType.APPLICATION_FORM_URLENCODED).delete(ClientResponse.class);
+				ClientResponse response = client.resource(factoryURI).type(MediaType.APPLICATION_FORM_URLENCODED).delete(ClientResponse.class);
 
 				log.info("Delete response status: " + response.getStatus());
 
