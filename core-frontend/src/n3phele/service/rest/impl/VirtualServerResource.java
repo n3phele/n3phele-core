@@ -52,6 +52,7 @@ import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 
@@ -73,7 +74,7 @@ import n3phele.service.model.core.VirtualServer;
 @Path("/virtualServers")
 public class VirtualServerResource {
 	private static Logger log = Logger.getLogger(VirtualServerResource.class.getName());
-	private static Client client;
+	private static Client client=null;
 	private static WebResource resource;
 	
 	@Context
@@ -85,10 +86,14 @@ public class VirtualServerResource {
 
 	public VirtualServerResource(Dao dao) {
 		this.dao = dao;
+		if (client==null)
+			client = Client.create();
 	}
 
 	public VirtualServerResource() {
 		this(new Dao());
+		if (client==null)
+			client = Client.create();
 	}
 
 	/*
@@ -175,7 +180,6 @@ public class VirtualServerResource {
 		return new VirtualServerCollection(ret, 0, -1);
 	}
 
-	@SuppressWarnings("null")
 	@GET
 	// @RolesAllowed("authenticated")
 	@Path("/updateStatus")
@@ -193,32 +197,28 @@ public class VirtualServerResource {
 			
 			for (VirtualServer vsDao : virtualServerCollection.getElements()) {
 				// Get the cloud information
-				log.warning("Retrieved virtual server elements");
-				log.warning("Cloud uri == " +vsDao.getCloudURI()+" works");
 				if(vsDao!=null && vsDao.getCloudURI()!=null){
 
 					URI uriCloud = URI.create(vsDao.getCloudURI());
 					cloud = dao.cloud().get(uriCloud);
-					
 					// Connect with the factory
 					if(factory == null || factory != cloud.getFactory()) {
-						log.warning("Conection with factory works!");
 						factory = cloud.getFactory();
-						Client client = ClientFactory.create();
 						client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
 						client.setConnectTimeout(20000);
-						
-						
 						resource = client.resource(factory.toString());
-						log.warning("Passou do cliente");
-					
+						VirtualServer vs = null;
+						try{
 					// Get the virtual server of EC2
-					VirtualServer vs = resource.path("/" + vsDao.getId()).get(VirtualServer.class);
+					vs = resource.path("/" + vsDao.getId()).type(MediaType.APPLICATION_JSON_TYPE).get(VirtualServer.class);
+							log.warning("URI === "+resource.path("/" + vsDao.getId()).type(MediaType.APPLICATION_JSON_TYPE));
+						} catch (Exception e){
+							log.info("Not found in EC2" + e);
+						}
 					boolean exists = false;
-					
+
 					// compare, and refresh, the two virtual servers
 					if (vs != null) {
-	
 						if (vsDao.getInstanceId().equals(vs.getInstanceId())) {
 							log.warning("Instance " + vs.getInstanceId() + " is " + vs.getStatus() + " name " + vs.getName());
 							exists = true;
@@ -325,13 +325,11 @@ public class VirtualServerResource {
 				Cloud cloud = dao.cloud().load(acc.getCloud(), UserResource.toUser(securityContext));
 
 				final String factoryURI = cloud.getFactory().toString() + "/" + id.toString();
+				client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
+				client.setReadTimeout(30000);
+				client.setConnectTimeout(20000);
 
-				Client cliente = ClientFactory.create();
-				cliente.addFilter(new HTTPBasicAuthFilter("fred", "3hyebbehg56yeh5"));
-				cliente.setReadTimeout(30000);
-				cliente.setConnectTimeout(20000);
-
-				ClientResponse response = cliente.resource(factoryURI).type(MediaType.APPLICATION_FORM_URLENCODED).delete(ClientResponse.class);
+				ClientResponse response = client.resource(factoryURI).type(MediaType.APPLICATION_FORM_URLENCODED).delete(ClientResponse.class);
 
 				log.info("Delete response status: " + response.getStatus());
 
