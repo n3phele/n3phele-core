@@ -72,12 +72,10 @@ public abstract class AbstractManager<Item extends Entity> {
 	public Item get(URI uri) throws NotFoundException {
 		try {
 			String s = uri.toString();
-			log.warning("Searching for cloud with "+uri+" URI");
 			if(!s.startsWith(myPath().toString())) {
 				log.severe("Wrong key "+s+" passed to DAO "+myPath());
 				throw new NotFoundException("Wrong key "+s+" passed to DAO "+myPath());
 			}
-			log.warning("Not enter on first if");
 			long id = Long.valueOf(s.substring(s.lastIndexOf("/")+1));
 			Item item = itemDao.get(id);
 			if(item != null)
