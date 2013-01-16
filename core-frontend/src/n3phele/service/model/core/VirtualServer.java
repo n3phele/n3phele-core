@@ -31,7 +31,7 @@ import com.googlecode.objectify.annotation.Unindexed;
 @XmlRootElement(name = "VirtualServer")
 @XmlType(name = "VirtualServer", propOrder = { "created", "description", "location", "parameters", "status", "notification",
 		"instanceId", "spotId", "outputParameters", "siblings", "idempotencyKey", "zombie", "price", "endDate", "isAlive",
-		"activity", "account", "cloudURI" })
+		"activity", "account", "cloudURI", "id" })
 @Unindexed
 @Cached
 public class VirtualServer extends Entity {
@@ -176,7 +176,7 @@ public class VirtualServer extends Entity {
 	/**
 	 * @return the id
 	 */
-	@XmlTransient
+	//@XmlTransient
 	public Long getId() {
 		return id;
 	}

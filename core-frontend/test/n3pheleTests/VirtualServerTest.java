@@ -77,7 +77,7 @@ public class VirtualServerTest extends JerseyTest {
 		Assert.assertEquals(201, clientResponse.getStatus());		
 		
 		list = listVirtualServers();
-		int count = list.getElements().size();
+		int count = (list.getElements() == null) ? 0 : list.getElements().size();
 		
 		//check if list has grow by one
 		Assert.assertTrue( (initialCount + 1) == count );
@@ -93,7 +93,7 @@ public class VirtualServerTest extends JerseyTest {
 		Assert.assertTrue( initialCount == count );
 	}
 	
-	//@Test
+	@Test
 	public void testGetVirtualServer() throws RequestException {
 		
 		//add credentials to request
@@ -115,7 +115,7 @@ public class VirtualServerTest extends JerseyTest {
 		Assert.assertTrue( (200 == clientResponse.getStatus() ) || (204 == clientResponse.getStatus() ) );		
 	}
 	
-	//@Test
+	@Test
 	public void testGetVirtualServerByInstanceId() throws RequestException {		
 
 		//add credentials to request
