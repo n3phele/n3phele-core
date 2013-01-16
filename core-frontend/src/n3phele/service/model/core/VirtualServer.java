@@ -176,7 +176,7 @@ public class VirtualServer extends Entity {
 	/**
 	 * @return the id
 	 */
-	//@XmlTransient
+	@XmlTransient
 	public Long getId() {
 		return id;
 	}
