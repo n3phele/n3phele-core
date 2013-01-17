@@ -302,7 +302,7 @@ public class VirtualServerResource {
 		
 		return Response.ok().build();
 	}
-
+	
 	/*
 	 * Return a specific VirtualServer according to it's ID
 	 */
