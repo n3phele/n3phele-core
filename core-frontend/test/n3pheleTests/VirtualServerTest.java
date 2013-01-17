@@ -254,7 +254,7 @@ public class VirtualServerTest extends JerseyTest {
 		return clientResponse;
 	}
 	
-	@Test
+	//@Test
 	public void updateVS(){
 		//this.client().addFilter(new HTTPBasicAuthFilter(userName, userPwd));
 		this.client().addFilter(new HTTPBasicAuthFilter("root","n3phelepoadev"));
