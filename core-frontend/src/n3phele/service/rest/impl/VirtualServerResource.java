@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.DELETE;
@@ -52,6 +53,7 @@ import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
@@ -70,6 +72,7 @@ import n3phele.service.model.core.NameValue;
 import n3phele.service.model.core.NotFoundException;
 import n3phele.service.model.core.User;
 import n3phele.service.model.core.VirtualServer;
+import java.util.HashMap;
 
 @Path("/virtualServers")
 public class VirtualServerResource {
@@ -179,6 +182,24 @@ public class VirtualServerResource {
 		ret.setElements(accountVS);
 		return new VirtualServerCollection(ret, 0, -1);
 	}
+	
+	private Map<String,VirtualServer> populateTable(Collection<Entity> col){
+		
+		log.warning("Populating table of virtual machines");
+	
+		Map<String,VirtualServer> vmTable = new HashMap<String,VirtualServer>();
+		
+		for (Entity e : col.getElements()) {
+			
+			String id = e.getUri().toString().substring(e.getUri().toString().lastIndexOf('/') + 1);
+
+			VirtualServer vs = resource.path("/" + id).type(MediaType.APPLICATION_JSON_TYPE).get(VirtualServer.class);
+		
+			vmTable.put(vs.getInstanceId(), vs);
+		}
+		
+		return vmTable;
+	}
 
 	@GET
 	// @RolesAllowed("authenticated")
@@ -189,42 +210,66 @@ public class VirtualServerResource {
 		
 		Collection<VirtualServer> virtualServerCollection = dao.virtualServer().getCollection(); 
 		
-		Cloud cloud;
+		Cloud cloud = null;
 		URI factory = null;
+		URI uriCloud = null;
+		Map<String,VirtualServer> vmTable = null;
+		
 		if (!virtualServerCollection.getElements().isEmpty()) {
 			
 			log.warning("Retrieved virtual server collection");
 			
-			for (VirtualServer vsDao : virtualServerCollection.getElements()) {
+			for (VirtualServer vsDao : virtualServerCollection.getElements()) {				
+			
 				// Get the cloud information
-				if(vsDao!=null && vsDao.getCloudURI()!=null){
+				if(vsDao!=null){
+					if(vsDao.getCloudURI()!=null){
+									
+						//vmTable is empty or it's a different cloud
+						if(uriCloud == null || !(uriCloud.toString().equalsIgnoreCase(vsDao.getCloudURI()))){
+							uriCloud = URI.create(vsDao.getCloudURI());
+							cloud = dao.cloud().get(uriCloud);
+							factory = cloud.getFactory();
+							
+							client.setConnectTimeout(20000);
+							client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
+							resource = client.resource(factory.toString());
+							
+							try {
+								//Retrieve VM list from the cloud
+								Collection<Entity> col = resource.get(new GenericType<Collection<Entity>>() {});
+								
+								if (col != null) {
+									
+									if (!col.getElements().isEmpty()) {
+										
+										vmTable = populateTable(col);
+										
+									}
+									else{
+										vmTable = null;
+									}
+								}
+								else{
+									vmTable = null;	
+								}
+							}catch(Exception e){
+								
+							}
+						}					
 
-					URI uriCloud = URI.create(vsDao.getCloudURI());
-					cloud = dao.cloud().get(uriCloud);
-					// Connect with the factory
-					if(factory == null || factory != cloud.getFactory()) {
-						factory = cloud.getFactory();
-						client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
-						client.setConnectTimeout(20000);
-						resource = client.resource(factory.toString());
-						VirtualServer vs = null;
-						try{
-					// Get the virtual server of EC2
-					vs = resource.path("/" + vsDao.getId()).type(MediaType.APPLICATION_JSON_TYPE).get(VirtualServer.class);
-							log.warning("URI === "+resource.path("/" + vsDao.getId()).type(MediaType.APPLICATION_JSON_TYPE));
-						} catch (Exception e){
-							log.info("Not found in EC2" + e);
-						}
 					boolean exists = false;
-
-					// compare, and refresh, the two virtual servers
-					if (vs != null) {
-						if (vsDao.getInstanceId().equals(vs.getInstanceId())) {
-							log.warning("Instance " + vs.getInstanceId() + " is " + vs.getStatus() + " name " + vs.getName());
+					
+					if(vmTable != null){
+						
+						if(vmTable.containsKey(vsDao.getInstanceId())){
 							exists = true;
-							if (vs.getStatus().equalsIgnoreCase("terminated") || vs.isZombie()) {
+							
+							VirtualServer vsCloud = vmTable.get(vsDao.getInstanceId());
+							
+							if (vsCloud.getStatus().equalsIgnoreCase("terminated") || vsCloud.isZombie()) {
 								vsDao.setStatus("terminated");
-								vsDao.setEndDate(vs.getEndDate());
+								vsDao.setEndDate(vsCloud.getEndDate());
 								log.warning(vsDao.getInstanceId() + " set as terminated");
 								break;
 							} else {
@@ -234,7 +279,6 @@ public class VirtualServerResource {
 							}
 						}
 					}
-					
 					if (exists) {
 						dao.virtualServer().update(vsDao);
 					} 
@@ -245,9 +289,9 @@ public class VirtualServerResource {
 				}
 			}
 		}
+	}
 		
 		
-		}
 		return Response.ok().build();
 	}
 
