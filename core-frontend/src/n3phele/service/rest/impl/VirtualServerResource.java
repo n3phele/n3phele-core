@@ -286,12 +286,12 @@ public class VirtualServerResource {
 					if (exists) {
 						dao.virtualServer().update(vsDao);
 					} 
-					else {
-						/*dao.virtualServer().delete(vsDao);
-						log.warning(vsDao.getInstanceId() + " deleted");*/
-						
+					else {		
 						vsDao.setStatus("terminated");
 						vsDao.setEndDate(new Date());
+						
+						/*dao.virtualServer().delete(vsDao);
+						log.warning(vsDao.getInstanceId() + " deleted");*/
 					}
 					}
 				}
