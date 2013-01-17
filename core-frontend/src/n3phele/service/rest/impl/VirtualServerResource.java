@@ -215,6 +215,8 @@ public class VirtualServerResource {
 		URI uriCloud = null;
 		Map<String,VirtualServer> vmTable = null;
 		
+
+		
 		if (!virtualServerCollection.getElements().isEmpty()) {
 			
 			log.warning("Retrieved virtual server collection");
@@ -262,6 +264,8 @@ public class VirtualServerResource {
 					
 					if(vmTable != null){
 						
+						if(!(vsDao.getStatus().equalsIgnoreCase("terminated"))){
+						
 						if(vmTable.containsKey(vsDao.getInstanceId())){
 							exists = true;
 							
@@ -283,14 +287,18 @@ public class VirtualServerResource {
 						dao.virtualServer().update(vsDao);
 					} 
 					else {
-						dao.virtualServer().delete(vsDao);
-						log.warning(vsDao.getInstanceId() + " deleted");
+						/*dao.virtualServer().delete(vsDao);
+						log.warning(vsDao.getInstanceId() + " deleted");*/
+						
+						vsDao.setStatus("terminated");
+						vsDao.setEndDate(new Date());
+					}
 					}
 				}
 			}
 		}
 	}
-		
+	
 		
 		return Response.ok().build();
 	}
