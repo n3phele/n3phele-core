@@ -277,18 +277,9 @@ public class VirtualServerResource {
 										log.warning(vsDao.getInstanceId() + " set as running");
 										break;
 									}
-								}
-							}
-							
-						}
-						if (exists) {
-							dao.virtualServer().update(vsDao);
-						} 
-						else {		
-							vsDao.setStatus("terminated");
-							vsDao.setEndDate(new Date());
 						}
 					}
+					
 					if (exists) {
 						dao.virtualServer().update(vsDao);
 					} 
@@ -302,6 +293,7 @@ public class VirtualServerResource {
 				}
 			}
 		}
+	}
 
 		return Response.ok().build();
 	}
