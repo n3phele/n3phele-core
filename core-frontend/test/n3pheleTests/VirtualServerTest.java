@@ -1,9 +1,19 @@
 package n3pheleTests;
 
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
@@ -15,15 +25,23 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import n3phele.service.core.Resource;
 import n3phele.service.model.Account;
+import n3phele.service.model.Cloud;
 import n3phele.service.model.VirtualServerCollection;
+import n3phele.service.model.core.Collection;
 import n3phele.service.model.core.Credential;
 import n3phele.service.model.core.NameValue;
 import n3phele.service.model.core.VirtualServer;
+import n3phele.service.rest.impl.Dao;
 import n3phele.service.rest.impl.N3pheleResource;
+import n3phele.service.rest.impl.VirtualServerResource;
+import n3phele.service.rest.impl.CloudResource.CloudManager;
+import n3phele.service.rest.impl.VirtualServerResource.VirtualServerManager;
 
 import com.google.gson.Gson;
 import com.google.gwt.http.client.RequestException;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.GenericType;
+import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.api.representation.Form;
 import com.sun.jersey.test.framework.JerseyTest;
@@ -230,7 +248,6 @@ public class VirtualServerTest extends JerseyTest {
 		return vs;
 	}
 
-
 		
 	/**
 	 * Removes a Virtual Server through the REST API call using the id passed by parameter.
@@ -254,14 +271,61 @@ public class VirtualServerTest extends JerseyTest {
 		return clientResponse;
 	}
 	
-	//@Test
-	public void updateVS(){
-		//this.client().addFilter(new HTTPBasicAuthFilter(userName, userPwd));
-		this.client().addFilter(new HTTPBasicAuthFilter("root","n3phelepoadev"));
-		System.out.println(resource().getURI().toString());
-		ClientResponse response = resource().path("virtualServers/updateStatus").get(
-				ClientResponse.class);
+	@Test
+	public void testUpdateStatus() {
 		
-		Assert.assertEquals(200, response.getStatus());
+		// *** Mock classes used by the VirtualServerResource into the updateStatus method ***
+		//mock the local list of VMs
+		Dao dao = mock(Dao.class);
+		VirtualServerManager vsm = mock(VirtualServerManager.class);
+		when(dao.virtualServer()).thenReturn(vsm);
+		
+		Collection<VirtualServer> vsCollection = new Collection<VirtualServer>();
+		List<VirtualServer> vsList = new ArrayList<VirtualServer>();		
+		
+		VirtualServer vs = null;		
+		//Add one fake virtual server to the list
+		try {			
+			vs = spy( new VirtualServer("name","description", new URI("http://location"), null, 
+					new URI("http://notification"), "instanceId", "spotId", 
+					new URI("http://owner"), new Date(), "price", new URI("http://activity"),
+					1l, new URI("http://account"), "cloudURI" ) );
+			vsList.add(vs);
+		} catch (URISyntaxException e) {
+			fail();
+		}		
+		vs.setId(1L);
+		vsCollection.setElements(vsList);		
+		//when the method ask for vms, give the list with the created vm
+		when(vsm.getCollection()).thenReturn(vsCollection);
+		
+		//Mock the call to vms in the EC2 as empty
+		final WebResource resource = mock(WebResource.class);
+		when(resource.get(new GenericType<Collection<n3phele.service.model.core.Entity>>() {})).thenReturn(new Collection<n3phele.service.model.core.Entity>());
+		
+		//Mock the call to the cloud database search
+		CloudManager cm = mock(CloudManager.class);
+		Cloud cloud = mock(Cloud.class);
+		//The dao returns the mocked cloudManager
+		when(dao.cloud()).thenReturn(cm);
+		when(cm.get(any(URI.class))).thenReturn(cloud);
+		//The cloud returns a null factoryURI that is used for the vm list get. Since we mocked the call it can be any value
+		when(cloud.getFactory()).thenReturn(null);
+		
+		//Create the virtual Server
+		VirtualServerResource vsr = spy( new VirtualServerResource(dao) {
+			//Override the 
+			@Override
+			protected WebResource createFactoryWebResource(Cloud cloud, URI factory) {
+				return resource;
+			}
+		} );
+		
+		//Execute tested method
+		vsr.updateStatus();
+		
+		verify(vsm).getCollection();
+		verify(vs, times(1)).setStatus("terminated");		
+		
 	}
 }

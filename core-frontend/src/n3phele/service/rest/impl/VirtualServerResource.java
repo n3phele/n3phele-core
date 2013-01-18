@@ -78,7 +78,6 @@ import java.util.HashMap;
 public class VirtualServerResource {
 	private static Logger log = Logger.getLogger(VirtualServerResource.class.getName());
 	private static Client client=null;
-	private static WebResource resource;
 	
 	@Context
 	UriInfo uriInfo;
@@ -183,7 +182,7 @@ public class VirtualServerResource {
 		return new VirtualServerCollection(ret, 0, -1);
 	}
 	
-	private Map<String,VirtualServer> populateTable(Collection<Entity> col){
+	private Map<String,VirtualServer> populateTable(Collection<Entity> col, WebResource resource){
 		
 		log.warning("Populating table of virtual machines");
 	
@@ -206,47 +205,44 @@ public class VirtualServerResource {
 	@Path("/updateStatus")
 	public Response updateStatus() {
 
+		WebResource resource;
+
 		log.warning("Entered n3phele updateStatus");
-		
+
 		Collection<VirtualServer> virtualServerCollection = dao.virtualServer().getCollection(); 
-		
+
 		Cloud cloud = null;
 		URI factory = null;
 		URI uriCloud = null;
 		Map<String,VirtualServer> vmTable = null;
-		
 
-		
 		if (!virtualServerCollection.getElements().isEmpty()) {
-			
+
 			log.warning("Retrieved virtual server collection");
-			
+
 			for (VirtualServer vsDao : virtualServerCollection.getElements()) {				
-			
+
 				// Get the cloud information
 				if(vsDao!=null){
 					if(vsDao.getCloudURI()!=null){
-									
+
 						//vmTable is empty or it's a different cloud
 						if(uriCloud == null || !(uriCloud.toString().equalsIgnoreCase(vsDao.getCloudURI()))){
+
 							uriCloud = URI.create(vsDao.getCloudURI());
 							cloud = dao.cloud().get(uriCloud);
+
 							factory = cloud.getFactory();
-							
-							client.setConnectTimeout(20000);
-							client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
-							resource = client.resource(factory.toString());
-							
+
+							resource = createFactoryWebResource(cloud, factory);
+
 							try {
 								//Retrieve VM list from the cloud
 								Collection<Entity> col = resource.get(new GenericType<Collection<Entity>>() {});
-								
-								if (col != null) {
-									
-									if (!col.getElements().isEmpty()) {
-										
-										vmTable = populateTable(col);
-										
+
+								if (col != null) {									
+									if (!col.getElements().isEmpty()) {										
+										vmTable = populateTable(col, resource);				
 									}
 									else{
 										vmTable = null;
@@ -256,7 +252,7 @@ public class VirtualServerResource {
 									vmTable = null;	
 								}
 							}catch(Exception e){
-								
+
 							}
 						}					
 
@@ -268,22 +264,30 @@ public class VirtualServerResource {
 						
 						if(vmTable.containsKey(vsDao.getInstanceId())){
 							exists = true;
-							
-							VirtualServer vsCloud = vmTable.get(vsDao.getInstanceId());
-							
-							if (vsCloud.getStatus().equalsIgnoreCase("terminated") || vsCloud.isZombie()) {
-								vsDao.setStatus("terminated");
-								vsDao.setEndDate(vsCloud.getEndDate());
-								log.warning(vsDao.getInstanceId() + " set as terminated");
-								break;
-							} else {
-								vsDao.setStatus("running");
-								log.warning(vsDao.getInstanceId() + " set as running");
-								break;
+
+									VirtualServer vsCloud = vmTable.get(vsDao.getInstanceId());
+
+									if (vsCloud.getStatus().equalsIgnoreCase("terminated") || vsCloud.isZombie()) {
+										vsDao.setStatus("terminated");
+										vsDao.setEndDate(vsCloud.getEndDate());
+										log.warning(vsDao.getInstanceId() + " set as terminated");
+										break;
+									} else {
+										vsDao.setStatus("running");
+										log.warning(vsDao.getInstanceId() + " set as running");
+										break;
+									}
+								}
 							}
+							
 						}
-				//	}
-					
+						if (exists) {
+							dao.virtualServer().update(vsDao);
+						} 
+						else {		
+							vsDao.setStatus("terminated");
+							vsDao.setEndDate(new Date());
+						}
 					}
 					if (exists) {
 						dao.virtualServer().update(vsDao);
@@ -298,10 +302,16 @@ public class VirtualServerResource {
 				}
 			}
 		}
-	}
-	
-		
+
 		return Response.ok().build();
+	}
+
+	protected WebResource createFactoryWebResource(Cloud cloud, URI factory) {
+		WebResource resource;
+		client.setConnectTimeout(20000);
+		client.addFilter(new HTTPBasicAuthFilter(cloud.getFactoryCredential().decrypt().getAccount(), cloud.getFactoryCredential().decrypt().getSecret()));
+		resource = client.resource(factory.toString());
+		return resource;
 	}
 	
 	/*
