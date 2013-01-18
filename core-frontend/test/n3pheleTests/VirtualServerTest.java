@@ -13,7 +13,9 @@ import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
@@ -29,6 +31,7 @@ import n3phele.service.model.Cloud;
 import n3phele.service.model.VirtualServerCollection;
 import n3phele.service.model.core.Collection;
 import n3phele.service.model.core.Credential;
+import n3phele.service.model.core.Entity;
 import n3phele.service.model.core.NameValue;
 import n3phele.service.model.core.VirtualServer;
 import n3phele.service.rest.impl.Dao;
@@ -272,7 +275,7 @@ public class VirtualServerTest extends JerseyTest {
 	}
 	
 	@Test
-	public void testUpdateStatus() {
+	public void testUpdateStatusTerminateMachine() {
 		
 		// *** Mock classes used by the VirtualServerResource into the updateStatus method ***
 		//mock the local list of VMs
@@ -314,7 +317,7 @@ public class VirtualServerTest extends JerseyTest {
 		
 		//Create the virtual Server
 		VirtualServerResource vsr = spy( new VirtualServerResource(dao) {
-			//Override the 
+			//Override the prepare resource method that access the cloud
 			@Override
 			protected WebResource createFactoryWebResource(Cloud cloud, URI factory) {
 				return resource;
@@ -326,6 +329,75 @@ public class VirtualServerTest extends JerseyTest {
 		
 		verify(vsm).getCollection();
 		verify(vs, times(1)).setStatus("terminated");		
+		
+	}
+	
+	@Test
+	public void testUpdateStatusKeepMachine() throws URISyntaxException {
+		
+		// *** Mock classes used by the VirtualServerResource into the updateStatus method ***
+		//mock the local list of VMs
+		Dao dao = mock(Dao.class);
+		VirtualServerManager vsm = mock(VirtualServerManager.class);
+		when(dao.virtualServer()).thenReturn(vsm);
+		
+		Collection<VirtualServer> vsCollection = new Collection<VirtualServer>();
+		List<VirtualServer> vsList = new ArrayList<VirtualServer>();		
+		
+		//Add one fake virtual server to the list
+		final VirtualServer	vs = spy( new VirtualServer("name","description", new URI("http://location"), null, 
+					new URI("http://notification"), "instanceId", "spotId", 
+					new URI("http://owner"), new Date(), "price", new URI("http://activity"),
+					1l, new URI("http://account"), "cloudURI" ) );
+			vsList.add(vs);
+			
+		vs.setId(1L);
+		vsCollection.setElements(vsList);		
+		//when the method ask for vms, give the list with the created vm
+		when(vsm.getCollection()).thenReturn(vsCollection);
+		
+		//Mock the call to vms in the EC2. Return the same virtual server object from the local database. 
+		final WebResource resource = mock(WebResource.class);
+		Collection col = new Collection<n3phele.service.model.core.Entity>();
+		List list = new ArrayList<Entity>();
+		list.add(vs);
+		col.setElements(list);
+		when(resource.get(any(GenericType.class) ) ).thenReturn(col);
+		
+		//Mock the call to the cloud database search
+		CloudManager cm = mock(CloudManager.class);
+		Cloud cloud = mock(Cloud.class);
+		//The dao returns the mocked cloudManager
+		when(dao.cloud()).thenReturn(cm);
+		when(cm.get(any(URI.class))).thenReturn(cloud);
+		//The cloud returns a null factoryURI that is used for the vm list get. Since we mocked the call it can be any value
+		when(cloud.getFactory()).thenReturn(null);
+		
+		//Create the virtual Server
+		VirtualServerResource vsr = spy( new VirtualServerResource(dao) {
+			//Override the prepare resource method that access the cloud
+			@Override
+			protected WebResource createFactoryWebResource(Cloud cloud, URI factory) {
+				return resource;
+			}
+			
+			//Override the method that populates an local Map to hold vm information from the cloud. 
+			@Override
+			protected Map<String,VirtualServer> populateTable(Collection<Entity> col, WebResource resource){
+				Map<String,VirtualServer> vmTable = new HashMap<String,VirtualServer>();
+				
+				vmTable.put(vs.getInstanceId(), vs);
+				
+				return vmTable;
+			}
+		} );
+		
+		//Execute tested method
+		vsr.updateStatus();
+		
+		verify(vsm).getCollection();
+		verify(vs, times(0)).setStatus("terminated");		
+		Assert.assertEquals(vs.getStatus(), "running");
 		
 	}
 }

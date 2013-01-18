@@ -182,7 +182,7 @@ public class VirtualServerResource {
 		return new VirtualServerCollection(ret, 0, -1);
 	}
 	
-	private Map<String,VirtualServer> populateTable(Collection<Entity> col, WebResource resource){
+	protected Map<String,VirtualServer> populateTable(Collection<Entity> col, WebResource resource){
 		
 		log.warning("Populating table of virtual machines");
 	
