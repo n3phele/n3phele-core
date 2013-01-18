@@ -182,7 +182,7 @@ public class VirtualServerResource {
 		return new VirtualServerCollection(ret, 0, -1);
 	}
 	
-	private Map<String,VirtualServer> populateTable(Collection<Entity> col, WebResource resource){
+	protected Map<String,VirtualServer> populateTable(Collection<Entity> col, WebResource resource){
 		
 		log.warning("Populating table of virtual machines");
 	
@@ -256,14 +256,14 @@ public class VirtualServerResource {
 							}
 						}					
 
-						boolean exists = false;
-
-						if(vmTable != null){
-
-							if(!(vsDao.getStatus().equalsIgnoreCase("terminated"))){
-
-								if(vmTable.containsKey(vsDao.getInstanceId())){
-									exists = true;
+					boolean exists = false;
+					
+					if(vmTable != null){
+						
+						//if(!(vsDao.getStatus().equalsIgnoreCase("terminated"))){
+						
+						if(vmTable.containsKey(vsDao.getInstanceId())){
+							exists = true;
 
 									VirtualServer vsCloud = vmTable.get(vsDao.getInstanceId());
 
@@ -277,21 +277,23 @@ public class VirtualServerResource {
 										log.warning(vsDao.getInstanceId() + " set as running");
 										break;
 									}
-								}
-							}
-							
 						}
-						if (exists) {
-							dao.virtualServer().update(vsDao);
-						} 
-						else {		
-							vsDao.setStatus("terminated");
-							vsDao.setEndDate(new Date());
-						}
+					}
+					
+					if (exists) {
+						dao.virtualServer().update(vsDao);
+					} 
+					else {		
+						vsDao.setStatus("terminated");
+						vsDao.setEndDate(new Date());
+						
+						/*dao.virtualServer().delete(vsDao);
+						log.warning(vsDao.getInstanceId() + " deleted");*/
 					}
 				}
 			}
 		}
+	}
 
 		return Response.ok().build();
 	}
