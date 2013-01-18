@@ -374,7 +374,7 @@ public class AccountHyperlinkView extends WorkspaceVerticalPanel implements Entr
 
 				}});
 			dialog.setGlassEnabled(true);
-			dialog.setAnimationEnabled(true);
+			dialog.setAnimationEnabled(false);
 
 		}
 		dialog.setValue("Remove virtual machine \""+item.getName()+"\"?<p>", item);
