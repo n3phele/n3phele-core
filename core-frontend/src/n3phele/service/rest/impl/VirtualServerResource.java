@@ -264,7 +264,7 @@ public class VirtualServerResource {
 					
 					if(vmTable != null){
 						
-						if(!(vsDao.getStatus().equalsIgnoreCase("terminated"))){
+						//if(!(vsDao.getStatus().equalsIgnoreCase("terminated"))){
 						
 						if(vmTable.containsKey(vsDao.getInstanceId())){
 							exists = true;
@@ -282,6 +282,8 @@ public class VirtualServerResource {
 								break;
 							}
 						}
+				//	}
+					
 					}
 					if (exists) {
 						dao.virtualServer().update(vsDao);
@@ -292,7 +294,6 @@ public class VirtualServerResource {
 						
 						/*dao.virtualServer().delete(vsDao);
 						log.warning(vsDao.getInstanceId() + " deleted");*/
-					}
 					}
 				}
 			}
