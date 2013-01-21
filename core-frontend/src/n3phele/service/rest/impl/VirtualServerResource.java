@@ -285,10 +285,12 @@ public class VirtualServerResource {
 						log.warning(vsDao.getInstanceId() + " updated");
 					} 
 					else {		
-						vsDao.setStatus("terminated");
-						vsDao.setEndDate(new Date());
-						dao.virtualServer().update(vsDao);
-						log.warning(vsDao.getInstanceId() + " set as terminated");
+						if(!(vsDao.getStatus().equalsIgnoreCase("terminated"))){
+							vsDao.setStatus("terminated");
+							vsDao.setEndDate(new Date());
+							dao.virtualServer().update(vsDao);
+							log.warning(vsDao.getInstanceId() + " set as terminated");
+						}
 						/*dao.virtualServer().delete(vsDao);
 						log.warning(vsDao.getInstanceId() + " deleted");*/
 					}
