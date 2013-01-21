@@ -138,7 +138,7 @@ body {
 @sprite .xbutton {
 	gwt-image: "x";
 	width:16px;
-	height:16px;
+	height:13px;
 	border:0;
 	padding:0;
 	margin-left:-12px;
@@ -146,6 +146,8 @@ body {
 }
 
 .xbutton:hover {
+	width:16px;
+	height:16px;
 	background-position: 0 -13px;
 }
 
