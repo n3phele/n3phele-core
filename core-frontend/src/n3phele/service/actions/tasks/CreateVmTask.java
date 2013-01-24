@@ -475,6 +475,8 @@ public class CreateVmTask extends ActionTaskImpl implements ActionTask {
 			args.append(URLEncoder.encode(this.accountURI.toString(), "UTF-8"));
 			args.append("&clouduri=");
 			args.append(URLEncoder.encode(myCloud.getUri().toString(), "UTF-8"));
+			args.append("&entityURI=");
+			args.append(URLEncoder.encode(vs.getUri().toString(), "UTF-8"));
 
 			log.warning("Sendind request");
 			

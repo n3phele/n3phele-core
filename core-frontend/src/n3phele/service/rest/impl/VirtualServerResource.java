@@ -108,7 +108,7 @@ public class VirtualServerResource {
 	public Response add(@FormParam("id") String id, @FormParam("name") String name, @FormParam("description") String description, @FormParam("location") URI location,
 			@FormParam("parametersList") String parametersList, @FormParam("notification") URI notification, @FormParam("instanceId") String instanceId,
 			@FormParam("spotId") String spotId, @FormParam("owner") URI owner, @FormParam("created") String created, @FormParam("price") String price,
-			@FormParam("activity") URI activity, @FormParam("account") URI account, @FormParam("clouduri") String clouduri) {
+			@FormParam("activity") URI activity, @FormParam("account") URI account, @FormParam("clouduri") String clouduri, @FormParam("entityURI") String entityURI) {
 
 		log.warning("VirtualServer creation started");
 
@@ -121,7 +121,7 @@ public class VirtualServerResource {
 
 		Date dateCreated = new Date(created);
 		// Creating a new VirtualServer
-		vs = new VirtualServer(name, description, location, parameters, notification, instanceId, spotId, owner, dateCreated, price, activity, Long.valueOf(id), account, clouduri);
+		vs = new VirtualServer(name, description, location, parameters, notification, instanceId, spotId, owner, dateCreated, price, activity, Long.valueOf(id), account, clouduri, entityURI);
 		if (vs==null)
 			log.severe("Can't create Virtual server! ");
 		// Ading to the GAE Data Store
@@ -182,19 +182,16 @@ public class VirtualServerResource {
 		return new VirtualServerCollection(ret, 0, -1);
 	}
 	
-	protected Map<String,VirtualServer> populateTable(Collection<Entity> col, WebResource resource){
-		
-		log.warning("Populating table of virtual machines");
+	protected Map<String,Entity> populateTable(Collection<Entity> col, WebResource resource){
 	
-		Map<String,VirtualServer> vmTable = new HashMap<String,VirtualServer>();
+		Map<String,Entity> vmTable = new HashMap<String,Entity>();
 		
-		for (Entity e : col.getElements()) {
+		for (Entity e : col.getElements()) {	
 			
 			String id = e.getUri().toString().substring(e.getUri().toString().lastIndexOf('/') + 1);
-
-			VirtualServer vs = resource.path("/" + id).type(MediaType.APPLICATION_JSON_TYPE).get(VirtualServer.class);
+			
 		
-			vmTable.put(vs.getInstanceId(), vs);
+			vmTable.put(id, e);
 		}
 		
 		return vmTable;
@@ -203,103 +200,60 @@ public class VirtualServerResource {
 	@GET
 	// @RolesAllowed("authenticated")
 	@Path("/updateStatus")
-	public Response updateStatus() {
-
+	public Response updateStatus(){
+		
 		WebResource resource;
-
-		log.warning("Entered n3phele updateStatus");
+		Map<String,Entity> vmTable = null;
 
 		Collection<VirtualServer> virtualServerCollection = dao.virtualServer().getCollection(); 
 
-		Cloud cloud = null;
-		URI factory = null;
-		URI uriCloud = null;
-		Map<String,VirtualServer> vmTable = null;
-
 		if (!virtualServerCollection.getElements().isEmpty()) {
-
-			log.warning("Retrieved virtual server collection");
-
-			for (VirtualServer vsDao : virtualServerCollection.getElements()) {				
-
-				// Get the cloud information
-				if(vsDao!=null){
-					if(vsDao.getCloudURI()!=null){
-
-						//vmTable is empty or it's a different cloud
-						if(uriCloud == null || !(uriCloud.toString().equalsIgnoreCase(vsDao.getCloudURI()))){
-
-							uriCloud = URI.create(vsDao.getCloudURI());
-							cloud = dao.cloud().get(uriCloud);
-
-							factory = cloud.getFactory();
-
-							resource = createFactoryWebResource(cloud, factory);
-
-							try {
-								//Retrieve VM list from the cloud
-								Collection<Entity> col = resource.get(new GenericType<Collection<Entity>>() {});
-
-								if (col != null) {									
-									if (!col.getElements().isEmpty()) {										
-										vmTable = populateTable(col, resource);				
-									}
-									else{
-										vmTable = null;
-									}
-								}
-								else{
-									vmTable = null;	
-								}
-							}catch(Exception e){
-
-							}
-						}					
-
-					boolean exists = false;
+			
+			URI uriCloud = URI.create(virtualServerCollection.getElements().get(0).getCloudURI());
+			
+			try{
+			
+				resource = createFactoryWebResource(dao.cloud().get(uriCloud), new URI(Resource.get("ec2factory","")));
+				log.info("Resource path: "+resource.getURI().toString());
+				Collection<Entity> col = resource.get(new GenericType<Collection<Entity>>() {});
+				
+				if(col!=null){
 					
-					if(vmTable != null){
+					vmTable = populateTable(col, resource);	
+					for (VirtualServer vsDao : virtualServerCollection.getElements()) {		
 						
-						//if(!(vsDao.getStatus().equalsIgnoreCase("terminated"))){
+						String id = vsDao.getUri().toString().substring(vsDao.getUri().toString().lastIndexOf('/') + 1);
 						
-						if(vmTable.containsKey(vsDao.getInstanceId())){
-							exists = true;
-
-									VirtualServer vsCloud = vmTable.get(vsDao.getInstanceId());
-
-									if (vsCloud.getStatus().equalsIgnoreCase("terminated") || vsCloud.isZombie()) {
-										vsDao.setStatus("terminated");
-										vsDao.setEndDate(vsCloud.getEndDate());
-										log.warning(vsDao.getInstanceId() + " set as terminated");
-										break;
-									} else {
-										vsDao.setStatus("running");
-										log.warning(vsDao.getInstanceId() + " set as running");
-										break;
-									}
-						}
-					}
-					
-					if (exists) {
-						dao.virtualServer().update(vsDao);
-						log.warning(vsDao.getInstanceId() + " updated");
-					} 
-					else {		
 						if(!(vsDao.getStatus().equalsIgnoreCase("terminated"))){
-							vsDao.setStatus("terminated");
-							vsDao.setEndDate(new Date());
+							
+							if(vmTable.containsKey(id)){
+								vsDao.setStatus("running");
+								log.info(vsDao.getInstanceId() + " set as running");
+							}
+							else{
+								vsDao.setStatus("terminated");
+								vsDao.setEndDate(new Date());
+								log.info(vsDao.getInstanceId() + " set as terminated");
+							}
+							
 							dao.virtualServer().update(vsDao);
-							log.warning(vsDao.getInstanceId() + " set as terminated");
+							log.info(vsDao.getInstanceId() + " updated");
+							
 						}
-						/*dao.virtualServer().delete(vsDao);
-						log.warning(vsDao.getInstanceId() + " deleted");*/
 					}
+					
 				}
+			}catch(Exception e){
+				log.warning("Exception: "+e.getMessage());
 			}
 		}
-	}
-
+		else{
+			log.warning("Virtual server collection is empty!");
+		}
+		
 		return Response.ok().build();
+		
+		
 	}
 
 	protected WebResource createFactoryWebResource(Cloud cloud, URI factory) {

@@ -292,7 +292,7 @@ public class VirtualServerTest extends JerseyTest {
 			vs = spy( new VirtualServer("name","description", new URI("http://location"), null, 
 					new URI("http://notification"), "instanceId", "spotId", 
 					new URI("http://owner"), new Date(), "price", new URI("http://activity"),
-					1l, new URI("http://account"), "cloudURI" ) );
+					1l, new URI("http://account"), "cloudURI", "http://entityURI" ) );
 			vsList.add(vs);
 		} catch (URISyntaxException e) {
 			fail();
@@ -348,7 +348,7 @@ public class VirtualServerTest extends JerseyTest {
 		final VirtualServer	vs = spy( new VirtualServer("name","description", new URI("http://location"), null, 
 					new URI("http://notification"), "instanceId", "spotId", 
 					new URI("http://owner"), new Date(), "price", new URI("http://activity"),
-					1l, new URI("http://account"), "cloudURI" ) );
+					1l, new URI("http://account"), "cloudURI", "entityURI" ) );
 			vsList.add(vs);
 			
 		vs.setId(1L);
@@ -383,8 +383,8 @@ public class VirtualServerTest extends JerseyTest {
 			
 			//Override the method that populates an local Map to hold vm information from the cloud. 
 			@Override
-			protected Map<String,VirtualServer> populateTable(Collection<Entity> col, WebResource resource){
-				Map<String,VirtualServer> vmTable = new HashMap<String,VirtualServer>();
+			protected Map<String,Entity> populateTable(Collection<Entity> col, WebResource resource){
+				Map<String,Entity> vmTable = new HashMap<String,Entity>();
 				
 				vmTable.put(vs.getInstanceId(), vs);
 				
