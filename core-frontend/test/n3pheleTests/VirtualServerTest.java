@@ -45,6 +45,7 @@ import com.google.gwt.http.client.RequestException;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.WebResourceLinkHeaders;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.api.representation.Form;
 import com.sun.jersey.test.framework.JerseyTest;
@@ -275,7 +276,7 @@ public class VirtualServerTest extends JerseyTest {
 	}
 	
 	@Test
-	public void testUpdateStatusTerminateMachine() {
+	public void testUpdateStatusTerminateMachine() throws URISyntaxException {
 		
 		// *** Mock classes used by the VirtualServerResource into the updateStatus method ***
 		//mock the local list of VMs
@@ -289,10 +290,10 @@ public class VirtualServerTest extends JerseyTest {
 		VirtualServer vs = null;		
 		//Add one fake virtual server to the list
 		try {			
-			vs = spy( new VirtualServer("name","description", new URI("http://location"), null, 
-					new URI("http://notification"), "instanceId", "spotId", 
-					new URI("http://owner"), new Date(), "price", new URI("http://activity"),
-					1l, new URI("http://account"), "cloudURI", "http://entityURI" ) );
+			vs = spy( new VirtualServer("name","description", new URI("http://location1"), null, 
+					new URI("http://notification/1"), "instanceId", "spotId", 
+					new URI("http://owner/1"), new Date(), "price", new URI("http://activity/1"),
+					1l, new URI("http://account/1"), "cloudURI", "http://entityURI/1" ) );
 			vsList.add(vs);
 		} catch (URISyntaxException e) {
 			fail();
@@ -301,10 +302,15 @@ public class VirtualServerTest extends JerseyTest {
 		vsCollection.setElements(vsList);		
 		//when the method ask for vms, give the list with the created vm
 		when(vsm.getCollection()).thenReturn(vsCollection);
+		vs.setUri(new URI("http://n3phele.com/"));
 		
 		//Mock the call to vms in the EC2 as empty
 		final WebResource resource = mock(WebResource.class);
-		when(resource.get(new GenericType<Collection<n3phele.service.model.core.Entity>>() {})).thenReturn(new Collection<n3phele.service.model.core.Entity>());
+		Collection col = new Collection<n3phele.service.model.core.Entity>();
+		List list = new ArrayList<Entity>();
+		col.setElements(list);
+		when(resource.get(any(GenericType.class) ) ).thenReturn(col);
+		when(resource.getURI()).thenReturn(new URI("http://n3phele.com"));
 		
 		//Mock the call to the cloud database search
 		CloudManager cm = mock(CloudManager.class);
@@ -363,6 +369,7 @@ public class VirtualServerTest extends JerseyTest {
 		list.add(vs);
 		col.setElements(list);
 		when(resource.get(any(GenericType.class) ) ).thenReturn(col);
+		when(resource.getURI()).thenReturn(new URI("http://n3phele.com"));
 		
 		//Mock the call to the cloud database search
 		CloudManager cm = mock(CloudManager.class);
@@ -397,7 +404,7 @@ public class VirtualServerTest extends JerseyTest {
 		
 		verify(vsm).getCollection();
 		verify(vs, times(0)).setStatus("terminated");		
-		Assert.assertEquals(vs.getStatus(), "running");
+		Assert.assertEquals(vs.getStatus(), "Running");
 		
 	}
 }
