@@ -204,6 +204,7 @@ public class VirtualServerResource {
 		
 		WebResource resource;
 		Map<String,Entity> vmTable = null;
+		Collection<Entity> col = null;
 
 		Collection<VirtualServer> virtualServerCollection = dao.virtualServer().getCollection(); 
 
@@ -215,7 +216,7 @@ public class VirtualServerResource {
 			
 				resource = createFactoryWebResource(dao.cloud().get(uriCloud), new URI(Resource.get("ec2factory","")));
 				log.info("Resource path: "+resource.getURI().toString());
-				Collection<Entity> col = resource.get(new GenericType<Collection<Entity>>() {});
+				col = resource.get(new GenericType<Collection<Entity>>() {});
 				
 				if(col!=null){
 					
@@ -244,7 +245,21 @@ public class VirtualServerResource {
 					
 				}
 			}catch(Exception e){
-				log.warning("Exception: "+e.getMessage());
+				log.warning("Exception message: "+e.getMessage());
+				if(col == null){
+					for (VirtualServer vsDao : virtualServerCollection.getElements()) {		
+											
+						String id = vsDao.getUri().toString().substring(vsDao.getUri().toString().lastIndexOf('/') + 1);
+						
+						if(!(vsDao.getStatus().equalsIgnoreCase("terminated"))){
+							vsDao.setStatus("terminated");
+							vsDao.setEndDate(new Date());
+							log.info(vsDao.getInstanceId() + " set as terminated");
+							dao.virtualServer().update(vsDao);
+							log.info(vsDao.getInstanceId() + " updated");
+						}
+					}
+				}
 			}
 		}
 		else{
