@@ -1,21 +1,33 @@
+var createRandomItems = function(number) {
+	list = [];
+	for (var i=0; i<number; i++)
+	{
+		var ownerName = Math.random().toString(36).substr(2, 5);
+		var owner = { name: ownerName, website: "http://github.com/LucioC", twitter: "" };
+		var widgetName = Math.random().toString(36).substr(4, 10);
+		var widget = { name: widgetName, displayName: "Nome da lista Cool", owner: "Lucio", dependencies: [ ] , image: "gallery_images/CoolList.jpg" };
+		widget.owner = owner;
+		list.push(widget);
+	}
+	return list;
+}
+
 
 //Exposes a list of items in two configurations, one is a Card type used for large screens
 //, and a ListItem, used for narrow screens. Cards are shown in a grid like gallery, and 
 // ListItem are shown in a basic list mode.
 enyo.kind({
 	name: "IconList",
-	kind: "FittableRows",
+	kind: "Scroller",
 	data: [],
 	events: {
-		onSelectedItem: "",
-		onClickedItem: ""
+		onSelectedItem: ""
 	},
+	fit: true, classes: "main",
 	components: [
-		{kind: "Scroller", fit: true, classes: "main", ondragfinish: "preventTap", components: [
-			// using media query (see css) to determine which one should be displayed
-			{name: "cards", classes: "cards"},
-			{name: "list", classes: "list"}
-		]}
+		// using media query (see css) to determine which one should be displayed
+		{name: "cards", classes: "cards"},
+		{name: "list", classes: "list"}
 	],
 	constructor: function() {
 		this.inherited(arguments);
@@ -43,9 +55,7 @@ enyo.kind({
 		this.renderItems();
 	},
 	retrieveContentData: function() {
-		this.data = createRandomItems(15);
-		this.doSelectedItem();
-		this.doClickedItem();
+		this.data = createRandomItems(2);
 	},
 	//Create Card and ListItems based on the content of this.widgets variable
 	renderItems: function() {
@@ -80,7 +90,6 @@ enyo.kind({
 	itemTap: function(inSender, inEvent) {
 		var selectedObject = inSender.data;
 		this.doSelectedItem(selectedObject);
-		console.log("itemTap function entered");
 	},
 	preventTap: function(inSender, inEvent) {
 		inEvent.preventTap();
@@ -137,4 +146,14 @@ enyo.kind({
 	}
 });
 
-enyo.kind({	name: "App", kind: "IconList" } );
+
+enyo.kind({
+	name: "App",
+	kind: "FittableRows",
+	components: [
+		{ name: "IconGallery", kind: "IconList", onSelectedItem: "selectedItem" , retrieveContentData: function() { console.log("loading data"); this.data = createRandomItems(8); } }
+	],
+	selectedItem: function(inSender, inEvent) {
+		console.log("One item was selected on APP : " + inEvent.name + " owned by " + inEvent.owner.name);
+	}
+});
