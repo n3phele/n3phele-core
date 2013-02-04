@@ -1,0 +1,36 @@
+<html>
+        <head>
+                <title>Enyo Community Gallery</title>
+                <meta name="apple-mobile-web-app-capable" content="yes" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+                <script src="http://enyojs.com/enyo-2.1.1/enyo.js"></script>
+                <link href="http://enyojs.com/enyo-2.1.1/enyo.css" rel="stylesheet"></link>
+                <script src="package.js"></script>
+				<script src="./App.js"></script>
+				<link href="./App.css" rel="stylesheet"></link>
+        </head>
+        <body class="onyx enyo-unselectable">
+                <script>
+				
+				list = new App();
+					
+				var createRandomItems = function(number) {
+					list = [];
+					for (var i=0; i<number; i++)
+					{
+						var ownerName = Math.random().toString(36).substr(2, 5);
+						var owner = { name: ownerName, website: "http://github.com/LucioC", twitter: "" };
+						var widgetName = Math.random().toString(36).substr(4, 10);
+						var widget = { name: widgetName, displayName: "Nome da lista Cool", owner: "Lucio", dependencies: [ ] , image: "gallery_images/CoolList.jpg" };
+						widget.owner = owner;
+						list.push(widget);
+					}
+					return list;
+				}
+			
+				list.retrieveContentData = function() { list.data = createRandomItems(6); }
+				list.renderInto(document.body);
+				
+                </script>
+        </body>
+</html>
