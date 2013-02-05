@@ -1,3 +1,15 @@
+var createCommandItems = function(arrayOfCommands, arrayOfImages) {
+	list = [];
+	console.log(arrayOfCommands);
+	console.log(arrayOfImages);
+	for (var i in arrayOfCommands)
+	{
+		var widget = { name: arrayOfCommands[i], displayName: arrayOfCommands[i], image: arrayOfImages[i] };
+		list.push(widget);
+	}
+	return list;
+}
+
 enyo.kind({
 	name: "enyo.sample.PanelsSlidingSample",
 	kind: "FittableRows",
@@ -36,23 +48,24 @@ enyo.kind({
 					
 				]}
 			]},
-			{name: "imageIcon"},			
+			{name: "imageIcon", kind: "Scroller" },			
         ]
 		}
 	],
 	
 	setupButton: function(inSender, inEvent) {
-	this.$.item.addRemoveClass("onyx-selected", inSender.isSelected(inEvent.index));
+		this.$.item.addRemoveClass("onyx-selected", inSender.isSelected(inEvent.index));
 		this.$.t.setContent({kind: "onyx.Button", ontap:"itemTapMenu", components: [
 					{kind: "onyx.Icon", src: "https://github.com/enyojs/enyo/wiki/assets/fish_bowl.png"}
 					]});
 	},
 	menu:["Files","Commands","Acvity History","Accounts"],	
-	nepheleImages:["C:/Users/LIS/Desktop/bootplate/lib/layout/panels/samples/assets/teste.png"
-	, "C:/Users/LIS/Desktop/bootplate/lib/layout/panels/samples/assets/search-input-search.png", 
-	"C:/Users/LIS/Desktop/bootplate/lib/layout/panels/samples/assets/search-input-search.png",
-	"C:/Users/LIS/Desktop/bootplate/lib/layout/panels/samples/assets/search-input-search.png"],
+	nepheleImages:["./assets/concatenate.gif"
+	, "./assets/search-input-search.png", 
+	"./assets/search-input-search.png",
+	"./assets/Untar.gif"],
 	commandPanels:["concPanel","copyPanel","impPanel","expPanel"],
+	commands:["Concatenate","Copy","Import","Export"],
 	setupItem: function(inSender, inEvent) {
 		// given some available data.
 		this.$.item.addRemoveClass("onyx-selected", inSender.isSelected(inEvent.index));
@@ -67,6 +80,7 @@ enyo.kind({
 	concPanel: function(inSender, inEvent) {
 	
 		panelCreated =true;
+		
 		b = this.$.panels;
 		p = b.createComponent( 
 			this.c1
@@ -75,8 +89,6 @@ enyo.kind({
 		b.reflow();
 		this.panel_three = p
 		this.$.panels.setIndex(1);
-		
-		
 	},
 	impPanel: function(inSender, inEvent) {
 		alert("Import Panel");
@@ -85,9 +97,9 @@ enyo.kind({
 		alert("Copy Panel");
 	},
 	expPanel: function(inSender, inEvent) {
+		console.log(this);
 		alert("Export Panel");
-	},
-	
+	},	
 	itemTapMenu: function(inSender, inEvent) {
 		alert("You tapped on row: " + inEvent.index);
 		
@@ -117,19 +129,31 @@ enyo.kind({
 		//);
 		b.render();
 		panel.reflow();
-	},
-	
+	},	
 	build: function() {
         this.$.imageIcon.destroyClientControls();
-        for (var i=0; i<4; i++) {
-            this.createComponent({kind: "onyx.Button", container: this.$.imageIcon, ontap: this.commandPanels[i], index: i, pack: "center", align: "center",components: [
-									{kind: "onyx.Icon", src: this.nepheleImages[i]}]
-								});  			
-        };
+        //for (var i=0; i<4; i++) {
+        //    this.createComponent({kind: "onyx.Button", container: this.$.imageIcon, ontap: this.commandPanels[i], index: i, pack: "center", align: "center",components: [
+		//							{kind: "onyx.Icon", src: this.nepheleImages[i]}]
+		//						});  			
+        //};
+		this.createComponent( 
+			{ name: "IconGallery", kind: "IconList", container: this.$.imageIcon ,onSelectedItem: "selectedItem" , nepheleImages: this.nepheleImages, commands: this.commands, retrieveContentData: function() { this.data = createCommandItems(this.commands, this.nepheleImages); } } 
+		);
 		
         this.$.imageIcon.render();
     },
-	
+	selectedItem: function(inSender, inEvent) {
+		console.log("One item was selected on APP : " + inEvent.name );
+			
+		for( var i in this.commands )
+		{
+			if (this.commands[i] == inEvent.name)
+			{
+				eval('this.' + this.commandPanels[i] + '()');
+			}
+		}		
+	},
 	createPanel: function(inEvent) {
 	
 		alert("Creating panel");
