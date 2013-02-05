@@ -14,24 +14,23 @@ enyo.kind({
 	name: "enyo.sample.PanelsSlidingSample",
 	kind: "FittableRows",
 	classes: "onyx enyo-fit",
-	destroyPanel: function() {
-		if(this.panelCreated)
-		{
-			this.panel_three.destroy();			
-			this.panelCreated = false;
-			this.$.panels.reflow();
-		}
-	},
-	buttonTapped: function(inSender, inEvent) {
-		// respond to the tap event
-		this.$.panels.setIndex(0);
-		this.destroyPanel();
-	},
 	c1:{ 
-			name: "panel_three",
-			style: "width: 800px" ,
-			classes: "panels-sample-sliding-content", 
-			content: "Broke, down dumb hospitality firewood chitlins. Has mud tired uncle everlastin' cold, out. Hauled thar, up thar tar heffer quarrel farmer fish water is. Simple gritts dogs soap give kickin'. Ain't shiney water range, preacher java rent thar go. Skinned wirey tin farm, trespassin' it, rodeo. Said roped caught creosote go simple. Buffalo butt, jig fried commencin' cipherin' maw, wash. Round-up barefoot jest bible rottgut sittin' trailer shed jezebel. Crop old over poker drinkin' dirt where tools skinned, city-slickers tools liniment mush tarnation. Truck lyin' snakeoil creosote, old a inbred pudneer, slap dirty cain't. Hairy, smokin', nothin' highway hootch pigs drinkin', barefoot bootleg hoosegow mule. Tax-collectors uncle wuz, maw watchin' had jumpin' got redblooded gimmie truck shootin' askin' hootch. No fat ails fire soap cabin jail, reckon if trespassin' fixin' rustle jest liniment. Ya huntin' catfish shot good bankrupt. Fishin' sherrif has, fat cooked shed old. Broke, down dumb hospitality firewood chitlins. Has mud tired uncle everlastin' cold, out. Hauled thar, up thar tar heffer quarrel farmer fish water is. Simple gritts dogs soap give kickin'. Ain't shiney water range, preacher java rent thar go. Skinned wirey tin farm, trespassin' it, rodeo. Said roped caught creosote go simple. Buffalo butt, jig fried commencin' cipherin' maw, wash. Round-up barefoot jest bible rottgut sittin' trailer shed jezebel. Crop old over poker drinkin' dirt where tools skinned, city-slickers tools liniment mush tarnation. Truck lyin' snakeoil creosote, old a inbred pudneer, slap dirty cain't. Hairy, smokin', nothin' highway hootch pigs drinkin', barefoot bootleg hoosegow mule. Tax-collectors uncle wuz, maw watchin' had jumpin' got redblooded gimmie truck shootin' askin' hootch. No fat ails fire soap cabin jail, reckon if trespassin' fixin' rustle jest liniment. Ya huntin' catfish shot good bankrupt. Fishin' sherrif has, fat cooked shed old. Broke, down dumb hospitality firewood chitlins. Has mud tired uncle everlastin' cold, out. Hauled thar, up thar tar heffer quarrel farmer fish water is. Simple gritts dogs soap give kickin'. Ain't shiney water range, preacher java rent thar go. Skinned wirey tin farm, trespassin' it, rodeo. Said roped caught creosote go simple. Buffalo butt, jig fried commencin' cipherin' maw, wash. Round-up barefoot jest bible rottgut sittin' trailer shed jezebel. Crop old over poker drinkin' dirt where tools skinned, city-slickers tools liniment mush tarnation. Truck lyin' snakeoil creosote, old a inbred pudneer, slap dirty cain't. Hairy, smokin', nothin' highway hootch pigs drinkin', barefoot bootleg hoosegow mule. Tax-collectors uncle wuz, maw watchin' had jumpin' got redblooded gimmie truck shootin' askin' hootch. No fat ails fire soap cabin jail, reckon if trespassin' fixin' rustle jest liniment. Ya huntin' catfish shot good bankrupt. Fishin' sherrif has, fat cooked shed old. Broke, down dumb hospitality firewood chitlins. Has mud tired uncle everlastin' cold, out. Hauled thar, up thar tar heffer quarrel farmer fish water is. Simple gritts dogs soap give kickin'. Ain't shiney water range, preacher java rent thar go. Skinned wirey tin farm, trespassin' it, rodeo. Said roped caught creosote go simple. Buffalo butt, jig fried commencin' cipherin' maw, wash. Round-up barefoot jest bible rottgut sittin' trailer shed jezebel. Crop old over poker drinkin' dirt where tools skinned, city-slickers tools liniment mush tarnation. Truck lyin' snakeoil creosote, old a inbred pudneer, slap dirty cain't. Hairy, smokin', nothin' highway hootch pigs drinkin', barefoot bootleg hoosegow mule. Tax-collectors uncle wuz, maw watchin' had jumpin' got redblooded gimmie truck shootin' askin' hootch. No fat ails fire soap cabin jail, reckon if trespassin' fixin' rustle jest liniment. Ya huntin' catfish shot good bankrupt. Fishin' sherrif has, fat cooked shed old."
+		name:"contContent",
+		kind: "FittableRows",
+		fit: true,
+		components:[
+			{name: "topToolbar",kind: "onyx.Toolbar", components: [
+						{content: "Concatenate"},
+						{fit: true}]},
+			{kind: "enyo.Scroller", fit: true, components: [
+				{name: "panel_three",
+				classes: "panels-sample-sliding-content", allowHtml: true, components:[
+				{name: "description", content: "Concatenate up to 8 files", style: "text-align:center; padding: 10px;"}]}
+			]},
+			{kind: "onyx.Toolbar", components: [
+				{kind: "onyx.Button", content: "Close", ontap: "destroyPanel"}
+			]}
+		],			
 	},	
 	components: [
 		{kind: "Panels", fit: true, touch: true, classes: "panels-sample-sliding-panels", arrangerKind: "CollapsingArranger", wrap: false, components: [
@@ -49,7 +48,16 @@ enyo.kind({
 				]}
 			]},
 			{name: "imageIcon", kind: "Scroller" },			
-        ]
+        ],
+			destroyPanel: function(inSender, inEvent) {
+				this.setIndex(2);				
+				this.getActive().destroy();					
+				this.panelCreated = false;
+				this.setIndex(0);
+				this.reflow();
+				
+		},
+			
 		}
 	],
 	
@@ -66,6 +74,12 @@ enyo.kind({
 	"./assets/Untar.gif"],
 	commandPanels:["concPanel","copyPanel","impPanel","expPanel"],
 	commands:["Concatenate","Copy","Import","Export"],
+	closePanel: function(){
+	alert("Closing Panel");
+		this.$.panels.setIndex(0);
+		this.destroyPanel();
+	},
+	
 	setupItem: function(inSender, inEvent) {
 		// given some available data.
 		this.$.item.addRemoveClass("onyx-selected", inSender.isSelected(inEvent.index));
@@ -78,17 +92,19 @@ enyo.kind({
 		this.$.menu_option.setContent(this.menu[inEvent.index]);
 	},
 	concPanel: function(inSender, inEvent) {
-	
-		panelCreated =true;
-		
-		b = this.$.panels;
-		p = b.createComponent( 
-			this.c1
-		);
-		p.render();
-		b.reflow();
-		this.panel_three = p
-		this.$.panels.setIndex(1);
+		if(!this.$.panels.panelCreated){
+			this.$.panels.panelCreated =true;
+			b = this.$.panels;
+			p = b.createComponent( 
+				this.c1
+			);
+			p.render();
+			b.reflow();
+			this.contContent = p
+			this.$.panels.setIndex(1);
+			
+			this.$.panels.activePanel = "contContent";
+		}
 	},
 	impPanel: function(inSender, inEvent) {
 		alert("Import Panel");
@@ -101,41 +117,45 @@ enyo.kind({
 		alert("Export Panel");
 	},	
 	itemTapMenu: function(inSender, inEvent) {
-		alert("You tapped on row: " + inEvent.index);
-		
 		if (enyo.Panels.isScreenNarrow()) {
 			this.$.panels.setIndex(1);
 		}		
 
-		if(this.panelCreated)this.destroyPanel();
+		if(this.$.panels.panelCreated)this.$.panels.destroyPanel();
 		
-		if(inEvent.index == 1){
+		if(inEvent.index == 0){
+			this.$.imageIcon.destroyClientControls();
+			this.createComponent({kind: "onyx.Toolbar", container: this.$.imageIcon,components: [
+						{content: "Files"},
+						{fit: true}]}
+			);
+			this.$.imageIcon.render();
+		
+		}else if(inEvent.index == 1){
 			this.build();
-			/*if(!this.panelCreated)
-			{
-				this.createPanel(inEvent);
-			}
-			else
-			{
-				this.destroyPanel();
-			}*/
+		}else if(inEvent.index == 2){
+			this.$.imageIcon.destroyClientControls();
+			this.createComponent({kind: "onyx.Toolbar", container: this.$.imageIcon,components: [
+						{content: "Activity History"},
+						{fit: true}]}
+			);
+			this.$.imageIcon.render();		
+		}else if(inEvent.index == 3){
+			this.$.imageIcon.destroyClientControls();
+			this.createComponent({kind: "onyx.Toolbar", container: this.$.imageIcon,components: [
+						{content: "Accounts"},
+						{fit: true}]}
+			);
+			this.$.imageIcon.render();		
 		}
 	},	
-		
-	createBackButton: function() {
-		panel = this.$.body;
-		//b = panel.createComponent( 
-		//	{kind: "onyx.Button", content: "tap me", ontap: "buttonTapped", style:"position:absolute; top:100px;"}
-		//);
-		b.render();
-		panel.reflow();
-	},	
+
 	build: function() {
         this.$.imageIcon.destroyClientControls();
-        //for (var i=0; i<4; i++) {
-        //    this.createComponent({kind: "onyx.Button", container: this.$.imageIcon, ontap: this.commandPanels[i], index: i, pack: "center", align: "center",components: [
-		//							{kind: "onyx.Icon", src: this.nepheleImages[i]}]
-		//						});  			
+		this.createComponent({kind: "onyx.Toolbar", container: this.$.imageIcon,components: [
+						{content: "Commands"},
+						{fit: true}]}
+		);
         //};
 		this.createComponent( 
 			{ name: "IconGallery", kind: "IconList", container: this.$.imageIcon ,onSelectedItem: "selectedItem" , nepheleImages: this.nepheleImages, commands: this.commands, retrieveContentData: function() { this.data = createCommandItems(this.commands, this.nepheleImages); } } 
@@ -154,9 +174,7 @@ enyo.kind({
 			}
 		}		
 	},
-	createPanel: function(inEvent) {
-	
-		alert("Creating panel");
+	createPanel: function(inEvent) {	
 		if(!this.panelCreated){
 			b = this.$.panels;
 				p = b.createComponent( 
@@ -164,25 +182,9 @@ enyo.kind({
 				);
 				p.render();
 				b.reflow();
-				this.panel_three = p;
+				this.conContent = p;
 				this.createBackButton();
 				this.$.panels.setIndex(1);
 			}
-		
-		/*if(!this.panelCreated)
-		{
-			this.panelCreated = true;
-			b = this.imageIcon;
-			p = b.createComponent( 
-				//this.c1
-				this.p3
-			);
-			p.render();
-			b.reflow();
-			//this.panel_three = p;
-			this.imageIcon = p;
-			this.createBackButton();
-			this.$.panels.setIndex(1);
-		}*/
 	}
 });
