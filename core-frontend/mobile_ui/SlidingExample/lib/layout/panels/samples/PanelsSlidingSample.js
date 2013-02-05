@@ -39,9 +39,8 @@ enyo.kind({
 			{name: "imageIcon"},			
         ],
 			destroyPanel: function(inSender, inEvent) {
-				alert("Destroying panel");
-				this.$.contContent.destroy();		
-				//this.activePanel.destroy();					
+				this.setIndex(2);				
+				this.getActive().destroy();					
 				this.panelCreated = false;
 				this.setIndex(0);
 				this.reflow();
@@ -94,10 +93,6 @@ enyo.kind({
 			
 			this.$.panels.activePanel = "contContent";
 		}
-		//else{
-			//this.destroyPanel();
-			//}	
-		
 	},
 	impPanel: function(inSender, inEvent) {
 		alert("Import Panel");
@@ -110,24 +105,36 @@ enyo.kind({
 	},
 	
 	itemTapMenu: function(inSender, inEvent) {
-		alert("You tapped on row: " + inEvent.index);
-		
 		if (enyo.Panels.isScreenNarrow()) {
 			this.$.panels.setIndex(1);
 		}		
 
-		if(this.panelCreated)this.destroyPanel();
+		if(this.$.panels.panelCreated)this.$.panels.destroyPanel();
 		
-		if(inEvent.index == 1){
+		if(inEvent.index == 0){
+			this.$.imageIcon.destroyClientControls();
+			this.createComponent({kind: "onyx.Toolbar", container: this.$.imageIcon,components: [
+						{content: "Files"},
+						{fit: true}]}
+			);
+			this.$.imageIcon.render();
+		
+		}else if(inEvent.index == 1){
 			this.build();
-			/*if(!this.panelCreated)
-			{
-				this.createPanel(inEvent);
-			}
-			else
-			{
-				this.destroyPanel();
-			}*/
+		}else if(inEvent.index == 2){
+			this.$.imageIcon.destroyClientControls();
+			this.createComponent({kind: "onyx.Toolbar", container: this.$.imageIcon,components: [
+						{content: "Activity History"},
+						{fit: true}]}
+			);
+			this.$.imageIcon.render();		
+		}else if(inEvent.index == 3){
+			this.$.imageIcon.destroyClientControls();
+			this.createComponent({kind: "onyx.Toolbar", container: this.$.imageIcon,components: [
+						{content: "Accounts"},
+						{fit: true}]}
+			);
+			this.$.imageIcon.render();		
 		}
 	},	
 
