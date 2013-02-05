@@ -2,14 +2,8 @@ enyo.kind({
 	name: "enyo.sample.PanelsSlidingSample",
 	kind: "FittableRows",
 	classes: "onyx enyo-fit",
-	destroyPanel: function() {
-		if(this.panelCreated)
-		{
-			this.panel_three.destroy();			
-			this.panelCreated = false;
-			this.$.panels.reflow();
-		}
-	},
+	
+	
 	buttonTapped: function(inSender, inEvent) {
 		// respond to the tap event
 		this.$.panels.setIndex(0);
@@ -17,9 +11,18 @@ enyo.kind({
 	},
 	c1:{ 
 			name: "panel_three",
-			style: "width: 800px" ,
-			classes: "panels-sample-sliding-content", 
-			content: "Broke, down dumb hospitality firewood chitlins. Has mud tired uncle everlastin' cold, out. Hauled thar, up thar tar heffer quarrel farmer fish water is. Simple gritts dogs soap give kickin'. Ain't shiney water range, preacher java rent thar go. Skinned wirey tin farm, trespassin' it, rodeo. Said roped caught creosote go simple. Buffalo butt, jig fried commencin' cipherin' maw, wash. Round-up barefoot jest bible rottgut sittin' trailer shed jezebel. Crop old over poker drinkin' dirt where tools skinned, city-slickers tools liniment mush tarnation. Truck lyin' snakeoil creosote, old a inbred pudneer, slap dirty cain't. Hairy, smokin', nothin' highway hootch pigs drinkin', barefoot bootleg hoosegow mule. Tax-collectors uncle wuz, maw watchin' had jumpin' got redblooded gimmie truck shootin' askin' hootch. No fat ails fire soap cabin jail, reckon if trespassin' fixin' rustle jest liniment. Ya huntin' catfish shot good bankrupt. Fishin' sherrif has, fat cooked shed old. Broke, down dumb hospitality firewood chitlins. Has mud tired uncle everlastin' cold, out. Hauled thar, up thar tar heffer quarrel farmer fish water is. Simple gritts dogs soap give kickin'. Ain't shiney water range, preacher java rent thar go. Skinned wirey tin farm, trespassin' it, rodeo. Said roped caught creosote go simple. Buffalo butt, jig fried commencin' cipherin' maw, wash. Round-up barefoot jest bible rottgut sittin' trailer shed jezebel. Crop old over poker drinkin' dirt where tools skinned, city-slickers tools liniment mush tarnation. Truck lyin' snakeoil creosote, old a inbred pudneer, slap dirty cain't. Hairy, smokin', nothin' highway hootch pigs drinkin', barefoot bootleg hoosegow mule. Tax-collectors uncle wuz, maw watchin' had jumpin' got redblooded gimmie truck shootin' askin' hootch. No fat ails fire soap cabin jail, reckon if trespassin' fixin' rustle jest liniment. Ya huntin' catfish shot good bankrupt. Fishin' sherrif has, fat cooked shed old. Broke, down dumb hospitality firewood chitlins. Has mud tired uncle everlastin' cold, out. Hauled thar, up thar tar heffer quarrel farmer fish water is. Simple gritts dogs soap give kickin'. Ain't shiney water range, preacher java rent thar go. Skinned wirey tin farm, trespassin' it, rodeo. Said roped caught creosote go simple. Buffalo butt, jig fried commencin' cipherin' maw, wash. Round-up barefoot jest bible rottgut sittin' trailer shed jezebel. Crop old over poker drinkin' dirt where tools skinned, city-slickers tools liniment mush tarnation. Truck lyin' snakeoil creosote, old a inbred pudneer, slap dirty cain't. Hairy, smokin', nothin' highway hootch pigs drinkin', barefoot bootleg hoosegow mule. Tax-collectors uncle wuz, maw watchin' had jumpin' got redblooded gimmie truck shootin' askin' hootch. No fat ails fire soap cabin jail, reckon if trespassin' fixin' rustle jest liniment. Ya huntin' catfish shot good bankrupt. Fishin' sherrif has, fat cooked shed old. Broke, down dumb hospitality firewood chitlins. Has mud tired uncle everlastin' cold, out. Hauled thar, up thar tar heffer quarrel farmer fish water is. Simple gritts dogs soap give kickin'. Ain't shiney water range, preacher java rent thar go. Skinned wirey tin farm, trespassin' it, rodeo. Said roped caught creosote go simple. Buffalo butt, jig fried commencin' cipherin' maw, wash. Round-up barefoot jest bible rottgut sittin' trailer shed jezebel. Crop old over poker drinkin' dirt where tools skinned, city-slickers tools liniment mush tarnation. Truck lyin' snakeoil creosote, old a inbred pudneer, slap dirty cain't. Hairy, smokin', nothin' highway hootch pigs drinkin', barefoot bootleg hoosegow mule. Tax-collectors uncle wuz, maw watchin' had jumpin' got redblooded gimmie truck shootin' askin' hootch. No fat ails fire soap cabin jail, reckon if trespassin' fixin' rustle jest liniment. Ya huntin' catfish shot good bankrupt. Fishin' sherrif has, fat cooked shed old."
+			classes: "panels-sample-sliding-content", components: [
+			{name: "left", components: [
+				{kind: "Scroller", classes: "enyo-fit", touch: true, components: [
+					{kind: "onyx.Toolbar", components: [
+						{content: "Concatenate"},
+						{fit: true}]
+					},
+					{name: "description", content: "Concatenate up to 8 files", style: "text-align:center; padding: 10px;"},					
+					]
+				}]
+			}
+			]
 	},	
 	components: [
 		{kind: "Panels", fit: true, touch: true, classes: "panels-sample-sliding-panels", arrangerKind: "CollapsingArranger", wrap: false, components: [
@@ -53,6 +56,20 @@ enyo.kind({
 	"C:/Users/LIS/Desktop/bootplate/lib/layout/panels/samples/assets/search-input-search.png",
 	"C:/Users/LIS/Desktop/bootplate/lib/layout/panels/samples/assets/search-input-search.png"],
 	commandPanels:["concPanel","copyPanel","impPanel","expPanel"],
+	closePanel: function(){
+	alert("Closing Panel");
+		this.$.panels.setIndex(0);
+		this.destroyPanel();
+	},
+	destroyPanel: function() {
+		//if(this.panelCreated)
+		//{
+			this.panel_three.destroy();			
+			this.panelCreated = false;
+			this.$.panels.setIndex(0);
+			this.$.panels.reflow();
+		//}
+	},
 	setupItem: function(inSender, inEvent) {
 		// given some available data.
 		this.$.item.addRemoveClass("onyx-selected", inSender.isSelected(inEvent.index));
@@ -65,17 +82,20 @@ enyo.kind({
 		this.$.menu_option.setContent(this.menu[inEvent.index]);
 	},
 	concPanel: function(inSender, inEvent) {
-	
-		panelCreated =true;
-		b = this.$.panels;
-		p = b.createComponent( 
-			this.c1
-		);
-		p.render();
-		b.reflow();
-		this.panel_three = p
-		this.$.panels.setIndex(1);
-		
+		if(!this.panelCreated){
+			this.panelCreated =true;
+			b = this.$.panels;
+			p = b.createComponent( 
+				this.c1
+			);
+			p.render();
+			b.reflow();
+			this.panel_three = p
+			this.$.panels.setIndex(1);
+		}
+		else{
+			this.destroyPanel();
+			}	
 		
 	},
 	impPanel: function(inSender, inEvent) {
@@ -121,6 +141,10 @@ enyo.kind({
 	
 	build: function() {
         this.$.imageIcon.destroyClientControls();
+		this.createComponent({kind: "onyx.Toolbar", container: this.$.imageIcon,components: [
+						{content: "Commands"},
+						{fit: true}]}
+		);
         for (var i=0; i<4; i++) {
             this.createComponent({kind: "onyx.Button", container: this.$.imageIcon, ontap: this.commandPanels[i], index: i, pack: "center", align: "center",components: [
 									{kind: "onyx.Icon", src: this.nepheleImages[i]}]
