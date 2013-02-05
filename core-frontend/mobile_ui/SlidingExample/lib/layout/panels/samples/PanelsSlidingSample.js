@@ -2,27 +2,23 @@ enyo.kind({
 	name: "enyo.sample.PanelsSlidingSample",
 	kind: "FittableRows",
 	classes: "onyx enyo-fit",
-	
-	
-	buttonTapped: function(inSender, inEvent) {
-		// respond to the tap event
-		this.$.panels.setIndex(0);
-		this.destroyPanel();
-	},
 	c1:{ 
-			name: "panel_three",
-			classes: "panels-sample-sliding-content", components: [
-			{name: "left", components: [
-				{kind: "Scroller", classes: "enyo-fit", touch: true, components: [
-					{kind: "onyx.Toolbar", components: [
+		name:"contContent",
+		kind: "FittableRows",
+		fit: true,
+		components:[
+			{name: "topToolbar",kind: "onyx.Toolbar", components: [
 						{content: "Concatenate"},
-						{fit: true}]
-					},
-					{name: "description", content: "Concatenate up to 8 files", style: "text-align:center; padding: 10px;"},					
-					]
-				}]
-			}
-			]
+						{fit: true}]},
+			{kind: "enyo.Scroller", fit: true, components: [
+				{name: "panel_three",
+				classes: "panels-sample-sliding-content", allowHtml: true, components:[
+				{name: "description", content: "Concatenate up to 8 files", style: "text-align:center; padding: 10px;"}]}
+			]},
+			{kind: "onyx.Toolbar", components: [
+				{kind: "onyx.Button", content: "Close", ontap: "destroyPanel"}
+			]}
+		],			
 	},	
 	components: [
 		{kind: "Panels", fit: true, touch: true, classes: "panels-sample-sliding-panels", arrangerKind: "CollapsingArranger", wrap: false, components: [
@@ -39,8 +35,19 @@ enyo.kind({
 					
 				]}
 			]},
+			
 			{name: "imageIcon"},			
-        ]
+        ],
+			destroyPanel: function(inSender, inEvent) {
+				alert("Destroying panel");
+				this.$.contContent.destroy();		
+				//this.activePanel.destroy();					
+				this.panelCreated = false;
+				this.setIndex(0);
+				this.reflow();
+				
+		},
+			
 		}
 	],
 	
@@ -61,15 +68,7 @@ enyo.kind({
 		this.$.panels.setIndex(0);
 		this.destroyPanel();
 	},
-	destroyPanel: function() {
-		//if(this.panelCreated)
-		//{
-			this.panel_three.destroy();			
-			this.panelCreated = false;
-			this.$.panels.setIndex(0);
-			this.$.panels.reflow();
-		//}
-	},
+	
 	setupItem: function(inSender, inEvent) {
 		// given some available data.
 		this.$.item.addRemoveClass("onyx-selected", inSender.isSelected(inEvent.index));
@@ -82,20 +81,22 @@ enyo.kind({
 		this.$.menu_option.setContent(this.menu[inEvent.index]);
 	},
 	concPanel: function(inSender, inEvent) {
-		if(!this.panelCreated){
-			this.panelCreated =true;
+		if(!this.$.panels.panelCreated){
+			this.$.panels.panelCreated =true;
 			b = this.$.panels;
 			p = b.createComponent( 
 				this.c1
 			);
 			p.render();
 			b.reflow();
-			this.panel_three = p
+			this.contContent = p
 			this.$.panels.setIndex(1);
+			
+			this.$.panels.activePanel = "contContent";
 		}
-		else{
-			this.destroyPanel();
-			}	
+		//else{
+			//this.destroyPanel();
+			//}	
 		
 	},
 	impPanel: function(inSender, inEvent) {
@@ -129,16 +130,7 @@ enyo.kind({
 			}*/
 		}
 	},	
-		
-	createBackButton: function() {
-		panel = this.$.body;
-		//b = panel.createComponent( 
-		//	{kind: "onyx.Button", content: "tap me", ontap: "buttonTapped", style:"position:absolute; top:100px;"}
-		//);
-		b.render();
-		panel.reflow();
-	},
-	
+
 	build: function() {
         this.$.imageIcon.destroyClientControls();
 		this.createComponent({kind: "onyx.Toolbar", container: this.$.imageIcon,components: [
@@ -154,9 +146,7 @@ enyo.kind({
         this.$.imageIcon.render();
     },
 	
-	createPanel: function(inEvent) {
-	
-		alert("Creating panel");
+	createPanel: function(inEvent) {	
 		if(!this.panelCreated){
 			b = this.$.panels;
 				p = b.createComponent( 
@@ -164,25 +154,9 @@ enyo.kind({
 				);
 				p.render();
 				b.reflow();
-				this.panel_three = p;
+				this.conContent = p;
 				this.createBackButton();
 				this.$.panels.setIndex(1);
 			}
-		
-		/*if(!this.panelCreated)
-		{
-			this.panelCreated = true;
-			b = this.imageIcon;
-			p = b.createComponent( 
-				//this.c1
-				this.p3
-			);
-			p.render();
-			b.reflow();
-			//this.panel_three = p;
-			this.imageIcon = p;
-			this.createBackButton();
-			this.$.panels.setIndex(1);
-		}*/
 	}
 });
