@@ -25,12 +25,24 @@ enyo.kind({
 			{kind: "enyo.Scroller", fit: true, components: [
 				{name: "panel_three",
 				classes: "panels-sample-sliding-content", allowHtml: true, components:[
-				{name: "description", content: "Concatenate up to 8 files", style: "text-align:center; padding: 10px;"}]}
+				{name: "description", content: "Concatenate up to 8 files", style: "text-align:center; padding: 10px;"}]},
+				{kind: "List", fit: true, touch:true, count: 8, onSetUpItem: "setupItemConc",components: [
+						{name: "menu_item",	style: "padding: 10px;", classes: "panels-sample-flickr-item", ontap: "itemTapMenu", components: [
+							{name: "menu_option", content:"File Input"}
+						]}
+					],
+					setupItemConc: function(inSender, inEvent) {
+						this.menu_item.addRemoveClass("onyx-selected", inSender.isSelected(inEvent.index));
+						this.menu_option.setContent("File Input");
+					}
+				}
 			]},
 			{kind: "onyx.Toolbar", components: [
 				{kind: "onyx.Button", content: "Close", ontap: "destroyPanel"}
-			]}
-		],			
+			]},
+
+		],	
+			
 	},	
 	components: [
 		{kind: "Panels", fit: true, touch: true, classes: "panels-sample-sliding-panels", arrangerKind: "CollapsingArranger", wrap: false, components: [
@@ -39,9 +51,10 @@ enyo.kind({
 					{kind: "onyx.Toolbar", components: [
 						{content: "N3phele"},
 						{fit: true}]},
-					{kind:"Image", src:"assets/cloud-theme.gif", fit: true},					
+					{kind:"Image", src:"assets/cloud-theme.gif", fit: true, style:  "padding-left:30px; padding-top: 30px;"},					
 					{kind: "List", fit: true, touch:true, count:4, onSetupItem: "setupItemMenu", components: [
-						{name: "menu_item",	style: "padding: 10px;", classes: "panels-sample-flickr-item", ontap: "itemTapMenu", components: [
+						{name: "menu_item",	classes: "panels-sample-flickr-item", ontap: "itemTapMenu", components: [
+							{name:"menu_image", kind:"Image"},
 							{name: "menu_option",kind:"Image"}]},
 					]},
 					
@@ -68,9 +81,10 @@ enyo.kind({
 					]});
 	},
 	menu:["Files","Commands","Acvity History","Accounts"],	
+	menuImages:["./assets/files.png","./assets/commands.png","./assets/activityHistory.png","./assets/accounts.png"],
 	nepheleImages:["./assets/concatenate.gif"
-	, "./assets/search-input-search.png", 
-	"./assets/search-input-search.png",
+	, "./assets/fileCopy.gif", 
+	"./assets/Import.gif",
 	"./assets/Untar.gif"],
 	commandPanels:["concPanel","copyPanel","impPanel","expPanel"],
 	commands:["Concatenate","Copy","Import","Export"],
@@ -89,7 +103,9 @@ enyo.kind({
 	setupItemMenu: function(inSender, inEvent) {
 		// given some available data.
 		this.$.menu_item.addRemoveClass("onyx-selected", inSender.isSelected(inEvent.index));
+		this.$.menu_image.setSrc(this.menuImages[inEvent.index]);
 		this.$.menu_option.setContent(this.menu[inEvent.index]);
+		
 	},
 	concPanel: function(inSender, inEvent) {
 		if(!this.$.panels.panelCreated){

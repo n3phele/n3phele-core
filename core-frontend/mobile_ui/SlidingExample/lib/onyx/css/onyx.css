@@ -568,10 +568,10 @@
 	*/
 
   padding: 9px 8px 10px 8px;
-  border: 1px solid #3A3A3A;
-  background: #4c4c4c url(../images/gradient.png) repeat-x 0 bottom;
+  border: 1px solid #375d8c;
+  background:#b1c2d7;
   background-size: contain;
-  color: #ffffff;
+  color: #375d8c;
   /**/
 
   white-space: nowrap;
@@ -589,9 +589,9 @@
   margin: 3px 2px 1px;
 }
 .onyx-toolbar .onyx-button {
-  color: #f2f2f2;
-  background-color: #555656;
-  border-color: rgba(15, 15, 15, 0.5);
+  color: #375d8c;
+  background-color: #FFFFFF;
+  border-color:#375d8c;
   margin-top: 0;
   margin-bottom: 0;
   height: 36px;

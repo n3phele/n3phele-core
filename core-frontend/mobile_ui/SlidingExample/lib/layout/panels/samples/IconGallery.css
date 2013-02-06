@@ -42,7 +42,7 @@ a img {
 /* main */
 
 .main {
-	background-color: #EAEAEA;
+	background-color: #eef2f5;
 }
 
 .cards {
@@ -89,8 +89,8 @@ a img {
 }
 
 .icon {
-	width: 180px;
-	height: 160px;
+	width: 140px;
+	height: 120px;
 }
 
 .blurb {
@@ -117,8 +117,8 @@ a img {
 .card {
 	display: inline-block;
 	overflow: hidden;
-	width: 180px;
-	height: 200px;
+	width: 160px;
+	height: 140px;
 	margin: 16px;
 	padding: 15px;
 	
