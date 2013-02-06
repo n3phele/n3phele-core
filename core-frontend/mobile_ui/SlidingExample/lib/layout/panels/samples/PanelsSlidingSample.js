@@ -63,7 +63,14 @@ enyo.kind({
 			this.setIndex(2);				
 			this.getActive().destroy();					
 			this.panelCreated = false;
-			this.setIndex(0);
+			
+			if (enyo.Panels.isScreenNarrow()) {
+				this.setIndex(1);
+			}
+			else {
+				this.setIndex(0);
+			}		
+			
 			this.reflow();
 			
 			this.owner.$.IconGallery.deselectLastItem();
@@ -88,14 +95,7 @@ enyo.kind({
 	alert("Closing Panel");
 		this.$.panels.setIndex(0);
 		this.destroyPanel();
-	},
-	
-	setupItem: function(inSender, inEvent) {
-		// given some available data.
-		this.$.item.addRemoveClass("onyx-selected", inSender.isSelected(inEvent.index));
-		this.$.t.setContent(this.menu[inEvent.index]);
-	},
-	
+	},	
 	setupItemMenu: function(inSender, inEvent) {
 		// given some available data.
 		this.$.menu_item.addRemoveClass("onyx-selected", inSender.isSelected(inEvent.index));
@@ -113,7 +113,13 @@ enyo.kind({
 			p.render();
 			b.reflow();
 			this.contContent = p
-			this.$.panels.setIndex(1);
+			
+			if (enyo.Panels.isScreenNarrow()) {
+				this.$.panels.setIndex(2);
+			}
+			else {
+				this.$.panels.setIndex(1);
+			}
 			
 			this.$.panels.activePanel = "contContent";
 		}
