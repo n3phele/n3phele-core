@@ -57,7 +57,9 @@ enyo.kind({
 					]},
 				]}
 			]},
-			{name: "imageIcon", kind: "Scroller" },			
+			{name: "imageIconPanel", kind:"FittableRows", fit:true, components:[
+				{name: "imageIcon",kind: "Scroller"}
+			]},			
         ],
 		destroyPanel: function(inSender, inEvent) {
 			this.setIndex(2);				
@@ -141,44 +143,59 @@ enyo.kind({
 		if(this.$.panels.panelCreated)this.$.panels.destroyPanel();
 		
 		if(inEvent.index == 0){
-			this.$.imageIcon.destroyClientControls();
-			this.createComponent({kind: "onyx.Toolbar", container: this.$.imageIcon,components: [
+			this.$.imageIconPanel.destroyClientControls();
+			this.createComponent({kind: "onyx.Toolbar", container: this.$.imageIconPanel,components: [
 						{content: "Files"},
 						{fit: true}]}
 			);
-			this.$.imageIcon.render();
+			this.$.imageIconPanel.render();
 		
 		}else if(inEvent.index == 1){
 			this.build();
 		}else if(inEvent.index == 2){
-			this.$.imageIcon.destroyClientControls();
-			this.createComponent({kind: "onyx.Toolbar", container: this.$.imageIcon,components: [
+			this.$.imageIconPanel.destroyClientControls();
+			this.createComponent({kind: "onyx.Toolbar", container: this.$.imageIconPanel,components: [
 						{content: "Activity History"},
 						{fit: true}]}
 			);
-			this.$.imageIcon.render();		
+			this.$.imageIconPanel.render();		
 		}else if(inEvent.index == 3){
-			this.$.imageIcon.destroyClientControls();
-			this.createComponent({kind: "onyx.Toolbar", container: this.$.imageIcon,components: [
+			this.$.imageIconPanel.destroyClientControls();
+			this.createComponent({kind: "onyx.Toolbar", container: this.$.imageIconPanel,components: [
 						{content: "Accounts"},
 						{fit: true}]}
 			);
-			this.$.imageIcon.render();		
+			this.$.imageIconPanel.render();		
 		}
 	},	
+	
+	backMenu: function(){
+		this.$.panels.setIndex(0);
+	},
 
 	build: function() {
-        this.$.imageIcon.destroyClientControls();
-		this.createComponent({kind: "onyx.Toolbar", container: this.$.imageIcon,components: [
-						{content: "Commands"},
-						{fit: true}]}
-		);
+        this.$.imageIconPanel.destroyClientControls();
+		
+		this.createComponent({name:"toolComm", kind: "onyx.Toolbar", container: this.$.imageIconPanel,components: [
+							{content: "Commands"},
+							{fit: true}]}
+			);		
 		
 		this.createComponent( 
-			{ name: "IconGallery", kind: "IconList",container: this.$.imageIcon, onDeselectedItems: "closeThirdPanel" , onSelectedItem: "selectedItem" , nepheleImages: this.nepheleImages, commands: this.commands, retrieveContentData: function() { this.data = createCommandItems(this.commands, this.nepheleImages); } } 
-		);
+			{ name: "IconGallery", kind: "IconList",container: this.$.imageIconPanel, onDeselectedItems: "closeThirdPanel" , onSelectedItem: "selectedItem" , nepheleImages: this.nepheleImages, commands: this.commands, retrieveContentData: function() { this.data = createCommandItems(this.commands, this.nepheleImages); } } 
+		);		
 		
-        this.$.imageIcon.render();
+		
+		if (enyo.Panels.isScreenNarrow()) {
+		this.createComponent({kind: "onyx.Toolbar",container: this.$.imageIconPanel, components: [
+				{kind: "onyx.Button", content: "Close", ontap: "backMenu"}
+			]});
+		}
+		else{
+		this.createComponent({kind: "onyx.Toolbar",container: this.$.imageIconPanel});
+		}
+		
+        this.$.imageIconPanel.render();
     },
 	closeThirdPanel: function() {
 		if ( this.$.panels.panelCreated )
