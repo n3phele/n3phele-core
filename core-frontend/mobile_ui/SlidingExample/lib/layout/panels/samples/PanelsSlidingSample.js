@@ -1,7 +1,5 @@
 var createCommandItems = function(arrayOfCommands, arrayOfImages) {
 	list = [];
-	console.log(arrayOfCommands);
-	console.log(arrayOfImages);
 	for (var i in arrayOfCommands)
 	{
 		var widget = { name: arrayOfCommands[i], displayName: arrayOfCommands[i], image: arrayOfImages[i] };
@@ -44,23 +42,21 @@ enyo.kind({
 						{name: "menu_item",	style: "padding: 10px;", classes: "panels-sample-flickr-item", ontap: "itemTapMenu", components: [
 							{name: "menu_option",kind:"Image"}]},
 					]},
-					
 				]}
 			]},
 			{name: "imageIcon", kind: "Scroller" },			
         ],
-			destroyPanel: function(inSender, inEvent) {
-				this.setIndex(2);				
-				this.getActive().destroy();					
-				this.panelCreated = false;
-				this.setIndex(0);
-				this.reflow();
-				
-		},
+		destroyPanel: function(inSender, inEvent) {
+			this.setIndex(2);				
+			this.getActive().destroy();					
+			this.panelCreated = false;
+			this.setIndex(0);
+			this.reflow();
 			
-		}
-	],
-	
+			this.owner.$.IconGallery.deselectLastItem();
+		}			
+	}
+	],	
 	setupButton: function(inSender, inEvent) {
 		this.$.item.addRemoveClass("onyx-selected", inSender.isSelected(inEvent.index));
 		this.$.t.setContent({kind: "onyx.Button", ontap:"itemTapMenu", components: [
@@ -95,7 +91,7 @@ enyo.kind({
 		if(!this.$.panels.panelCreated){
 			this.$.panels.panelCreated =true;
 			b = this.$.panels;
-			p = b.createComponent( 
+			p = b.createComponent(
 				this.c1
 			);
 			p.render();
@@ -113,7 +109,6 @@ enyo.kind({
 		alert("Copy Panel");
 	},
 	expPanel: function(inSender, inEvent) {
-		console.log(this);
 		alert("Export Panel");
 	},	
 	itemTapMenu: function(inSender, inEvent) {
@@ -156,16 +151,28 @@ enyo.kind({
 						{content: "Commands"},
 						{fit: true}]}
 		);
-        //};
+		
 		this.createComponent( 
-			{ name: "IconGallery", kind: "IconList", container: this.$.imageIcon ,onSelectedItem: "selectedItem" , nepheleImages: this.nepheleImages, commands: this.commands, retrieveContentData: function() { this.data = createCommandItems(this.commands, this.nepheleImages); } } 
+			{ name: "IconGallery", kind: "IconList", container: this.$.imageIcon, onDeselectedItems: "closeThirdPanel" , onSelectedItem: "selectedItem" , nepheleImages: this.nepheleImages, commands: this.commands, retrieveContentData: function() { this.data = createCommandItems(this.commands, this.nepheleImages); } } 
 		);
 		
         this.$.imageIcon.render();
     },
+	closeThirdPanel: function() {
+		if ( this.$.panels.panelCreated )
+		{
+			this.$.panels.setIndex(2);
+			this.$.panels.getActive().destroy();
+			this.$.panels.panelCreated = false;
+			this.$.panels.setIndex(0);
+			this.$.panels.reflow();
+			this.$.IconGallery.deselectLastItem();
+		}
+	}
+	,
 	selectedItem: function(inSender, inEvent) {
-		console.log("One item was selected on APP : " + inEvent.name );
-			
+		console.log("One command was selected on APP : " + inEvent.name );
+		
 		for( var i in this.commands )
 		{
 			if (this.commands[i] == inEvent.name)
@@ -173,18 +180,5 @@ enyo.kind({
 				eval('this.' + this.commandPanels[i] + '()');
 			}
 		}		
-	},
-	createPanel: function(inEvent) {	
-		if(!this.panelCreated){
-			b = this.$.panels;
-				p = b.createComponent( 
-					this.c1
-				);
-				p.render();
-				b.reflow();
-				this.conContent = p;
-				this.createBackButton();
-				this.$.panels.setIndex(1);
-			}
 	}
 });

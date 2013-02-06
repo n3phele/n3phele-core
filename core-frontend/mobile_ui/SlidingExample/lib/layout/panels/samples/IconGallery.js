@@ -20,7 +20,8 @@ enyo.kind({
 	kind: "Scroller",
 	data: [],
 	events: {
-		onSelectedItem: ""
+		onSelectedItem: "",
+		onDeselectedItems: ""
 	},
 	fit: true, touch: true, classes: "main",
 	components: [
@@ -62,7 +63,7 @@ enyo.kind({
 		this.$.list.destroyClientControls();
 		
 		var items = this.widgets;
-		// to sorted by submission date array
+		
 		items = this.toArray(items);
 		
 		for (var i=0, w; (w=items[i]); i++) {
@@ -70,11 +71,6 @@ enyo.kind({
 			this.createComponent({kind: "Card", container: this.$.cards}, more);
 			this.createComponent({kind: "ListItem", container: this.$.list}, more);
 		}
-		
-		//to make cards in last row left-aligned
-		//for (i=0; i<4; i++) {
-		//	this.createComponent({kind: "Card", container: this.$.cards, classes: "card-empty"});
-		//}
 		
 		this.$.cards.render();
 		this.$.list.render();
@@ -87,22 +83,38 @@ enyo.kind({
 		return ls;
 	},
 	lastSelected: false,
-	selectItem: function(item) {
+	selectItem: function(item) {	
+		if( item != this.lastSelected ) 
+		{	
+			this.setAsSelected(item);
+			this.lastSelected = item;
+			this.doSelectedItem(item.data);
+		}
+		else
+		{	
+			this.deselectLastItem();
+			this.lastSelected = null;
+			this.doDeselectedItems();
+		}
+	},
+	setAsSelected: function(item) { 
 		if (this.lastSelected){
-			this.lastSelected.addRemoveClass("onyx-selected", false );;
-		//	this.lastSelected.$.name.addRemoveClass("onyx-selected", false );
-		//	this.lastSelected.$.icon.addRemoveClass("onyx-selected", false );
+				this.lastSelected.addRemoveClass("onyx-selected", false );
 		}
 		item.addRemoveClass("onyx-selected", true );
-		//item.$.name.addRemoveClass("onyx-selected", true );
-		//item.$.icon.addRemoveClass("onyx-selected", true );
-		
-		this.lastSelected = item;
 	},
+	deselectLastItem: function() {
+		if(this.lastSelected) this.lastSelected.addRemoveClass("onyx-selected", false );
+		lastSelected = null;
+	}
+	,
 	itemTap: function(inSender, inEvent) {
-		var selectedObject = inSender.data;
+		var selectedObject = inSender;
+		
+		console.log( "selected object" + selectedObject);
+		console.log( "last selected object" + this.lastSelected);
+		
 		this.selectItem(inSender);
-		this.doSelectedItem(selectedObject);
 	},
 	preventTap: function(inSender, inEvent) {
 		inEvent.preventTap();
