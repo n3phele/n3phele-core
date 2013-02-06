@@ -216,6 +216,7 @@ a img {
 
 /* */
 
+/*
 @media (max-width: 600px) {
 	.cards {
 		display: none;
@@ -233,6 +234,7 @@ a img {
 		padding: 6px 16px;
 	}
 }
+*/
 
 /* IE8 border hack */
 @media \0screen {

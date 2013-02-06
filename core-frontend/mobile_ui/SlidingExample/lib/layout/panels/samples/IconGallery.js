@@ -27,7 +27,6 @@ enyo.kind({
 	components: [
 		// using media query (see css) to determine which one should be displayed
 		{name: "cards", classes: "cards"},
-		{name: "list", classes: "list"}
 	],
 	constructor: function() {
 		this.inherited(arguments);
@@ -60,7 +59,6 @@ enyo.kind({
 	//Create Card and ListItems based on the content of this.widgets variable
 	renderItems: function() {
 		this.$.cards.destroyClientControls();
-		this.$.list.destroyClientControls();
 		
 		var items = this.widgets;
 		
@@ -69,11 +67,9 @@ enyo.kind({
 		for (var i=0, w; (w=items[i]); i++) {
 			var more = {data: w, ontap: "itemTap"};
 			this.createComponent({kind: "Card", container: this.$.cards}, more);
-			this.createComponent({kind: "ListItem", container: this.$.list}, more);
 		}
 		
 		this.$.cards.render();
-		this.$.list.render();
 	},
 	toArray: function(inItems) {
 		var ls = [];		
@@ -123,6 +119,7 @@ enyo.kind({
 
 //Hold the 'widget' object from the json file, showing displayName and owner.name
 //Represents the data that is shown in the narrow screen mode (list only)
+/*
 enyo.kind({
 	name: "ListItem",
 	classes:"listitem",
@@ -144,27 +141,36 @@ enyo.kind({
 		this.$.name.setContent(i.displayName);
 	}
 });
+*/
 
-//Inherit from ListItem
 //Presents a icon for the object
 enyo.kind({
 	name: "Card",
-	kind: "ListItem",
 	kindClasses: "card",
+	published: {
+		data: ""
+	},
 	components: [
-		//{name: "holder", classes: "icon-holder", components: [
-			{name: "icon", kind: "Image", classes: "icon"}
-		//]}
+		{name: "icon", kind: "Image", classes: "icon"}
 		,
-		//{name: "top", classes: "card-topbar", components: [
-			{name: "name", classes: "name"}
-		//]}
+		{name: "name", classes: "name"}
 	],
 	dataChanged: function() {
 		this.inherited(arguments);
+		
+		var i = this.data;
+		if (!i) {
+			return;
+		}
+		this.$.name.setContent(i.displayName);
+		
 		if (this.data) {
 			this.$.icon.setSrc(this.data.image);
 		}
+	},
+	create: function() {
+		this.inherited(arguments);
+		this.dataChanged();
 	}
 });
 
