@@ -1,0 +1,31 @@
+.concatInternLine{
+	padding: 6px;
+	display: inline-block;
+	width: 49%;
+	vertical-align: middle;
+}
+.concatTable > .header{
+	background-color:#A0BBDB;
+	padding: 8px;
+ }
+ 
+.concatTable > .subheader{
+	background-color: rgb(200,200,200);
+	font-weight: bold;
+	font-size:13px;
+	padding: 0px 6px;
+}
+.concatTable > .subheader > .subsubheader{ display: inline-block; }
+ #concatInFiles.concatTable > .subheader > .subsubheader{ width:49%; }
+ #concatOutFiles.concatTable > .subheader > .subsubheader{ width:49%; }
+ #concatRun.concatTable > .subheader > .subsubheader{ padding: 0px 6px; }
+ .concatExecLine{
+	padding: 6px;
+	display: inline-block;
+	vertical-align: middle;
+ }
+.concatExecFinal{ 
+	background-color: rgb(200,200,200);
+	padding: 6px;
+}
+#ConcatExecFinal{}
