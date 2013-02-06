@@ -85,10 +85,10 @@ enyo.kind({
 	},
 	menu:["Files","Commands","Acvity History","Accounts"],	
 	menuImages:["./assets/files.png","./assets/commands.png","./assets/activityHistory.png","./assets/accounts.png"],
-	nepheleImages:["./assets/concatenate.gif"
+	nepheleImages:["./assets/nogloss.gif"
 	, "./assets/fileCopy.gif", 
 	"./assets/Import.gif",
-	"./assets/Untar.gif"],
+	"./assets/export.gif"],
 	commandPanels:["concPanel","copyPanel","impPanel","expPanel"],
 	commands:["Concatenate","Copy","Import","Export"],
 	closePanel: function(){
@@ -175,7 +175,7 @@ enyo.kind({
 		);
 		
 		this.createComponent( 
-			{ name: "IconGallery", kind: "IconList", container: this.$.imageIcon, onDeselectedItems: "closeThirdPanel" , onSelectedItem: "selectedItem" , nepheleImages: this.nepheleImages, commands: this.commands, retrieveContentData: function() { this.data = createCommandItems(this.commands, this.nepheleImages); } } 
+			{ name: "IconGallery", kind: "IconList",container: this.$.imageIcon, onDeselectedItems: "closeThirdPanel" , onSelectedItem: "selectedItem" , nepheleImages: this.nepheleImages, commands: this.commands, retrieveContentData: function() { this.data = createCommandItems(this.commands, this.nepheleImages); } } 
 		);
 		
         this.$.imageIcon.render();
