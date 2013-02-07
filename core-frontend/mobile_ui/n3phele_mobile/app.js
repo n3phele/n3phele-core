@@ -12,7 +12,7 @@ enyo.kind({
 	name: "com.N3phele",
 	kind: "FittableRows",
 	classes: "onyx enyo-fit",
-	c1:{ 
+	/*c1:{ 
 		name:"contContent",
 		kind: "FittableRows",
 		fit: true,
@@ -41,7 +41,7 @@ enyo.kind({
 
 		],	
 			
-	},	
+	},	*/
 	components: [
 		{kind: "Panels", fit: true, touch: true, classes: "panels-sample-sliding-panels", arrangerKind: "CollapsingArranger", wrap: false, components: [
 			{name: "left", components: [
@@ -108,22 +108,45 @@ enyo.kind({
 	concPanel: function(inSender, inEvent) {
 		if(!this.$.panels.panelCreated){
 			this.$.panels.panelCreated =true;
-			b = this.$.panels;
-			p = b.createComponent(
-				this.c1
+			var panel = this.$.panels;
+			var concPage = panel.createComponent(
+				new concatPage({classes: "enyo-unselectable"})
+				//this.c1
 			);
-			p.render();
-			b.reflow();
-			this.contContent = p
 			
-			if (enyo.Panels.isScreenNarrow()) {
-				this.$.panels.setIndex(2);
-			}
-			else {
-				this.$.panels.setIndex(1);
+			/* -Begin- Generating Table Lines ****************************************************************************************/
+			var names = "";
+			for (var i=0; i<2; i++){
+				concPage.$.concatInFiles.createComponent({
+					kind: ConcatLineElem,
+					filename: "file"+i+".jpg",
+					msg: "You have not specified the file!"
+				});
+				
+				names += "file"+i+".jpg, ";
 			}
 			
-			this.$.panels.activePanel = "contContent";
+			concPage.$.concatOutFiles.createComponent({
+					kind: ConcatLineElem,
+					filename: "concatenation of " + names,
+					msg: "You have not specified the file!"
+			});
+			
+			for (var i=0; i<2; i++){
+				concPage.$.concatRun.createComponent({
+						kind: ConcatExecLine,
+						name: "Machine"+i,
+						zone: "zone"+i,
+						settings: "standard.small",
+						send: "ok"
+				});
+			}
+			
+			concPage.$.concatRun.createComponent({ kind: ConcatExecFinal }); 
+			/* -End- Generating Table Lines ****************************************************************************************/
+			concPage.render();
+			panel.reflow();
+			this.contContent = concPage;
 		}
 	},
 	impPanel: function(inSender, inEvent) {
