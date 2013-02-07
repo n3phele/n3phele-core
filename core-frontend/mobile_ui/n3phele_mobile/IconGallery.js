@@ -56,7 +56,7 @@ enyo.kind({
 	retrieveContentData: function() {
 		this.data = createRandomItems(2);
 	},
-	//Create Card and ListItems based on the content of this.widgets variable
+	//Create Cards based on the content of this.widgets variable
 	renderItems: function() {
 		this.$.cards.destroyClientControls();
 		
@@ -116,32 +116,6 @@ enyo.kind({
 		inEvent.preventTap();
 	}
 });
-
-//Hold the 'widget' object from the json file, showing displayName and owner.name
-//Represents the data that is shown in the narrow screen mode (list only)
-/*
-enyo.kind({
-	name: "ListItem",
-	classes:"listitem",
-	published: {
-		data: ""
-	},
-	components: [
-		{name: "name", classes: "name"}
-	],
-	create: function() {
-		this.inherited(arguments);
-		this.dataChanged();
-	},
-	dataChanged: function() {
-		var i = this.data;
-		if (!i) {
-			return;
-		}
-		this.$.name.setContent(i.displayName);
-	}
-});
-*/
 
 //Presents a icon for the object
 enyo.kind({
