@@ -135,6 +135,22 @@ enyo.kind({
 	expPanel: function(inSender, inEvent) {
 		alert("Export Panel");
 	},	
+	selectFile: function() {
+		// Retrieve image file location from specified source
+        navigator.camera.getPicture( 
+        		this.onSuccessFileSelection, 
+        		function(message) { alert('get file failed'); },
+                { 
+        			quality: 50, 
+        			destinationType: navigator.camera.DestinationType.FILE_URI,
+        			sourceType: navigator.camera.PictureSourceType.PHOTOLIBRARY,
+                    mediaType: navigator.camera.MediaType.ALLMEDIA 
+                }
+        );		
+	},
+	onSuccessFileSelection: function(imageData) {
+	    console.log(imageData);
+	},
 	itemTapMenu: function(inSender, inEvent) {
 		if (enyo.Panels.isScreenNarrow()) {
 			this.$.panels.setIndex(1);
