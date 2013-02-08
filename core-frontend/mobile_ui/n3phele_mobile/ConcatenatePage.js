@@ -124,7 +124,7 @@ enyo.kind({
 
 	],	
 	destroyPanel:function(inSender){
-			alert("Closing Panel");
+			//alert("Closing Panel");
 			var panel = inSender.parent.parent.parent;
 			
 			panel.setIndex(2);				
