@@ -147,6 +147,15 @@ enyo.kind({
 			concPage.render();
 			panel.reflow();
 			this.contContent = concPage;
+			
+			if (enyo.Panels.isScreenNarrow()) {
+				this.$.panels.setIndex(2);
+			}
+			else {
+				this.$.panels.setIndex(1);
+			}
+			
+			this.$.panels.activePanel = "contContent";
 		}
 	},
 	impPanel: function(inSender, inEvent) {
