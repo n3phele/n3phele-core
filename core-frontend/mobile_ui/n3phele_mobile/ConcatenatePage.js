@@ -8,7 +8,7 @@ enyo.kind({
 		{ classes: "concatInternLine", style: "text-align:right", components:[
 			{name:"msg", content: "ND" , style: "margin: 2px 0px;"},
 			{tag: "br"},
-			{kind:"onyx.Button", content: "File", ontap:"buttonTapped", style: "margin: 2px 0px;"}
+			{kind:"onyx.Button", content: "File", ontap:"selectFile", style: "margin: 2px 0px;"}
 		]}	
 	],
 	create: function() {
@@ -16,7 +16,22 @@ enyo.kind({
 		this.$.filename.setContent(this.filename);
 		this.$.msg.setContent(this.msg);
 	},
-	buttonTapped: function(){ console.log("Foi botão");}
+	selectFile: function() {
+	// Retrieve image file location from specified source
+		navigator.camera.getPicture( 
+				this.onSuccessFileSelection, 
+				function(message) { alert('get file failed'); },
+				{ 
+					quality: 50, 
+					destinationType: navigator.camera.DestinationType.FILE_URI,
+					sourceType: navigator.camera.PictureSourceType.PHOTOLIBRARY,
+					mediaType: navigator.camera.MediaType.ALLMEDIA 
+				}
+		);		
+	},
+	onSuccessFileSelection: function(imageData) {
+	    console.log(imageData);
+	},
 });
 
 enyo.kind({ 

@@ -158,7 +158,7 @@ enyo.kind({
 	expPanel: function(inSender, inEvent) {
 		alert("Export Panel");
 	},	
-	selectFile: function() {
+/**	selectFile: function() {
 		// Retrieve image file location from specified source
         navigator.camera.getPicture( 
         		this.onSuccessFileSelection, 
@@ -173,7 +173,7 @@ enyo.kind({
 	},
 	onSuccessFileSelection: function(imageData) {
 	    console.log(imageData);
-	},
+	},**/
 	itemTapMenu: function(inSender, inEvent) {
 		if (enyo.Panels.isScreenNarrow()) {
 			this.$.panels.setIndex(1);
