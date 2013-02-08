@@ -120,9 +120,27 @@ enyo.kind({
 				]},
 		]},
 		{kind: "onyx.Toolbar", components: [ {kind: "onyx.Button", content: "Close", ontap: "destroyPanel"} ]},
+		//{kind: "onyx.Toolbar", components: [ {kind: "onyx.Button", content: "Close", ontap: "closeCPanel"} ]}
 
 	],	
-		
+	destroyPanel:function(inSender){
+			alert("Closing Panel");
+			var panel = inSender.parent.parent.parent;
+			
+			panel.setIndex(2);				
+			panel.getActive().destroy();					
+			panel.panelCreated = false;
+			
+			if (enyo.Panels.isScreenNarrow()) {
+				panel.setIndex(1);
+			}
+			else {
+				panel.setIndex(0);
+			}		
+			
+			panel.reflow();		
+			panel.owner.$.IconGallery.deselectLastItem();			
+	}
 });
 //nome, zona, configuração, send
 					
