@@ -1,0 +1,8 @@
+	.loginMsgDisable{
+		display:none;
+	}
+	.loginMsgEnable{
+		display:block;
+		color: red;
+	}
+	#floatingLayer > #scrim{ background-color: rgb(100,100,100);opacity:0.2;}
