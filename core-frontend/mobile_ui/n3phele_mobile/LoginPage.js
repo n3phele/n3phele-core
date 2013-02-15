@@ -72,12 +72,11 @@ enyo.kind({
 		.go()
 		.response( this, function(inSender, inResponse){
 			sender.parent.owner.$.loginMsg.setContent("User authenticated");
-			popup.hide();
-			popup.destroy();
+			popup.delete();
 			//alert(inSender.xhrResponse.status);
+			new com.N3phele().renderInto(document.body);
 		}).error( this, function(inSender, inResponse){
 			sender.parent.owner.$.loginMsg.setContent("Access denied!");
-			
 			popup.delete();
 		});
 		
