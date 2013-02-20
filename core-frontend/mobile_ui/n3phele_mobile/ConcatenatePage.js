@@ -89,7 +89,7 @@ enyo.kind({
 				{name: "panel_three", classes: "panels-sample-sliding-content", allowHtml: true, components:[
 						{tag: "br"},
 						{name:"concatInFiles", id:"concatInFiles", classes: "concatTable", kind: "onyx.Groupbox", components: [
-							{kind: "onyx.GroupboxHeader", classes: "header", content: "Input Files"},
+							{kind: "onyx.GroupboxHeader", classes: "groupboxBlueHeader", content: "Input Files"},
 							{classes: "subheader", components:[ 
 								{content: "Filename", classes: "subsubheader" } , 
 								{content: "Status", classes: "subsubheader"} 
@@ -99,7 +99,7 @@ enyo.kind({
 						{tag: "br"},
 						
 						{name:"concatOutFiles", id:"concatOutFiles", classes: "concatTable", kind: "onyx.Groupbox", components: [
-							{kind: "onyx.GroupboxHeader", classes: "header", content: "Output Files"},
+							{kind: "onyx.GroupboxHeader", classes: "groupboxBlueHeader", content: "Output Files"},
 							{classes: "subheader", components:[ 
 								{content: "Filename", classes: "subsubheader" } , 
 								{content: "Status", classes: "subsubheader"} 
@@ -108,7 +108,7 @@ enyo.kind({
 						{tag: "br"},
 						
 						{name:"concatRun", id: "concatRun", classes: "concatTable", kind: "onyx.Groupbox", components: [
-							{kind: "onyx.GroupboxHeader", classes: "header", content: "Execute On"},
+							{kind: "onyx.GroupboxHeader", classes: "groupboxBlueHeader", content: "Execute On"},
 							{classes: "subheader", style: "padding:0px", components:[ 
 								{content: "Machine name", classes: "subsubheader", style:"width:34%"} , 
 								{content: "Zone", classes: "subsubheader", style:"width:26%" } , 

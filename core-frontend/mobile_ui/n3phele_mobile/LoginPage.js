@@ -29,7 +29,7 @@ enyo.kind({
 	components:[
 			{name: "topToolbar",kind: "onyx.Toolbar", components: [ {content: "N3PHELE"}, {fit: true}]},
 			{kind: "enyo.Scroller", fit: true, components: [
-				{classes: "panels-sample-sliding-content", allowHtml: true, style: "background: url('img/bg_login.png') repeat; height: 100%; width:100%; display: table;", components:[
+				{classes: "panels-sample-sliding-content", allowHtml: true, style: "background: url('assets/bg_login.png') repeat; height: 100%; width:100%; display: table;", components:[
 						{name: "login-container", style: "vertical-align: middle; display:table-cell; text-align:center;", components:[
 								{name: "loginMsg"},
 								{kind: "onyx.InputDecorator", style: "background-color: white;margin:2px;", components: [ {kind: "onyx.Input", name: "loginUser", placeholder: "Username"} ]},		
@@ -58,9 +58,10 @@ enyo.kind({
 	
 		//request user validation ********************************************
 		var hdr = user.replace("@", ".at-.") + ":" + pass;
+		var encodeHdr = Base64.encode( hdr );
 		var ajaxParams = {
 			url: serverAddress+"user/login",
-			headers:{ 'authorization' : "Basic "+ Base64.encode( hdr )},
+			headers:{ 'authorization' : "Basic "+ encodeHdr},
 			method: "POST",
 			contentType: "application/x-www-form-urlencoded",
 			sync: false, 
@@ -72,9 +73,12 @@ enyo.kind({
 		.go()
 		.response( this, function(inSender, inResponse){
 			sender.parent.owner.$.loginMsg.setContent("User authenticated");
+			
+
+			var mainPage = new com.N3phele({ 'uid' : encodeHdr });
+			
 			popup.delete();
-			//alert(inSender.xhrResponse.status);
-			new com.N3phele().renderInto(document.body);
+			mainPage.renderInto(document.body);
 		}).error( this, function(inSender, inResponse){
 			sender.parent.owner.$.loginMsg.setContent("Access denied!");
 			popup.delete();
