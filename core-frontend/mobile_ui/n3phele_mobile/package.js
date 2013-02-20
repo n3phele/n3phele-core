@@ -1,4 +1,5 @@
 enyo.depends(
+	"enyo/sources/ajax",
 	"PanelsSample.css",
 	"PanelsSample.js",
 	"PanelsFlickrSample.css",

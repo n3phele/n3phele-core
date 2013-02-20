@@ -12,7 +12,7 @@ enyo.kind({
 	name: "enyo.sample.PanelsSlidingSample",
 	kind: "FittableRows",
 	classes: "onyx enyo-fit",
-	c1:{ 
+/**	c1:{ 
 		name:"contContent",
 		kind: "FittableRows",
 		fit: true,
@@ -41,7 +41,7 @@ enyo.kind({
 
 		],	
 			
-	},	
+	},	**/
 	components: [
 		{kind: "Panels", fit: true, touch: true, classes: "panels-sample-sliding-panels", arrangerKind: "CollapsingArranger", wrap: false, components: [
 			{name: "left", components: [
@@ -106,13 +106,45 @@ enyo.kind({
 	concPanel: function(inSender, inEvent) {
 		if(!this.$.panels.panelCreated){
 			this.$.panels.panelCreated =true;
-			b = this.$.panels;
-			p = b.createComponent(
-				this.c1
+			var panel = this.$.panels;
+			var concPage = panel.createComponent(
+				new concatPage({classes: "enyo-unselectable"})
 			);
-			p.render();
-			b.reflow();
-			this.contContent = p
+			
+			/* -Begin- Generating Table Lines ****************************************************************************************/
+			var names = "";
+			for (var i=0; i<2; i++){
+				concPage.$.concatInFiles.createComponent({
+					kind: ConcatLineElem,
+					filename: "file"+i+".jpg",
+					msg: "You have not specified the file!"
+				});
+				
+				names += "file"+i+".jpg, ";
+			}
+			
+			concPage.$.concatOutFiles.createComponent({
+					kind: ConcatLineElem,
+					filename: "concatenation of " + names,
+					msg: "You have not specified the file!"
+			});
+			
+			for (var i=0; i<2; i++){
+				concPage.$.concatRun.createComponent({
+						kind: ConcatExecLine,
+						name: "Machine"+i,
+						zone: "zone"+i,
+						settings: "standard.small",
+						send: "ok"
+				});
+			}
+			
+			concPage.$.concatRun.createComponent({ kind: ConcatExecFinal });
+			concPage.render();
+			/* -End- Generating Table Lines ****************************************************************************************/
+			
+			panel.reflow();
+			this.contContent = concPage;
 			
 			if (enyo.Panels.isScreenNarrow()) {
 				this.$.panels.setIndex(2);

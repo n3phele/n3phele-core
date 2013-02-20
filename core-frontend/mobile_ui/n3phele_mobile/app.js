@@ -8,59 +8,35 @@ var createCommandItems = function(arrayOfCommands, arrayOfImages) {
 	return list;
 }
 
+/*Main painels*/
 enyo.kind({
 	name: "com.N3phele",
 	kind: "FittableRows",
 	classes: "onyx enyo-fit",
-	c1:{ 
-		name:"contContent",
-		kind: "FittableRows",
-		fit: true,
-		components:[
-			{name: "topToolbar",kind: "onyx.Toolbar", components: [
-						{content: "Concatenate"},
-						{fit: true}]},
-			{kind: "enyo.Scroller", fit: true, components: [
-				{name: "panel_three",
-				classes: "panels-sample-sliding-content", allowHtml: true, components:[
-				{name: "description", content: "Concatenate up to 8 files", style: "text-align:center; padding: 10px;"}]},
-				{kind: "List", fit: true, touch:true, count: 8, onSetUpItem: "setupItemConc",components: [
-						{name: "menu_item",	style: "padding: 10px;", classes: "panels-sample-flickr-item", ontap: "itemTapMenu", components: [
-							{name: "menu_option", content:"File Input"}
-						]}
-					],
-					setupItemConc: function(inSender, inEvent) {
-						this.menu_item.addRemoveClass("onyx-selected", inSender.isSelected(inEvent.index));
-						this.menu_option.setContent("File Input");
-					}
-				}
-			]},
-			{kind: "onyx.Toolbar", components: [
-				{kind: "onyx.Button", content: "Close", ontap: "destroyPanel"}
-			]},
-
-		],	
-			
-	},	
 	components: [
-		{kind: "Panels", fit: true, touch: true, classes: "panels-sample-sliding-panels", arrangerKind: "CollapsingArranger", wrap: false, components: [
+		{name:"N3pheleUid", style: "display:none"},
+		{kind: "Panels", panelCreated : false, fit: true, touch: true, classes: "panels-sample-sliding-panels", arrangerKind: "CollapsingArranger", wrap: false, components: [
 			{name: "left", components: [
 				{kind: "Scroller", classes: "enyo-fit", touch: true, components: [
-					{kind: "onyx.Toolbar", components: [
-						{content: "N3phele"},
-						{fit: true}]},
-					{kind:"Image", src:"assets/cloud-theme.gif", fit: true, style:  "padding-left:30px; padding-top: 30px;"},					
-					{kind: "List", fit: true, touch:true, count:4, onSetupItem: "setupItemMenu", components: [
-						{name: "menu_item",	classes: "panels-sample-flickr-item", ontap: "itemTapMenu", components: [
-							{name:"menu_image", kind:"Image"},
-							{name: "menu_option",kind:"Image"}]},
-					]},
-				]}
+					
+					{kind: "onyx.Toolbar", components: [ {content: "N3phele"}, {fit: true} ]}, //Panel Title
+					
+					{name: "mainMenuPanel", style:"width:90%;margin:auto", components:[//div to align content
+						
+						{kind:"Image", src:"assets/cloud-theme.gif", fit: true, style:  "padding-left:30px; padding-top: 30px;"},
+						{classes: "onyx-sample-divider", content: "Main Menu", style: "color: #375d8c"},					
+						{kind: "List", fit: true, touch:true, count:4, style: "height:"+(4*65)+"px", onSetupItem: "setupItemMenu", components: [
+							{name: "menu_item",	classes: "panels-sample-flickr-item", ontap: "itemTapMenu", style: "box-shadow: -4px 0px 4px rgba(0,0,0,0.3);", components: [
+								{name:"menu_image", kind:"Image"},
+								{name: "menu_option",kind:"Image"}]},
+						]}
+					]}// end mainMenuPanel
+				]}//end scroller
 			]},
 			{name: "imageIconPanel", kind:"FittableRows", fit:true, components:[
-				{name: "imageIcon",kind: "Scroller"}
-			]},			
-        ],
+				{name: "imageIcon",kind: "enyo.Scroller"}
+			]}			
+		],
 		destroyPanel: function(inSender, inEvent) {
 			this.setIndex(2);				
 			this.getActive().destroy();					
@@ -108,13 +84,45 @@ enyo.kind({
 	concPanel: function(inSender, inEvent) {
 		if(!this.$.panels.panelCreated){
 			this.$.panels.panelCreated =true;
-			b = this.$.panels;
-			p = b.createComponent(
-				this.c1
+			var panel = this.$.panels;
+			var concPage = panel.createComponent(
+				new concatPage({classes: "enyo-unselectable"})
+				//this.c1
 			);
-			p.render();
-			b.reflow();
-			this.contContent = p
+			
+			/* -Begin- Generating Table Lines ****************************************************************************************/
+			var names = "";
+			for (var i=0; i<2; i++){
+				concPage.$.concatInFiles.createComponent({
+					kind: ConcatLineElem,
+					filename: "file"+i+".jpg",
+					msg: "You have not specified the file!"
+				});
+				
+				names += "file"+i+".jpg, ";
+			}
+			
+			concPage.$.concatOutFiles.createComponent({
+					kind: ConcatLineElem,
+					filename: "concatenation of " + names,
+					msg: "You have not specified the file!"
+			});
+			
+			for (var i=0; i<2; i++){
+				concPage.$.concatRun.createComponent({
+						kind: ConcatExecLine,
+						name: "Machine"+i,
+						zone: "zone"+i,
+						settings: "standard.small",
+						send: "ok"
+				});
+			}
+			
+			concPage.$.concatRun.createComponent({ kind: ConcatExecFinal }); 
+			/* -End- Generating Table Lines ****************************************************************************************/
+			concPage.render();
+			panel.reflow();
+			this.contContent = concPage;
 			
 			if (enyo.Panels.isScreenNarrow()) {
 				this.$.panels.setIndex(2);
@@ -135,22 +143,6 @@ enyo.kind({
 	expPanel: function(inSender, inEvent) {
 		alert("Export Panel");
 	},	
-	selectFile: function() {
-		// Retrieve image file location from specified source
-        navigator.camera.getPicture( 
-        		this.onSuccessFileSelection, 
-        		function(message) { alert('get file failed'); },
-                { 
-        			quality: 50, 
-        			destinationType: navigator.camera.DestinationType.FILE_URI,
-        			sourceType: navigator.camera.PictureSourceType.PHOTOLIBRARY,
-                    mediaType: navigator.camera.MediaType.ALLMEDIA 
-                }
-        );		
-	},
-	onSuccessFileSelection: function(imageData) {
-	    console.log(imageData);
-	},
 	itemTapMenu: function(inSender, inEvent) {
 		if (enyo.Panels.isScreenNarrow()) {
 			this.$.panels.setIndex(1);
@@ -235,5 +227,10 @@ enyo.kind({
 				eval('this.' + this.commandPanels[i] + '()');
 			}
 		}		
+	},
+	create: function() {
+		this.inherited(arguments);
+		this.$.N3pheleUid.setContent( this.uid );
+		this.$.mainMenuPanel.createComponent({ kind: "RecentActivityList", 'uid' : this.uid});
 	}
 });
