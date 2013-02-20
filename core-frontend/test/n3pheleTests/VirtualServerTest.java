@@ -81,7 +81,7 @@ public class VirtualServerTest extends JerseyTest {
 	/*
 	 * Test the process of adding a new VirtualServer object to GAE Data Store through API calls.
 	 */
-	@Test
+	//@Test
 	public void testVirtualServerCreationListAndDeletion() throws RequestException {		
 		
 		//add credentials to request
@@ -115,7 +115,7 @@ public class VirtualServerTest extends JerseyTest {
 		Assert.assertTrue( initialCount == count );
 	}
 	
-	@Test
+	//@Test
 	public void testGetVirtualServer() throws RequestException {
 		
 		//add credentials to request
@@ -137,7 +137,7 @@ public class VirtualServerTest extends JerseyTest {
 		Assert.assertTrue( (200 == clientResponse.getStatus() ) || (204 == clientResponse.getStatus() ) );		
 	}
 	
-	@Test
+	//@Test
 	public void testGetVirtualServerByInstanceId() throws RequestException {		
 
 		//add credentials to request
