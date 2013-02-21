@@ -49,6 +49,7 @@ enyo.kind({
 		for(var n in this.data)
 		{
 			this.widgets[this.data[n].name] = this.data[n];
+			this.widgets[this.data[n].name].index = n;//Anelise: I need this information to search the commend information
 		}
 		
 		this.renderItems();
@@ -105,12 +106,13 @@ enyo.kind({
 	}
 	,
 	itemTap: function(inSender, inEvent) {
-		var selectedObject = inSender;
+		//var selectedObject = inSender;
 		
-		console.log( "selected object" + selectedObject);
-		console.log( "last selected object" + this.lastSelected);
+		//console.log( "selected object" + selectedObject);
+		//console.log( "last selected object" + this.lastSelected);
 		
-		this.selectItem(inSender);
+		//this.selectItem(inSender);
+		this.selectItem(inSender, inEvent);
 	},
 	preventTap: function(inSender, inEvent) {
 		inEvent.preventTap();

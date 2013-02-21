@@ -3,7 +3,7 @@ enyo.kind({
 		result: null,
 		components:[
 			{classes: "onyx-sample-divider", content: "Recent Activities", style: "color: #375d8c"},
-			{name: "list", kind: "List", fit: true, touch: true, onSetupItem: "setupItem", count: 5, components:[
+			{name: "list", kind: "List", fit: true, touch: true, onSetupItem: "setupItem", count: 1, components:[
 				{name: "item", style: "padding: 10px; box-shadow: -4px 0px 4px rgba(0,0,0,0.3);",  classes: "panels-sample-flickr-item enyo-border-box",  ontap: "itemTap", components:[
 					{ style:"margin: 2px; display:inline-block", components: [ {tag:"img", style:"width: 70%;height:auto", src: "assets/activities.png" }, ]},
 					{ name: "activity", style: "display:inline-block"},
@@ -30,7 +30,6 @@ enyo.kind({
 			this.results = response.elements;
 			this.$.list.setCount(this.results.length);
 			this.$.list.reset();
-			console.log(this.results.length);
 		},
 		setupItem: function(inSender, inEvent){
 			if(this.results == null ) return;
@@ -48,10 +47,11 @@ enyo.kind({
 			var main = sender.owner.parent.parent.parent.parent.owner;
 			var panels = main.$.panels;
 			
+			panels.parent.closeSecondaryPanels();
+			panels.reflow();
 			if (enyo.Panels.isScreenNarrow()){
 				panels.setIndex(1);
 			}
-			console.log(panels.owner.$.imageIconPanel.getComponents().length);
 			//console.log("panels.$.imageIconPanel", panels.owner.$.imageIconPanel);
 			panels.owner.$.imageIconPanel.destroyClientControls();
 			main.createComponent({kind: "RecentActivityPanel", 'data': this.results[event.index], container: main.$.imageIconPanel});
