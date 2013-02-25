@@ -34,29 +34,16 @@ box-pack:center;
 box-align:center;
 }
 
-/* Concatenate Page *****/
-.concatInternLine{
-	
-	display: inline-block;
-	width: 49%;
-	vertical-align: middle;
-}
- 
-.concatTable > .subheader{
+/* Command Detail Page *****/
+.commandFilesLine>div{ display: inline-block; width: 50%; vertical-align: middle; }
+
+.commandTable{ margin:4px; }
+.commandTable > .subheader{
 	background-color: rgb(200,200,200);
 	font-weight: bold;
 	font-size:13px;
 }
-.concatTable > .subheader > .subsubheader{ display: inline-block; }
- #concatInFiles.concatTable > .subheader > .subsubheader{ width:49%; }
- #concatOutFiles.concatTable > .subheader > .subsubheader{ width:49%; }
- .concatExecLine{
-	display: inline-block;
-	vertical-align: middle;
- }
-.concatExecFinal{ 
-	background-color: rgb(200,200,200);
-}
+.commandTable > .subheader > .subsubheader{ display: inline-block; width:50%; }
 
 /**** Login Page ****/
 .loginMsgDisable{

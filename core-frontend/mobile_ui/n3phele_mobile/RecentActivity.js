@@ -48,7 +48,6 @@ enyo.kind({
 			var panels = main.$.panels;
 			
 			panels.parent.closeSecondaryPanels();
-			panels.reflow();
 			if (enyo.Panels.isScreenNarrow()){
 				panels.setIndex(1);
 			}

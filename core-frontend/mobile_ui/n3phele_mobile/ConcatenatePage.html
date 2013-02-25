@@ -11,7 +11,20 @@
 	<script src="./lib/onyx/package.js" type="text/javascript"></script>
 	<!-- -->
 	<link href="sample-onyx.css" rel="stylesheet">
-	<link href="ConcatenatePage.css" rel="stylesheet">
+	<style type="text/css">
+		.groupboxBlueHeader{ background-color:#A0BBDB;}
+		.concatInternLine{ display: inline-block; width: 49%; vertical-align: middle; }
+		.concatExecLine{ display: inline-block; vertical-align: middle; }
+		.concatExecFinal{ background-color: rgb(200,200,200); }
+
+		.concatTable{ margin:4px; }
+		.concatTable > .subheader{
+			background-color: rgb(200,200,200);
+			font-weight: bold;
+			font-size:13px;
+		}
+		.concatTable > .subheader > .subsubheader{ display: inline-block; width:49%; }
+	</style>
 	<script src="ConcatenatePage.js" type="text/javascript"></script>
 	<!-- -->
 </head>
@@ -46,8 +59,8 @@
 		});
 	}
 	
-	c.$.concatRun.createComponent({ kind: ConcatExecFinal });
-	c.renderInto(document.body);**/
+	c.$.concatRun.createComponent({ kind: ConcatExecFinal });**/
+	c.renderInto(document.body);
 </script>
 </body>
 </html>

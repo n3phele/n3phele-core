@@ -1,3 +1,53 @@
+/** Upload Function **/
+var uploadFile = function() {
+// Retrieve image file location from specified source
+	navigator.camera.getPicture( 
+			onSuccessFileUp, 
+			function(message) { alert('get file failed'); },
+			{ 
+				quality: 50, 
+				destinationType: navigator.camera.DestinationType.FILE_URI,
+				sourceType: navigator.camera.PictureSourceType.PHOTOLIBRARY,
+				mediaType: navigator.camera.MediaType.ALLMEDIA 
+			}
+	);		
+};
+var onSuccessFileUp = function(imageData){ console.log(imageData); }
+/****************/
+
+enyo.kind({
+	name: "filesList",
+	components:[
+		{tag: "br"},
+		{name: "groupbox", classes: "commandTable", kind: "onyx.Groupbox", components: [
+			{name: "header", kind: "onyx.GroupboxHeader", classes: "groupboxBlueHeader", content: "Input Files"},//header
+			{classes: "subheader", components:[ //subheader
+				{content: "Filename", classes: "subsubheader" } , 
+				{content: "Status", classes: "subsubheader"} 
+			]}
+		]}//end groupbox
+	],//end components inFilesList
+	create: function(){
+		this.inherited(arguments);
+		this.$.header.setContent( this.title );
+		this.initializeLines( this.lines );
+	},
+	initializeLines: function( linesInfo ){
+		for( var i in linesInfo ){
+			console.log("oioioi", linesInfo[i]);
+			var description = "" + linesInfo[i].description;
+			 
+			this.$.groupbox.createComponent({ classes: "commandFilesLine", style:"padding: 1px;", components:[
+					{tag:"div", components:[ {name: linesInfo[i].name, content: description } ]},
+					{tag:"div", style: "text-align:right", components:[
+						{name:"msg", content: "Specify a file." , style: "margin: 2px 0px;display:block"},
+						{kind:"onyx.Button", content: "File", ontap:"uploadFile", style: "margin: 2px 0px;display:inline-block"}
+					]}
+			]});//end this.createComponent
+		}
+	},
+});
+
 enyo.kind({ 
 	name:"CommandDetail",
 	kind: "FittableRows",
@@ -25,60 +75,16 @@ enyo.kind({
 		this.$.description.setContent(this.data.description);
 		
 		if(typeof this.data.inputFiles != 'undefined'){
-			this.$.panel_three.createComponent({
-				name:"concatInFiles",
-				classes: "concatTable",
-				style: "margin:4px",
-				kind: "onyx.Groupbox",
-				components: [
-					{kind: "onyx.GroupboxHeader", classes: "groupboxBlueHeader", content: "Input Files"},
-					{classes: "subheader", components:[ 
-						{content: "Filename", classes: "subsubheader" } , 
-						{content: "Status", classes: "subsubheader"} 
-					]},
-					{components:[
-						{ classes: "concatInternLine", components:[
-							{ name: "filename",	content: "Filename"},
-						]},
-						{ classes: "concatInternLine", style: "text-align:right", components:[
-							{name:"msg", content: "some message" , style: "margin: 2px 0px;"},
-							{tag: "br"},
-							{kind:"onyx.Button", content: "File", ontap:"selectFile", style: "margin: 2px 0px;"}
-						]}	
-					]}
-				]
-			});
+			this.$.panel_three.createComponent({kind:"filesList", "lines": this.data.inputFiles, "title" : "Input Files"});
 			this.$.panel_three.reflow();
 		}// end if(typeof this.data.inputFiles != 'undefined')
 		
 		if(typeof this.data.outputFiles != 'undefined'){
-			this.$.panel_three.createComponent({
-				name:"concatOutFiles",
-				classes: "concatTable",
-				style: "margin: 4px",
-				kind: "onyx.Groupbox",
-				components: [
-					{kind: "onyx.GroupboxHeader", classes: "groupboxBlueHeader", content: "Output Files"},
-					{classes: "subheader", components:[ 
-						{content: "Filename", classes: "subsubheader" } , 
-						{content: "Status", classes: "subsubheader"} 
-					]},
-					{components:[
-						{ classes: "concatInternLine", components:[
-							{ name: "filename",	content: "Filename"},
-						]},
-						{ classes: "concatInternLine", style: "text-align:right", components:[
-							{name:"msg", content: "some message" , style: "margin: 2px 0px;"},
-							{tag: "br"},
-							{kind:"onyx.Button", content: "File", ontap:"selectFile", style: "margin: 2px 0px;"}
-						]}	
-					]}
-				]
-			});
+			var info = new Array();
+				info.push(this.data.outputFiles);
+			this.$.panel_three.createComponent({kind:"filesList", "lines": info, "title" : "Output Files" });
 			this.$.panel_three.reflow();
 		}
-		
-		console.log("painel", this.data, (typeof this.data.inputFiles != 'undefined'), (typeof this.data.outputFiles != 'undefined'));
 	},
 	closePanel: function(inSender, inEvent){
 			var panel = inSender.parent.parent.parent;

@@ -21,7 +21,6 @@ enyo.kind({
 	commandsImages : null,
 		
 	components: [
-		{name:"N3pheleUid", style: "display:none"},
 		{name:"N3pheleCommands", style: "display:none"},
 		{kind: "Panels", panelCreated : false, fit: true, touch: true, classes: "panels-sample-sliding-panels", arrangerKind: "CollapsingArranger", wrap: false, components: [
 			{name: "left", components: [
@@ -34,7 +33,7 @@ enyo.kind({
 						{kind:"Image", src:"assets/cloud-theme.gif", fit: true, style:  "padding-left:30px; padding-top: 30px;"},
 						{classes: "onyx-sample-divider", content: "Main Menu", style: "color: #375d8c"},					
 						{kind: "List", fit: true, touch:true, count:4, style: "height:"+(4*65)+"px", onSetupItem: "setupItemMenu", components: [
-							{name: "menu_item",	classes: "panels-sample-flickr-item", ontap: "itemTapMenu", style: "box-shadow: -4px 0px 4px rgba(0,0,0,0.3);", components: [
+							{name: "menu_item",	classes: "panels-sample-flickr-item", ontap: "mainMenuTap", style: "box-shadow: -4px 0px 4px rgba(0,0,0,0.3);", components: [
 								{name:"menu_image", kind:"Image"},
 								{name: "menu_option",kind:"Image"}]},
 						]}
@@ -44,23 +43,7 @@ enyo.kind({
 			{name: "imageIconPanel", kind:"FittableRows", fit:true, components:[
 				{name: "imageIcon",kind: "enyo.Scroller"}
 			]}			
-		],
-		destroyPanel: function(inSender, inEvent) {
-			this.setIndex(2);				
-			this.getActive().destroy();					
-			this.panelCreated = false;
-			
-			if (enyo.Panels.isScreenNarrow()) {
-				this.setIndex(1);
-			}
-			else {
-				this.setIndex(0);
-			}		
-			
-			this.reflow();
-			this.owner.$.IconGallery.deselectLastItem();
-		}			
-	}
+		]}
 	],	
 	setupButton: function(inSender, inEvent) {
 		this.$.item.addRemoveClass("onyx-selected", inSender.isSelected(inEvent.index));
@@ -68,10 +51,22 @@ enyo.kind({
 					{kind: "onyx.Icon", src: "https://github.com/enyojs/enyo/wiki/assets/fish_bowl.png"}
 					]});
 	},
-
-	
+	destroyPanel: function(inSender, inEvent) {
+		this.setIndex(2);				
+		this.getActive().destroy();					
+		this.panelCreated = false;
+		
+		if (enyo.Panels.isScreenNarrow()) {
+			this.setIndex(1);
+		}
+		else {
+			this.setIndex(0);
+		}		
+		
+		this.reflow();
+		this.owner.$.IconGallery.deselectLastItem();
+	},			
 	closePanel: function(){
-	alert("Closing Panel");
 		this.$.panels.setIndex(0);
 		this.destroyPanel();
 	},	
@@ -80,18 +75,20 @@ enyo.kind({
 		this.$.menu_image.setSrc(this.menuImages[inEvent.index]);
 		this.$.menu_option.setContent(this.menu[inEvent.index]);
 	},
-	itemTapMenu: function(inSender, inEvent) {
+	mainMenuTap: function(inSender, inEvent) {
 		//Checking if the device has a small screen and adjust if necessa
 		if (enyo.Panels.isScreenNarrow()) {
 			this.$.panels.setIndex(1);
 		}		
 
 		if(this.$.panels.panelCreated)this.$.panels.destroyPanel(); //??
+		
 		this.$.imageIconPanel.destroyClientControls(); // clear second painel
 		
 		//Checking the menu selected
 		switch(inEvent.index){
 			case 0://File menu
+				this.closeSecondaryPanels(2);
 				this.createComponent({
 					kind: "onyx.Toolbar",
 					container: this.$.imageIconPanel,
@@ -102,9 +99,10 @@ enyo.kind({
 				this.$.imageIconPanel.render();	
 			break;
 			case 1://Concatenate Menu
-				this.build();
+				this.createCommandList();
 			break;
 			case 2://Activity History
+				this.closeSecondaryPanels(2);
 				this.createComponent({
 					kind: "onyx.Toolbar",
 					container: this.$.imageIconPanel,
@@ -115,6 +113,7 @@ enyo.kind({
 				this.$.imageIconPanel.render();	
 			break;
 			case 3://Accounts
+				this.closeSecondaryPanels(2);
 				this.createComponent({
 					kind: "onyx.Toolbar",
 					container: this.$.imageIconPanel,
@@ -126,12 +125,10 @@ enyo.kind({
 			break;
 		}//end switch
 	},	
-	
 	backMenu: function(){
 		this.$.panels.setIndex(0);
 	},
-
-	build: function() {
+	createCommandList: function() {
 	
 		this.createComponent({name:"toolComm", kind: "onyx.Toolbar", container: this.$.imageIconPanel,components: [
 							{content: "Commands"},
@@ -142,8 +139,8 @@ enyo.kind({
 			name: "IconGallery",
 			kind: "IconList",
 			container: this.$.imageIconPanel,
-			onDeselectedItems: "closeThirdPanel",
-			onSelectedItem: "selectedItem", 
+			/**onDeselectedItems: "closeThirdPanel",**/
+			onSelectedItem: "commandTap", 
 			commands: this.commands,
 			commandsImages: this.commandsImages,
 			retrieveContentData: function(){
@@ -151,19 +148,18 @@ enyo.kind({
 			} 
 		);		
 		
-		
 		if (enyo.Panels.isScreenNarrow()) {
-		this.createComponent({kind: "onyx.Toolbar",container: this.$.imageIconPanel, components: [
+			this.createComponent({kind: "onyx.Toolbar",container: this.$.imageIconPanel, components: [
 				{kind: "onyx.Button", content: "Close", ontap: "backMenu"}
 			]});
 		}
 		else{
-		this.createComponent({kind: "onyx.Toolbar",container: this.$.imageIconPanel});
+			this.createComponent({kind: "onyx.Toolbar",container: this.$.imageIconPanel});
 		}
 		
         this.$.imageIconPanel.render();
     },
-	closeThirdPanel: function() {
+	/**closeThirdPanel: function() {
 		if ( this.$.panels.panelCreated )
 		{
 			this.$.panels.setIndex(2);
@@ -173,27 +169,21 @@ enyo.kind({
 			this.$.panels.reflow();
 			this.$.IconGallery.deselectLastItem();
 		}
-	}
-	,
+	},**/
 	/** When an command icon is actioned It will be runned**/
-	selectedItem: function(inSender, inEvent) {
-		this.closeSecondaryPanels();
-		
-		//get command information
-		var ajaxParams = {
+	commandTap: function(inSender, inEvent) {//get command information
+		//connection parameters
+		var ajaxComponent = new enyo.Ajax({
 				url: this.commandsData[inEvent.index].uri,
 				headers:{ 'authorization' : "Basic "+ this.uid},
 				method: "GET",
 				contentType: "application/x-www-form-urlencoded",
 				sync: false, 
-		};
+		}); 
 			
-		var ajaxComponent = new enyo.Ajax(ajaxParams); //connection parameters
-			
-		ajaxComponent
-		.go()
+		ajaxComponent.go()
 		.response( this, function(sender, response){
-			
+			this.closeSecondaryPanels();
 			//create panel
 			var newPanel = this.$.panels.createComponent({ kind: "CommandDetail", 'data': response });
 			newPanel.render();
@@ -210,36 +200,76 @@ enyo.kind({
 		
 
 	},
+	/** It's called when the king is instanciated **/
 	create: function() {
 		this.inherited(arguments);
-		this.searchCommandList( this.uid );
-		this.$.N3pheleUid.setContent( this.uid );
 		this.$.mainMenuPanel.createComponent({ kind: "RecentActivityList", 'uid' : this.uid});
-	},
-	searchCommandList: function( uid ){
-			var ajaxParams = {
-				url: serverAddress+"command",
-				headers:{ 'authorization' : "Basic "+ uid},
-				method: "GET",
-				contentType: "application/x-www-form-urlencoded",
-				sync: false, 
-			};
+	
+		//setting connection parameters
+		var ajaxComponent = new enyo.Ajax({
+			url: serverAddress+"command",
+			headers:{ 'authorization' : "Basic "+ this.uid},
+			method: "GET",
+			contentType: "application/x-www-form-urlencoded",
+			sync: false, 
+		});
+		
+		//Requesting service reply
+		ajaxComponent
+		.go({'summary' : true, 'start' : 0, 'end' : 16, 'preferred' :true})
+		.response( this, function( sender, response ){
+			this.commandsData = response.elements;//get the response
+			this.commands = new Array();
+			this.commandsImages = new Array();
 			
-			var ajaxComponent = new enyo.Ajax(ajaxParams); //connection parameters
-			
-			ajaxComponent
-			.go({'summary' : true, 'start' : 0, 'end' : 16, 'preferred' :true})
-			.response( this, "setCommandList" )
-			.error( this, function(){ console.log("Error to load the list of commands!!"); });
+			var waiting = 0;
+			var errorIndex = new Array();// array containing the index of the icons that did exists 
+			for( var i in response.elements ){//set comand list information
+				this.commands.push( response.elements[i].name ); //set name
+				
+				var iconUrl = this.commandsData[i].application; //get icon url
+					iconUrl = this.fixCommandIconUrl( iconUrl );//fix icon url 
+				
+				this.commandsImages.push(iconUrl); //set icon url fixed
+						
+				//checking if icon exists
+				waiting++;
+				var test = new enyo.Ajax({ url : iconUrl, handleAs: "text", index: i });
+		
+				test.go().response(this,function(sender, response){
+					waiting--;
+					if(waiting == 0) this.replaceWrongIcons(errorIndex);
+				}).error(this,function(sender, response){
+					waiting--;
+					errorIndex.push( sender.index );//adding icon with error
+					if(waiting == 0) this.replaceWrongIcons(errorIndex);				
+				});
+			}// end for( var i in response.elements )
+		})
+		.error( this, function(){ console.log("Error to load the list of commands!!"); });
+		
+		
 	},
-	setCommandList: function( sender, response ){
-		this.commandsData = response.elements;
-		this.commands = new Array();
-		this.commandsImages = new Array();
-		for( var i in response.elements ){
-			this.commands.push( response.elements[i].name );
-			this.commandsImages.push( "./assets/nogloss.gif" );
+	/** Used to set the defaul command icon when the icon address doesn't exist**/
+	replaceWrongIcons: function( wrongIcons ){
+		for(var i in wrongIcons){//it will change the icons that doesn't have icon
+			var imageIndex = wrongIcons[i];
+			this.commandsImages[imageIndex] = "./assets/Script.png";
 		}
+	},
+	/** Used to fix wrong information in the command icon url **/
+	fixCommandIconUrl: function( iconUrl ){
+		var url = iconUrl;
+			url = url.substring( url.search("/")+1 );//removing https
+			url = "http://"+ url;
+		
+		if( url.search("/icons/") < 0 ){ // correcting wrong url
+			var aux = url.split("/");
+			var filename = aux[ aux.length - 1 ];
+			var filenameIndex =  url.search( filename );
+			url = url.substring(0,filenameIndex-1) +"/icons/"+ filename;
+		}
+		return url;		
 	},
 	/** It will close painels that are not needed anymore **/
 	closeSecondaryPanels: function( level ){
@@ -252,5 +282,6 @@ enyo.kind({
 				panels[i].destroy();
 			}
 		}
+		this.$.panels.reflow();
 	}
 });
