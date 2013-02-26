@@ -183,7 +183,7 @@ enyo.kind({
 			
 		ajaxComponent.go()
 		.response( this, function(sender, response){
-			this.closeSecondaryPanels();
+			this.closeSecondaryPanels(2);
 			//create panel
 			var newPanel = this.$.panels.createComponent({ kind: "CommandDetail", 'data': response });
 			newPanel.render();
@@ -273,9 +273,6 @@ enyo.kind({
 	},
 	/** It will close painels that are not needed anymore **/
 	closeSecondaryPanels: function( level ){
-		if(!level)
-			level = 2; // If the parammeter was not set, the valuue is two
-			
 		var panels = this.$.panels.getPanels();
 		if( panels.length > level ){// Is there panels opened? close it
 			for(var i=level; i < panels.length; i++ ){

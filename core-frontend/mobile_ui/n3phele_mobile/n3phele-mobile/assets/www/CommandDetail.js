@@ -12,8 +12,29 @@ var uploadFile = function() {
 			}
 	);		
 };
-var onSuccessFileUp = function(imageData){ console.log(imageData); }
+var onSuccessFileUp = function(imageData){ alert(imageData); }
 /****************/
+enyo.kind({
+	name: "commandFilesLine",
+	classes: "commandFilesLine",
+	style:"padding: 1px;", 
+	components:[
+		{tag:"div", components:[{name: "filename"}]},
+		{tag:"div", style: "text-align:right", components:[
+			{name:"msg", content: "Specify a file." , style: "margin: 2px 0px;display:block"},
+			{kind:"onyx.Button", content: "File", ontap:"doFileUpload", style: "margin: 2px 0px;display:inline-block"}
+		]}
+	],
+	doFileUpload: function(inSender, inEvent){
+		alert("Aqui23");
+		uploadFile();
+	},
+	create: function(){
+		this.inherited(arguments);
+		this.$.filename.setContent(this.data.description);
+	}
+	
+});
 
 enyo.kind({
 	name: "filesList",
@@ -34,18 +55,9 @@ enyo.kind({
 	},
 	initializeLines: function( linesInfo ){
 		for( var i in linesInfo ){
-			console.log("oioioi", linesInfo[i]);
-			var description = "" + linesInfo[i].description;
-			 
-			this.$.groupbox.createComponent({ classes: "commandFilesLine", style:"padding: 1px;", components:[
-					{tag:"div", components:[ {name: linesInfo[i].name, content: description } ]},
-					{tag:"div", style: "text-align:right", components:[
-						{name:"msg", content: "Specify a file." , style: "margin: 2px 0px;display:block"},
-						{kind:"onyx.Button", content: "File", ontap:"uploadFile", style: "margin: 2px 0px;display:inline-block"}
-					]}
-			]});//end this.createComponent
+			this.$.groupbox.createComponent({ kind: "commandFilesLine", data: linesInfo[i] });
 		}
-	},
+	}
 });
 
 enyo.kind({ 

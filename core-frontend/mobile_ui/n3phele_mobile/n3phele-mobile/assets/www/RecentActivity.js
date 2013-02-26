@@ -44,10 +44,11 @@ enyo.kind({
 		},
 		itemTap: function( sender, event){
 			if(this.results == null ) return;
-			var main = sender.owner.parent.parent.parent.parent.owner;
+			var main = sender.owner.parent.owner;
 			var panels = main.$.panels;
-			
-			panels.parent.closeSecondaryPanels();
+
+			main.closeSecondaryPanels(2);
+
 			if (enyo.Panels.isScreenNarrow()){
 				panels.setIndex(1);
 			}
