@@ -1,25 +1,5 @@
 var serverAddress = "https://n3phele-dev.appspot.com/resources/";
 
-enyo.kind({
-		name: "spinnerPopup",
-		classes: "onyx-sample-popup",
-		kind: "onyx.Popup",
-		centered: true, 
-		floating: true,
-		onHide: "popupHidden",
-		scrim: true,
-		autoDismiss: false,
-		scrimWhenModal: false,
-		components: [
-			{kind: "onyx.Spinner"},
-			{content: "Loading", style: "font-size:12px"},
-		],
-		delete: function (){
-			this.hide();
-			this.destroy();
-		}
-});
-
 enyo.kind({ 
 	name:"loginPage",
 	kind: "FittableRows",
@@ -28,7 +8,6 @@ enyo.kind({
 	style: "padding: 0px",
 	components:[
 			{name: "topToolbar",kind: "onyx.Toolbar", components: [ {content: "N3PHELE"}, {fit: true}]},
-			{kind: "enyo.Scroller", fit: true, components: [
 				{classes: "panels-sample-sliding-content", allowHtml: true, style: "background: url('assets/bg_login.png') repeat; height: 100%; width:100%; display: table;", components:[
 						{name: "login-container", style: "vertical-align: middle; display:table-cell; text-align:center;", components:[
 								{name: "loginMsg"},
@@ -39,8 +18,6 @@ enyo.kind({
 								{kind:"onyx.Button", content: "Login", style: "margin:2px;", classes: "onyx-blue", ontap:"validateUser"},
 						]}//end div vertical cell
 				]},//end panel table
-		]},//end scroller
-		
 	],//end components
 	validateUser: function( sender, event){
 		//obtain form data ********************************************

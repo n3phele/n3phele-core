@@ -1,11 +1,12 @@
+var listSize = 3;
 enyo.kind({ 
 		name:"RecentActivityList",
 		result: null,
 		components:[
 			{classes: "onyx-sample-divider", content: "Recent Activities", style: "color: #375d8c"},
-			{name: "list", kind: "List", fit: true, touch: true, onSetupItem: "setupItem", count: 1, components:[
+			{name: "list", kind: "List", fit: true, touch: true, onSetupItem: "setupItem", count: 1, style: "height:"+(55*listSize)+"px", components:[
 				{name: "item", style: "padding: 10px; box-shadow: -4px 0px 4px rgba(0,0,0,0.3);",  classes: "panels-sample-flickr-item enyo-border-box",  ontap: "itemTap", components:[
-					{ style:"margin: 2px; display:inline-block", components: [ {tag:"img", style:"width: 70%;height:auto", src: "assets/activities.png" }, ]},
+					{ style:"margin: 2px; display:inline-block", components: [ {tag:"img", style:"width: 70%;", src: "assets/activities.png" }, ]},
 					{ name: "activity", style: "display:inline-block"},
 				]}//end item
 			]}
@@ -22,7 +23,7 @@ enyo.kind({
 			var ajaxComponent = new enyo.Ajax(ajaxParams); //connection parameters
 			
 			ajaxComponent
-			.go({'summary' : true, 'start' : 0, 'end' : 9})
+			.go({'summary' : true, 'start' : 0, 'end' : listSize-1})
 			.response( this, "processRecentActivities" )
 			.error( this, function(){ console.log("Error to load recent activities!!"); });
 		},

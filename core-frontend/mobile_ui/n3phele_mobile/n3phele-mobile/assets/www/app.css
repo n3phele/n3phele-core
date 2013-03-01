@@ -45,6 +45,9 @@ box-align:center;
 }
 .commandTable > .subheader > .subsubheader{ display: inline-block; width:50%; }
 
+.commandFilesLine .btnActive{margin: 2px 0px; display:inline-block}
+.commandFilesLine .btnInactive{display: none}
+
 /**** Login Page ****/
 .loginMsgDisable{
 	display:none;

@@ -29,8 +29,7 @@ enyo.kind({
 					{kind: "onyx.Toolbar", components: [ {content: "N3phele"}, {fit: true} ]}, //Panel Title
 					
 					{name: "mainMenuPanel", style:"width:90%;margin:auto", components:[//div to align content
-						
-						{kind:"Image", src:"assets/cloud-theme.gif", fit: true, style:  "padding-left:30px; padding-top: 30px;"},
+					    {kind:"Image", src:"assets/cloud-theme.gif", fit: true, style:  "padding-left:30px; padding-top: 30px;"},
 						{classes: "onyx-sample-divider", content: "Main Menu", style: "color: #375d8c"},					
 						{kind: "List", fit: true, touch:true, count:4, style: "height:"+(4*65)+"px", onSetupItem: "setupItemMenu", components: [
 							{name: "menu_item",	classes: "panels-sample-flickr-item", ontap: "mainMenuTap", style: "box-shadow: -4px 0px 4px rgba(0,0,0,0.3);", components: [
@@ -99,6 +98,7 @@ enyo.kind({
 				this.$.imageIconPanel.render();	
 			break;
 			case 1://Concatenate Menu
+				this.closeSecondaryPanels(2);
 				this.createCommandList();
 			break;
 			case 2://Activity History
@@ -139,7 +139,7 @@ enyo.kind({
 			name: "IconGallery",
 			kind: "IconList",
 			container: this.$.imageIconPanel,
-			/**onDeselectedItems: "closeThirdPanel",**/
+			onDeselectedItems: "commandDeselect",
 			onSelectedItem: "commandTap", 
 			commands: this.commands,
 			commandsImages: this.commandsImages,
@@ -159,17 +159,17 @@ enyo.kind({
 		
         this.$.imageIconPanel.render();
     },
-	/**closeThirdPanel: function() {
-		if ( this.$.panels.panelCreated )
-		{
+    commandDeselect: function(inSender, inEvent) {
+
+    	this.closeSecondaryPanels( 2 );
+    
+	    if (enyo.Panels.isScreenNarrow()) {
 			this.$.panels.setIndex(2);
-			this.$.panels.getActive().destroy();
-			this.$.panels.panelCreated = false;
-			this.$.panels.setIndex(0);
-			this.$.panels.reflow();
-			this.$.IconGallery.deselectLastItem();
 		}
-	},**/
+		else {
+			this.$.panels.setIndex(1);
+		}
+	},
 	/** When an command icon is actioned It will be runned**/
 	commandTap: function(inSender, inEvent) {//get command information
 		//connection parameters
@@ -188,6 +188,7 @@ enyo.kind({
 			var newPanel = this.$.panels.createComponent({ kind: "CommandDetail", 'data': response });
 			newPanel.render();
 			this.$.panels.reflow();
+			inSender.scrollIntoView(inSender.$["commandItem"+inEvent.index], false);
 			
 			if (enyo.Panels.isScreenNarrow()) {
 				this.$.panels.setIndex(2);
@@ -203,6 +204,9 @@ enyo.kind({
 	/** It's called when the king is instanciated **/
 	create: function() {
 		this.inherited(arguments);
+		var popup = new spinnerPopup();
+		popup.show();
+		
 		this.$.mainMenuPanel.createComponent({ kind: "RecentActivityList", 'uid' : this.uid});
 	
 		//setting connection parameters
@@ -239,10 +243,12 @@ enyo.kind({
 				test.go().response(this,function(sender, response){
 					waiting--;
 					if(waiting == 0) this.replaceWrongIcons(errorIndex);
+					popup.delete();
 				}).error(this,function(sender, response){
 					waiting--;
 					errorIndex.push( sender.index );//adding icon with error
-					if(waiting == 0) this.replaceWrongIcons(errorIndex);				
+					if(waiting == 0) this.replaceWrongIcons(errorIndex);	
+					popup.delete();
 				});
 			}// end for( var i in response.elements )
 		})
@@ -275,6 +281,7 @@ enyo.kind({
 	closeSecondaryPanels: function( level ){
 		var panels = this.$.panels.getPanels();
 		if( panels.length > level ){// Is there panels opened? close it
+			
 			for(var i=level; i < panels.length; i++ ){
 				panels[i].destroy();
 			}

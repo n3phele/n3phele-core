@@ -67,7 +67,7 @@ enyo.kind({
 		
 		for (var i=0, w; (w=items[i]); i++) {
 			var more = {data: w, ontap: "itemTap"};
-			this.createComponent({kind: "Card", container: this.$.cards}, more);
+			this.createComponent({name:"commandItem"+i, kind: "Card", container: this.$.cards}, more);
 		}
 		
 		this.$.cards.render();
