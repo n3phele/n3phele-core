@@ -22,10 +22,10 @@ enyo.kind({
 			
 			var ajaxComponent = new enyo.Ajax(ajaxParams); //connection parameters
 			
-			ajaxComponent
+/**			ajaxComponent
 			.go({'summary' : true, 'start' : 0, 'end' : listSize-1})
 			.response( this, "processRecentActivities" )
-			.error( this, function(){ console.log("Error to load recent activities!!"); });
+			.error( this, function(){ console.log("Error to load recent activities!!"); });**/
 		},
 		processRecentActivities: function( request, response){
 			this.results = response.elements;

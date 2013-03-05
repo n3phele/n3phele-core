@@ -97,18 +97,14 @@ enyo.kind({
 				});
 				this.$.imageIconPanel.render();	
 			break;
-			case 1://Concatenate Menu
+			case 1://Command Menu
 				this.closeSecondaryPanels(2);
 				this.createCommandList();
 			break;
 			case 2://Activity History
 				this.closeSecondaryPanels(2);
-				this.createComponent({
-					kind: "onyx.Toolbar",
-					container: this.$.imageIconPanel,
-					components: [
-						{content: "Activity History"}, {fit: true}
-					]
+				this.$.imageIconPanel.createComponent({
+					kind: "RecentActivityHistory",
 				});
 				this.$.imageIconPanel.render();	
 			break;
@@ -252,8 +248,8 @@ enyo.kind({
 				});
 			}// end for( var i in response.elements )
 		})
-		.error( this, function(){ console.log("Error to load the list of commands!!"); });
-		
+		.error( this, function(){ console.log("Error to load the list of commands!!"); popup.delete();});
+		popup.delete();
 		
 	},
 	/** Used to set the defaul command icon when the icon address doesn't exist**/
@@ -280,12 +276,18 @@ enyo.kind({
 	/** It will close painels that are not needed anymore **/
 	closeSecondaryPanels: function( level ){
 		var panels = this.$.panels.getPanels();
+
 		if( panels.length > level ){// Is there panels opened? close it
 			
-			for(var i=level; i < panels.length; i++ ){
+			
+			for(var i=level; i < panels.length ;){
+				console.log("entrou");
+				this.$.panels.render();
 				panels[i].destroy();
 			}
+			
+			this.$.panels.reflow();
 		}
-		this.$.panels.reflow();
+		
 	}
 });
