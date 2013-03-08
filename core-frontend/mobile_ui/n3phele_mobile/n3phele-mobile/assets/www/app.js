@@ -156,7 +156,6 @@ enyo.kind({
         this.$.imageIconPanel.render();
     },
     commandDeselect: function(inSender, inEvent) {
-
     	this.closeSecondaryPanels( 2 );
     
 	    if (enyo.Panels.isScreenNarrow()) {
@@ -179,6 +178,7 @@ enyo.kind({
 			
 		ajaxComponent.go()
 		.response( this, function(sender, response){
+			if(response.total == 0){alert("There is commands in the database!");return;}
 			this.closeSecondaryPanels(2);
 			//create panel
 			var newPanel = this.$.panels.createComponent({ kind: "CommandDetail", 'data': response });
@@ -193,7 +193,7 @@ enyo.kind({
 				this.$.panels.setIndex(1);
 			}
 		})
-		.error( this, function(){ console.log("Error to load the list of commands!!"); });
+		.error( this, function(){ console.log("Error to load the detail of commands!!"); });
 		
 
 	},
@@ -202,7 +202,6 @@ enyo.kind({
 		this.inherited(arguments);
 		var popup = new spinnerPopup();
 		popup.show();
-		
 		this.$.mainMenuPanel.createComponent({ kind: "RecentActivityList", 'uid' : this.uid});
 	
 		//setting connection parameters
@@ -218,20 +217,23 @@ enyo.kind({
 		ajaxComponent
 		.go({'summary' : true, 'start' : 0, 'end' : 16, 'preferred' :true})
 		.response( this, function( sender, response ){
+			if(response.total == 0){alert("There is no recent activities!");return;}
+			
 			this.commandsData = response.elements;//get the response
+			this.commandsData = fixArrayInformation(this.commandsData);
 			this.commands = new Array();
 			this.commandsImages = new Array();
 			
 			var waiting = 0;
 			var errorIndex = new Array();// array containing the index of the icons that did exists 
-			for( var i in response.elements ){//set comand list information
-				this.commands.push( response.elements[i].name ); //set name
+			for( var i in this.commandsData ){//set comand list information
+				this.commands.push( this.commandsData[i].name ); //set name
 				
-				var iconUrl = this.commandsData[i].application; //get icon url
+				var iconUrl = this.commandsData[i].icon; //get icon url
 					iconUrl = this.fixCommandIconUrl( iconUrl );//fix icon url 
 				
 				this.commandsImages.push(iconUrl); //set icon url fixed
-						
+		
 				//checking if icon exists
 				waiting++;
 				var test = new enyo.Ajax({ url : iconUrl, handleAs: "text", index: i });
@@ -249,8 +251,7 @@ enyo.kind({
 			}// end for( var i in response.elements )
 		})
 		.error( this, function(){ console.log("Error to load the list of commands!!"); popup.delete();});
-		popup.delete();
-		
+	
 	},
 	/** Used to set the defaul command icon when the icon address doesn't exist**/
 	replaceWrongIcons: function( wrongIcons ){
@@ -281,7 +282,6 @@ enyo.kind({
 			
 			
 			for(var i=level; i < panels.length ;){
-				console.log("entrou");
 				this.$.panels.render();
 				panels[i].destroy();
 			}

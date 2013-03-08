@@ -22,12 +22,13 @@ enyo.kind({
 			
 			var ajaxComponent = new enyo.Ajax(ajaxParams); //connection parameters
 			
-/**			ajaxComponent
+			ajaxComponent
 			.go({'summary' : true, 'start' : 0, 'end' : listSize-1})
 			.response( this, "processRecentActivities" )
-			.error( this, function(){ console.log("Error to load recent activities!!"); });**/
+			.error( this, function(){ console.log("Error to load recent activities!!"); });
 		},
 		processRecentActivities: function( request, response){
+			if(response.total == 0){alert("There is no recent activities!");return;}
 			this.results = response.elements;
 			this.$.list.setCount(this.results.length);
 			this.$.list.reset();
@@ -39,10 +40,10 @@ enyo.kind({
 			var item = this.results[i];
 			this.$.activity.setContent(item.name);
 		},
-		rendered: function() {
+/**		rendered: function() {
 			this.inherited(arguments);
 			this.getRecentActivities(this.uid);
-		},
+		},**/
 		itemTap: function( sender, event){
 			if(this.results == null ) return;
 			var main = sender.owner.parent.owner;
@@ -53,7 +54,7 @@ enyo.kind({
 			if (enyo.Panels.isScreenNarrow()){
 				panels.setIndex(1);
 			}
-			//console.log("panels.$.imageIconPanel", panels.owner.$.imageIconPanel);
+			
 			panels.owner.$.imageIconPanel.destroyClientControls();
 			main.createComponent({kind: "RecentActivityPanel", 'data': this.results[event.index], container: main.$.imageIconPanel});
 		

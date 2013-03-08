@@ -200,7 +200,6 @@ enyo.kind({
 				
 				this.$.commandList.setCount(this.lines.total);
 		
-		console.log(this.lines);
 	},
 	backMenu: function( sender , event){
 		sender.parent.parent.parent.parent.setIndex(0);

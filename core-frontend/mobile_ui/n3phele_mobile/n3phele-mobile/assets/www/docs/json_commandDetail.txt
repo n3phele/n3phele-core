@@ -1,0 +1,20 @@
+{
+					"name": "Concatenate",
+					"description": "This command will request  eight files, concatenate them and provide a file that results the content of all files.",
+					"inputFiles": [
+						{"description": "Input file 1"},
+						{"description": "Input file 2(optional)"},
+						{"description":"Input file 3(optional)"},
+						{"description": "Input file 4(optional)"},
+						{"description": "Input file 5(optional)"},
+						{"description": "Input file 6(optional)"},
+						{"description": "Input file 7(optional)"},
+						{"description": "Input file 8(optional)"}
+					],
+					"outputFiles": [
+						{"description": "File that result of concatenation Input file 1,2,3,4,5,6,7, and 8."}
+					],
+					"cloudProfiles": [
+						{"accountName":"HP Cloud", "cloudName": "HPCloud-USWEST2-Az2", "description":"standard.small on-demand"}
+					]
+				}

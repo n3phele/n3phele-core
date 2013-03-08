@@ -1,4 +1,5 @@
-var serverAddress = "https://n3phele-dev.appspot.com/resources/";
+//var serverAddress = "https://n3phele-dev.appspot.com/resources/";//http://127.0.0.1:8888/
+var serverAddress = "http://127.0.0.1:8888/resources/";
 
 enyo.kind({ 
 	name:"loginPage",

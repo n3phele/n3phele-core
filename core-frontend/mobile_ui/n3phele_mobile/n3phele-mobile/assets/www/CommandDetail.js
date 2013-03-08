@@ -36,15 +36,7 @@ enyo.kind({
 		this.inherited(arguments);
 		
 		if(typeof this.params == 'undefined') return;//checking if the lines informations are set
-		
-		//correcting the type of information
-		if( !(this.params instanceof Array) ){
-			
-			var aux = this.params;
-			this.params = new Array();
-			this.params.push(aux);
-		}
-		
+		this.params = fixArrayInformation(this.params);
 		this.initializeLines(this.params);
 	},
 	initializeLines: function( linesInfo ){
@@ -235,36 +227,60 @@ enyo.kind({
 	style: "padding: 0px",
 	components:[
 		{kind: "onyx.Toolbar", components: [ { name: "title" }, {fit: true}]},
-		{kind: "enyo.Scroller", fit: true, components: [
+		 {fit: true, kind: "Scroller", components:[
+/**    {tag:"ul", name:"ul", id: "ul", components:[
+	  			{tag:"li", name:"li1", ontap: "tabTap", index: "1", content: "Information"},
+	  			{tag:"li", name:"li2", ontap: "tabTap", index: "2", content: "Command"}
+	  		]},
+	 		{fit: true, kind: "Scroller",classes: "panels", name:"panels", components:[
+			 
+			]}**/
+	  		{kind: "FittableRows", classes: "commandTabs enyo-fit", components: [
+	  		    {components: [
+	  		                {tag:"ul", name:"ul", id: "ul", components:[
+              		  			{tag:"li", name:"li1", ontap: "tabTap", index: "1", content: "Information"},
+              		  			{tag:"li", name:"li2", ontap: "tabTap", index: "2", content: "Command"}
+              		  		]},
+	  		     ]},
+          		{kind: "FittableColumns",fit:true, classes: "panels fittable-sample-box fittable-sample-mtb enyo-center",name:"panels", components: [
+          			   {name: "div1", components:[
+							{tag:"img", src:"./assets/info.png", style: "display: inline-block;margin: 2px;"},
+							{name:"description",content: "Main Menu", style: "color: #63B8FF;display: inline-block; font-size: 16px;"}
+          			    ]},
+          			   {name: "div2", components:[
+          			                              
+          			    ]},
+          		]}
+          	]}//kind: "FittableRows"
+		]},
+/**		{kind: "enyo.Scroller", fit: true, components: [
 				{name: "panel_three", classes: "panels-sample-sliding-content", allowHtml: true, components:[
-					{tag:"img", src:"./assets/info.png", style: "display: inline-block;margin: 2px;"},
-					{name:"description",content: "Main Menu", style: "color: #63B8FF;display: inline-block; font-size: 16px;"},
+					,
 					{tag: "br"},
 					
 				]}
-		]},
+		]},**/
 		{kind: "onyx.Toolbar", components: [ {kind: "onyx.Button", content: "Close", ontap: "closePanel"} ]},
 	],
 	create: function(){
 		this.inherited(arguments);
+		this.tabTap({index:2},{});
 		this.$.title.setContent(this.data.name);
 		this.$.description.setContent(this.data.description);
 
 		if(typeof this.data.executionParameters != 'undefined'){
-			this.$.panel_three.createComponent({kind:"commandParamGroup", "params": this.data.executionParameters});
-			this.$.panel_three.reflow();
+			this.$.div2.createComponent({kind:"commandParamGroup", "params": this.data.executionParameters});
+			this.$.div2.reflow();
 		}
 		
 		if(typeof this.data.inputFiles != 'undefined'){
-			this.$.panel_three.createComponent({kind:"commandFilesGroup", "lines": this.data.inputFiles, "type" : "input"});
-			this.$.panel_three.reflow();
+			this.$.div2.createComponent({kind:"commandFilesGroup", "lines": this.data.inputFiles, "type" : "input"});
+			this.$.div2.reflow();
 		}
 		
 		if(typeof this.data.outputFiles != 'undefined'){
-			var info = new Array();
-				info.push(this.data.outputFiles);
-			this.$.panel_three.createComponent({kind:"commandFilesGroup", "lines": info, "type" : "output" });
-			this.$.panel_three.reflow();
+			this.$.div2.createComponent({kind:"commandFilesGroup", "lines": this.data.outputFiles, "type" : "output" });
+			this.$.div2.reflow();
 		}
 		
 		if( typeof this.data.cloudProfiles != 'undefined' ){// it is a object
@@ -274,15 +290,26 @@ enyo.kind({
 			else
 				cloudList = this.data.cloudProfiles;//it is already an array
 			
-			this.$.panel_three.createComponent({kind:"commandExecGroup", "lines": cloudList });	
+			this.$.div2.createComponent({kind:"commandExecGroup", "lines": cloudList });	
 			
 		}else{//clouds não definidas
-			this.$.panel_three.createComponent({kind:"commandExecGroup", "lines": new Array() });	
+			this.$.div2.createComponent({kind:"commandExecGroup", "lines": new Array() });	
 		}
 		
+	},
+	tabTap: function( sender, event ){
 		
+		var tabs = this.$.ul.components;
+		for( var i in tabs ){
+			var tabname = tabs[i].name;
+			this.$[tabname].addRemoveClass("active", this.$[tabname].name == "li"+sender.index );
+		}
 		
-		//if(typeof this.data.outputFiles != 'undefined' && )
+		var divs = this.$.panels.components;
+		for( var i in divs ){
+			var divname = divs[i].name;
+			this.$[divname].addRemoveClass("active", this.$[divname].name == "div"+sender.index );
+		}
 	},
 	closePanel: function(inSender, inEvent){
 			var panel = inSender.parent.parent.parent;
