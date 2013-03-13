@@ -106,12 +106,6 @@ enyo.kind({
 	}
 	,
 	itemTap: function(inSender, inEvent) {
-		//var selectedObject = inSender;
-		
-		//console.log( "selected object" + selectedObject);
-		//console.log( "last selected object" + this.lastSelected);
-		
-		//this.selectItem(inSender);
 		this.selectItem(inSender, inEvent);
 	},
 	preventTap: function(inSender, inEvent) {

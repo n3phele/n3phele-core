@@ -90,15 +90,7 @@ enyo.kind({
 		else
 			this.$.header.setContent( "Input Files" );
 		
-		if(typeof this.lines == 'undefined') return;//checking if the lines informations are set
-		
-		//correcting the type of information
-		if( !(this.lines instanceof Array) ){
-			
-			var aux = this.lines;
-			this.lines = new Array();
-			this.lines.push(aux);
-		}
+		this.lines = fixArrayInformation(this.lines);
 
 		this.initializeLines( this.lines );
 	},
@@ -127,8 +119,8 @@ enyo.kind({
 	create: function(){
 		this.inherited(arguments);
 
-		if(!this.lines)
-			return;
+		if(!this.lines) return;
+		this.lines = fixArrayInformation(this.lines);
 		
 		if( this.lines.length == 0 ){
 			this.addEmptyLine();
@@ -223,79 +215,80 @@ enyo.kind({
 	name:"CommandDetail",
 	kind: "FittableRows",
 	fit: true,
-	classes: "onyx onyx-sample",
+	classes: "onyx onyx-sample commandDetail",
 	style: "padding: 0px",
 	components:[
 		{kind: "onyx.Toolbar", components: [ { name: "title" }, {fit: true}]},
-		 {fit: true, kind: "Scroller", components:[
-/**    {tag:"ul", name:"ul", id: "ul", components:[
-	  			{tag:"li", name:"li1", ontap: "tabTap", index: "1", content: "Information"},
-	  			{tag:"li", name:"li2", ontap: "tabTap", index: "2", content: "Command"}
-	  		]},
-	 		{fit: true, kind: "Scroller",classes: "panels", name:"panels", components:[
-			 
-			]}**/
-	  		{kind: "FittableRows", classes: "commandTabs enyo-fit", components: [
-	  		    {components: [
-	  		                {tag:"ul", name:"ul", id: "ul", components:[
-              		  			{tag:"li", name:"li1", ontap: "tabTap", index: "1", content: "Information"},
-              		  			{tag:"li", name:"li2", ontap: "tabTap", index: "2", content: "Command"}
-              		  		]},
-	  		     ]},
-          		{kind: "FittableColumns",fit:true, classes: "panels fittable-sample-box fittable-sample-mtb enyo-center",name:"panels", components: [
-          			   {name: "div1", components:[
-							{tag:"img", src:"./assets/info.png", style: "display: inline-block;margin: 2px;"},
-							{name:"description",content: "Main Menu", style: "color: #63B8FF;display: inline-block; font-size: 16px;"}
-          			    ]},
-          			   {name: "div2", components:[
-          			                              
-          			    ]},
-          		]}
-          	]}//kind: "FittableRows"
-		]},
-/**		{kind: "enyo.Scroller", fit: true, components: [
-				{name: "panel_three", classes: "panels-sample-sliding-content", allowHtml: true, components:[
-					,
-					{tag: "br"},
+
+		{kind: "Panels", name:"panels", fit: true, classes: "panels-sample-sliding-panels panels", arrangerKind: "CollapsingArranger", wrap: false, components: [
+			{name: "info", classes: "info", style: "width:15%;", components: [
+				{kind: "Scroller", classes: "enyo-fit", touch: true, style: "width:90%;margin:auto;padding: 10px 0px;", components: [
+				     {name: "icon", tag: "img", classes: "card onyx-selected", style: "width:40%;height:auto"},
+				     {name: "cName", style: "margin-top: -10px;margin-bottom:15px; color: black;font-weight:bold"},
+				     {name: "description"}
+				]}
+			]},
+			{name: "params",classes: "params", fit: true, style: "padding: 0px",  components: [
+				{name: "comScroll", kind: "Scroller", classes: "enyo-fit", touch: true, components: [
 					
 				]}
-		]},**/
-		{kind: "onyx.Toolbar", components: [ {kind: "onyx.Button", content: "Close", ontap: "closePanel"} ]},
+			]}
+		]},
+		
+		{kind: "onyx.Toolbar", components: [ {kind: "onyx.Button", content: "Close", ontap: "closePanel"} ]}
 	],
 	create: function(){
-		this.inherited(arguments);
-		this.tabTap({index:2},{});
-		this.$.title.setContent(this.data.name);
-		this.$.description.setContent(this.data.description);
-
-		if(typeof this.data.executionParameters != 'undefined'){
-			this.$.div2.createComponent({kind:"commandParamGroup", "params": this.data.executionParameters});
-			this.$.div2.reflow();
-		}
+		this.inherited(arguments)
+		var popup = new spinnerPopup();
+		popup.show();
 		
-		if(typeof this.data.inputFiles != 'undefined'){
-			this.$.div2.createComponent({kind:"commandFilesGroup", "lines": this.data.inputFiles, "type" : "input"});
-			this.$.div2.reflow();
-		}
+		var ajaxComponent = new enyo.Ajax({
+			url: this.uri,
+			headers:{ 'authorization' : "Basic "+ this.uid},
+			method: "GET",
+			contentType: "application/x-www-form-urlencoded",
+			sync: false, 
+			}); 
+				
+		ajaxComponent.go()
+		.response(this, function(sender, response){
+			this.setDynamicData(response);
+			popup.delete();
+		})
+		.error(this, function(){
+			console.log("Error to load the detail of the command!");
+			popup.delete();
+		});		
+	},
+	setDynamicData: function( data ){
+		this.$.title.setContent(data.name);
+		this.$.icon.setSrc(this.icon);
+		this.$.cName.setContent(data.name);
+		this.$.description.setContent(data.description);
 		
-		if(typeof this.data.outputFiles != 'undefined'){
-			this.$.div2.createComponent({kind:"commandFilesGroup", "lines": this.data.outputFiles, "type" : "output" });
-			this.$.div2.reflow();
-		}
+		//Parameters Groupbox
+		if(typeof data.executionParameters != 'undefined')
+			this.$.comScroll.createComponent({kind:"commandParamGroup", "params": data.executionParameters});
 		
-		if( typeof this.data.cloudProfiles != 'undefined' ){// it is a object
-			var cloudList = new Array();
-			if( !(this.data.cloudProfiles instanceof Array) )//if it is not an array
-				cloudList.push(this.data.cloudProfiles);
-			else
-				cloudList = this.data.cloudProfiles;//it is already an array
-			
-			this.$.div2.createComponent({kind:"commandExecGroup", "lines": cloudList });	
-			
-		}else{//clouds não definidas
-			this.$.div2.createComponent({kind:"commandExecGroup", "lines": new Array() });	
-		}
+		//Input files Groupbox
+		if(typeof data.inputFiles != 'undefined')
+			this.$.comScroll.createComponent({kind:"commandFilesGroup", "lines": data.inputFiles, "type" : "input"});
 		
+		//Output files Groupbox
+		if(typeof data.outputFiles != 'undefined')
+			this.$.comScroll.createComponent({kind:"commandFilesGroup", "lines": data.outputFiles, "type" : "output" });
+		
+		//Cloud list
+		if( typeof data.cloudAccounts != 'undefined' )
+			this.$.comScroll.createComponent({kind:"commandExecGroup", "lines": data.cloudAccounts });				
+		else
+			this.$.comScroll.createComponent({kind:"commandExecGroup", "lines": new Array() });	
+		
+		//panel reflow
+		if (enyo.Panels.isScreenNarrow())
+			this.$.info.destroy();
+		this.$.comScroll.render();
+		this.$.panels.reflow();
 	},
 	tabTap: function( sender, event ){
 		

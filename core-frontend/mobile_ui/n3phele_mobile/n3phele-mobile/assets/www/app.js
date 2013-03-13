@@ -156,45 +156,30 @@ enyo.kind({
         this.$.imageIconPanel.render();
     },
     commandDeselect: function(inSender, inEvent) {
-    	this.closeSecondaryPanels( 2 );
+   // 	this.closeSecondaryPanels( 2 );
     
-	    if (enyo.Panels.isScreenNarrow()) {
+	/*8    if (enyo.Panels.isScreenNarrow()) {
 			this.$.panels.setIndex(2);
 		}
 		else {
 			this.$.panels.setIndex(1);
-		}
+		}**/
 	},
 	/** When an command icon is actioned It will be runned**/
-	commandTap: function(inSender, inEvent) {//get command information
-		//connection parameters
-		var ajaxComponent = new enyo.Ajax({
-				url: this.commandsData[inEvent.index].uri,
-				headers:{ 'authorization' : "Basic "+ this.uid},
-				method: "GET",
-				contentType: "application/x-www-form-urlencoded",
-				sync: false, 
-		}); 
-			
-		ajaxComponent.go()
-		.response( this, function(sender, response){
-			if(response.total == 0){alert("There is commands in the database!");return;}
-			this.closeSecondaryPanels(2);
-			//create panel
-			var newPanel = this.$.panels.createComponent({ kind: "CommandDetail", 'data': response });
-			newPanel.render();
-			this.$.panels.reflow();
-			inSender.scrollIntoView(inSender.$["commandItem"+inEvent.index], false);
-			
-			if (enyo.Panels.isScreenNarrow()) {
-				this.$.panels.setIndex(2);
-			}
-			else {
-				this.$.panels.setIndex(1);
-			}
-		})
-		.error( this, function(){ console.log("Error to load the detail of commands!!"); });
+	commandTap: function(inSender, inEvent) {
+		//check if command information is set
+		if( !( inEvent.index in this.commandsData ) ){
+			alert("There is not commands in the database!");
+			return;
+		}
+		this.closeSecondaryPanels(2);//close old panels
 		
+		//create panel
+		this.$.panels.createComponent({ kind: "CommandDetail", "uid": this.uid, 'icon': this.commandsData[inEvent.index].icon, 'uri': this.commandsData[inEvent.index].uri }).render();
+		this.$.panels.reflow();
+		this.$.panels.setIndex(2);
+		
+		inSender.scrollIntoView(inSender.$["commandItem"+inEvent.index], false);
 
 	},
 	/** It's called when the king is instanciated **/
@@ -232,8 +217,9 @@ enyo.kind({
 				var iconUrl = this.commandsData[i].icon; //get icon url
 					iconUrl = this.fixCommandIconUrl( iconUrl );//fix icon url 
 				
-				this.commandsImages.push(iconUrl); //set icon url fixed
-		
+				this.commandsData[i].icon = iconUrl;
+				this.commandsImages.push( iconUrl ); //set icon url fixed
+
 				//checking if icon exists
 				waiting++;
 				var test = new enyo.Ajax({ url : iconUrl, handleAs: "text", index: i });
@@ -253,7 +239,7 @@ enyo.kind({
 		.error( this, function(){ console.log("Error to load the list of commands!!"); popup.delete();});
 	
 	},
-	/** Used to set the defaul command icon when the icon address doesn't exist**/
+	/** Used to set the default command icon when the icon address doesn't exist**/
 	replaceWrongIcons: function( wrongIcons ){
 		for(var i in wrongIcons){//it will change the icons that doesn't have icon
 			var imageIndex = wrongIcons[i];
@@ -282,7 +268,6 @@ enyo.kind({
 			
 			
 			for(var i=level; i < panels.length ;){
-				this.$.panels.render();
 				panels[i].destroy();
 			}
 			

@@ -48,6 +48,17 @@ box-align:center;
 .commandFilesLine .btnActive{margin: 2px 0px; display:inline-block}
 .commandFilesLine .btnInactive{display: none}
 
+.commandDetail .panels   .info {
+	width:10%;
+	border: 0px solid;
+	border-right: medium ridge rgb(200,200,200);
+	text-align: center;
+	color: #63B8FF;
+	font-size: 16px;
+}
+.commandDetail .panels  .info > * {padding: 10px 5px;}
+.commandDetail .panels  .params{ width:90%; }
+
 /**** Login Page ****/
 .loginMsgDisable{
 	display:none;
@@ -61,34 +72,4 @@ box-align:center;
 /*** Geral ****/
 .groupboxBlueHeader{
 	background-color:#A0BBDB;
-}
-
-/** Command tabs **/
-.commandTabs{background-color: #eef2f5;}
-.commandTabs  .panels{ text-align: left;}
-.commandTabs  .panels > *{ display: none;opacity: 1 !important; width:98%;padding:2px;margin:auto}
-.commandTabs  #ul > .active{  background-color: #eef2f5; box-shadow: 0px 1px 0px #eef2f5;}
-.commandTabs > .panels > .active{ display:block !important;  }
-.commandTabs  #ul{
-	padding-top: 2px;
-	border-bottom : 1px solid #999;
-	list-style: none;
-	height: 47px;
-	
-	font: bold 11px verdana,arial,sans-serif;
-}
-.commandTabs  #ul > li{
-	display: inline-block;
-	background-color: #DCDCDC;
-	border-radius: 5px 5px  0 0 ;
-	border-color: #999;
-	border-style: solid solid none;
-	border-width: 1px 1px medium;
-	padding: 13px 13px 8px 13px;
-	height: 25px;
-	margin: 0 1px;
-	vertical-align:middle;
-	
-	color: #000;
-	font-size: 18px;
 }
