@@ -104,7 +104,7 @@ enyo.kind({
 			case 2://Activity History
 				this.closeSecondaryPanels(2);
 				this.$.imageIconPanel.createComponent({
-					kind: "RecentActivityHistory",
+					kind: "RecentActivityHistory", 'uid' : this.uid
 				});
 				this.$.imageIconPanel.render();	
 			break;
@@ -187,7 +187,8 @@ enyo.kind({
 		this.inherited(arguments);
 		var popup = new spinnerPopup();
 		popup.show();
-		this.$.mainMenuPanel.createComponent({ kind: "RecentActivityList", 'uid' : this.uid});
+		if (!enyo.Panels.isScreenNarrow())
+			this.$.mainMenuPanel.createComponent({ kind: "RecentActivityList", 'uid' : this.uid});
 	
 		//setting connection parameters
 		var ajaxComponent = new enyo.Ajax({
