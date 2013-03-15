@@ -110,14 +110,10 @@ enyo.kind({
 			break;
 			case 3://Accounts
 				this.closeSecondaryPanels(2);
-				this.createComponent({
-					kind: "onyx.Toolbar",
-					container: this.$.imageIconPanel,
-					components: [
-						{content: "Accounts"}, {fit: true}
-					]
+				this.$.imageIconPanel.createComponent({
+					kind: "AccountList", 'uid' : this.uid
 				});
-				this.$.imageIconPanel.render();		
+				this.$.imageIconPanel.render();	
 			break;
 		}//end switch
 	},	

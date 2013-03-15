@@ -96,11 +96,7 @@ enyo.kind({
 					{name: "acDuration", style:"display: inline-block"},
 					{tag: "br"},
 					{tag: "span", content: "Log: ", style:"font-variant:small-caps;"},
-					{tag: "br"},
-					{name: "acNarStamp", style:"display: inline-block;"},//key
-					{name: "acNarStatus", style:"display: inline-block;font-weight: bold;"},//parentesis
-					{name: "acNarId", style:"display: inline-block;"}, //" :"
-					{name: "acNarText", style:"display: inline-block;font-weight: bold"}
+
 				]}
 			]}
 		],
@@ -129,10 +125,19 @@ enyo.kind({
 				var d2 = new Date(response.complete);
 				
 				this.$.acDuration.setContent(" "+(d2-d1));
-				this.$.acNarStamp.setContent(" ["+response.narrative.stamp+"] ");
-				this.$.acNarStatus.setContent(" ("+response.narrative.state+") ");
-				this.$.acNarId.setContent(" "+response.narrative.tag+"  :  ");
-				this.$.acNarText.setContent(" "+response.narrative.text);
+				
+				var narrative = fixArrayInformation(response.narrative);
+				
+				for( var i in narrative ){
+					console.log("oi nar",narrative[i] );
+					this.$.panel_three.createComponent({tag: "br"});
+					this.$.panel_three.createComponent({style:"display: inline-block;", content: "  [ "+narrative[i].stamp+" ]  "});
+					this.$.panel_three.createComponent({style:"display: inline-block;font-weight: bold;", content : "  ( "+narrative[i].state+" ) "});
+					this.$.panel_three.createComponent({style:"display: inline-block;", content : " "+narrative[i].tag+" : "});
+					this.$.panel_three.createComponent({style:"display: inline-block;font-weight: bold", content : " "+narrative[i].text});
+				}
+				this.$.panel_three.render();
+				this.reflow();
 				
 				if (enyo.Panels.isScreenNarrow()){
 					this.createComponent({kind: "onyx.Toolbar", components: [ {kind: "onyx.Button", content: "Close", ontap: "backMenu"} ] });
@@ -144,7 +149,8 @@ enyo.kind({
 			
 
 		},
-		backMenu: function( sender , event){
+		backMenu: function( sender , event){3
+			console.log(sender.parent.parent.parent.parent);
 			sender.parent.parent.parent.parent.setIndex(0);
 		}
 });
